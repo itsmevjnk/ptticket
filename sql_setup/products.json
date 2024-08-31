@@ -1,0 +1,442 @@
+{
+    "0": {
+        "name": "None",
+        "coveredZones": 0
+    },
+    "1": {
+        "name": "Zone 1+2",
+        "coveredZones": 3
+    },
+    "2": {
+        "name": "Zone 1+2+3",
+        "coveredZones": 7
+    },
+    "3": {
+        "name": "Zone 1/2 overlap",
+        "coveredZones": 0
+    },
+    "4": {
+        "name": "Zones 1-15",
+        "coveredZones": 32767
+    },
+    "5": {
+        "name": "Zone 2",
+        "coveredZones": 2
+    },
+    "6": {
+        "name": "Zone 3",
+        "coveredZones": 4
+    },
+    "7": {
+        "name": "Zone 4",
+        "coveredZones": 8
+    },
+    "8": {
+        "name": "Zone 5",
+        "coveredZones": 16
+    },
+    "9": {
+        "name": "Zone 6",
+        "coveredZones": 32
+    },
+    "10": {
+        "name": "Zone 7",
+        "coveredZones": 64
+    },
+    "11": {
+        "name": "Zone 8",
+        "coveredZones": 128
+    },
+    "12": {
+        "name": "Zone 9",
+        "coveredZones": 256
+    },
+    "13": {
+        "name": "Zone 10",
+        "coveredZones": 512
+    },
+    "14": {
+        "name": "Zone 11",
+        "coveredZones": 1024
+    },
+    "15": {
+        "name": "Zone 12",
+        "coveredZones": 2048
+    },
+    "16": {
+        "name": "Zone 13",
+        "coveredZones": 4096
+    },
+    "17": {
+        "name": "Zone 14",
+        "coveredZones": 8192
+    },
+    "18": {
+        "name": "Zone 15",
+        "coveredZones": 16384
+    },
+    "19": {
+        "name": "Zones 2-3",
+        "coveredZones": 6
+    },
+    "20": {
+        "name": "Zones 3-4",
+        "coveredZones": 12
+    },
+    "21": {
+        "name": "Zones 4-5",
+        "coveredZones": 24
+    },
+    "22": {
+        "name": "Zones 5-6",
+        "coveredZones": 48
+    },
+    "23": {
+        "name": "Zones 6-7",
+        "coveredZones": 96
+    },
+    "24": {
+        "name": "Zones 7-8",
+        "coveredZones": 192
+    },
+    "25": {
+        "name": "Zones 8-9",
+        "coveredZones": 384
+    },
+    "26": {
+        "name": "Zones 9-10",
+        "coveredZones": 768
+    },
+    "27": {
+        "name": "Zones 10-11",
+        "coveredZones": 1536
+    },
+    "28": {
+        "name": "Zones 11-12",
+        "coveredZones": 3072
+    },
+    "29": {
+        "name": "Zones 12-13",
+        "coveredZones": 6144
+    },
+    "30": {
+        "name": "Zones 13-14",
+        "coveredZones": 12288
+    },
+    "31": {
+        "name": "Zones 14-15",
+        "coveredZones": 24576
+    },
+    "32": {
+        "name": "Zones 2-4",
+        "coveredZones": 14
+    },
+    "33": {
+        "name": "Zones 3-5",
+        "coveredZones": 28
+    },
+    "34": {
+        "name": "Zones 4-6",
+        "coveredZones": 56
+    },
+    "35": {
+        "name": "Zones 5-7",
+        "coveredZones": 112
+    },
+    "36": {
+        "name": "Zones 6-8",
+        "coveredZones": 224
+    },
+    "37": {
+        "name": "Zones 7-9",
+        "coveredZones": 448
+    },
+    "38": {
+        "name": "Zones 8-10",
+        "coveredZones": 896
+    },
+    "39": {
+        "name": "Zones 9-11",
+        "coveredZones": 1792
+    },
+    "40": {
+        "name": "Zones 10-12",
+        "coveredZones": 3584
+    },
+    "41": {
+        "name": "Zones 11-13",
+        "coveredZones": 7168
+    },
+    "42": {
+        "name": "Zones 12-14",
+        "coveredZones": 14336
+    },
+    "43": {
+        "name": "Zones 13-15",
+        "coveredZones": 28672
+    },
+    "44": {
+        "name": "Zones 2-5",
+        "coveredZones": 30
+    },
+    "45": {
+        "name": "Zones 3-6",
+        "coveredZones": 60
+    },
+    "46": {
+        "name": "Zones 4-7",
+        "coveredZones": 120
+    },
+    "47": {
+        "name": "Zones 5-8",
+        "coveredZones": 240
+    },
+    "48": {
+        "name": "Zones 6-9",
+        "coveredZones": 480
+    },
+    "49": {
+        "name": "Zones 7-10",
+        "coveredZones": 960
+    },
+    "50": {
+        "name": "Zones 8-11",
+        "coveredZones": 1920
+    },
+    "51": {
+        "name": "Zones 9-12",
+        "coveredZones": 3840
+    },
+    "52": {
+        "name": "Zones 10-13",
+        "coveredZones": 7680
+    },
+    "53": {
+        "name": "Zones 11-14",
+        "coveredZones": 15360
+    },
+    "54": {
+        "name": "Zones 12-15",
+        "coveredZones": 30720
+    },
+    "55": {
+        "name": "Zones 2-6",
+        "coveredZones": 62
+    },
+    "56": {
+        "name": "Zones 3-7",
+        "coveredZones": 124
+    },
+    "57": {
+        "name": "Zones 4-8",
+        "coveredZones": 248
+    },
+    "58": {
+        "name": "Zones 5-9",
+        "coveredZones": 496
+    },
+    "59": {
+        "name": "Zones 6-10",
+        "coveredZones": 992
+    },
+    "60": {
+        "name": "Zones 7-11",
+        "coveredZones": 1984
+    },
+    "61": {
+        "name": "Zones 8-12",
+        "coveredZones": 3968
+    },
+    "62": {
+        "name": "Zones 9-13",
+        "coveredZones": 7936
+    },
+    "63": {
+        "name": "Zones 10-14",
+        "coveredZones": 15872
+    },
+    "64": {
+        "name": "Zones 11-15",
+        "coveredZones": 31744
+    },
+    "65": {
+        "name": "Zones 2-7",
+        "coveredZones": 126
+    },
+    "66": {
+        "name": "Zones 3-8",
+        "coveredZones": 252
+    },
+    "67": {
+        "name": "Zones 4-9",
+        "coveredZones": 504
+    },
+    "68": {
+        "name": "Zones 5-10",
+        "coveredZones": 1008
+    },
+    "69": {
+        "name": "Zones 6-11",
+        "coveredZones": 2016
+    },
+    "70": {
+        "name": "Zones 7-12",
+        "coveredZones": 4032
+    },
+    "71": {
+        "name": "Zones 8-13",
+        "coveredZones": 8064
+    },
+    "72": {
+        "name": "Zones 9-14",
+        "coveredZones": 16128
+    },
+    "73": {
+        "name": "Zones 10-15",
+        "coveredZones": 32256
+    },
+    "74": {
+        "name": "Zones 2-8",
+        "coveredZones": 254
+    },
+    "75": {
+        "name": "Zones 3-9",
+        "coveredZones": 508
+    },
+    "76": {
+        "name": "Zones 4-10",
+        "coveredZones": 1016
+    },
+    "77": {
+        "name": "Zones 5-11",
+        "coveredZones": 2032
+    },
+    "78": {
+        "name": "Zones 6-12",
+        "coveredZones": 4064
+    },
+    "79": {
+        "name": "Zones 7-13",
+        "coveredZones": 8128
+    },
+    "80": {
+        "name": "Zones 8-14",
+        "coveredZones": 16256
+    },
+    "81": {
+        "name": "Zones 9-15",
+        "coveredZones": 32512
+    },
+    "82": {
+        "name": "Zones 2-9",
+        "coveredZones": 510
+    },
+    "83": {
+        "name": "Zones 3-10",
+        "coveredZones": 1020
+    },
+    "84": {
+        "name": "Zones 4-11",
+        "coveredZones": 2040
+    },
+    "85": {
+        "name": "Zones 5-12",
+        "coveredZones": 4080
+    },
+    "86": {
+        "name": "Zones 6-13",
+        "coveredZones": 8160
+    },
+    "87": {
+        "name": "Zones 7-14",
+        "coveredZones": 16320
+    },
+    "88": {
+        "name": "Zones 8-15",
+        "coveredZones": 32640
+    },
+    "89": {
+        "name": "Zones 2-10",
+        "coveredZones": 1022
+    },
+    "90": {
+        "name": "Zones 3-11",
+        "coveredZones": 2044
+    },
+    "91": {
+        "name": "Zones 4-12",
+        "coveredZones": 4088
+    },
+    "92": {
+        "name": "Zones 5-13",
+        "coveredZones": 8176
+    },
+    "93": {
+        "name": "Zones 6-14",
+        "coveredZones": 16352
+    },
+    "94": {
+        "name": "Zones 7-15",
+        "coveredZones": 32704
+    },
+    "95": {
+        "name": "Zones 2-11",
+        "coveredZones": 2046
+    },
+    "96": {
+        "name": "Zones 3-12",
+        "coveredZones": 4092
+    },
+    "97": {
+        "name": "Zones 4-13",
+        "coveredZones": 8184
+    },
+    "98": {
+        "name": "Zones 5-14",
+        "coveredZones": 16368
+    },
+    "99": {
+        "name": "Zones 6-15",
+        "coveredZones": 32736
+    },
+    "100": {
+        "name": "Zones 2-12",
+        "coveredZones": 4094
+    },
+    "101": {
+        "name": "Zones 3-13",
+        "coveredZones": 8188
+    },
+    "102": {
+        "name": "Zones 4-14",
+        "coveredZones": 16376
+    },
+    "103": {
+        "name": "Zones 5-15",
+        "coveredZones": 32752
+    },
+    "104": {
+        "name": "Zones 2-13",
+        "coveredZones": 8190
+    },
+    "105": {
+        "name": "Zones 3-14",
+        "coveredZones": 16380
+    },
+    "106": {
+        "name": "Zones 4-15",
+        "coveredZones": 32760
+    },
+    "107": {
+        "name": "Zones 2-14",
+        "coveredZones": 16382
+    },
+    "108": {
+        "name": "Zones 3-15",
+        "coveredZones": 32764
+    },
+    "109": {
+        "name": "Zones 2-15",
+        "coveredZones": 32766
+    }
+}
