@@ -5,22 +5,22 @@ EXECUTE insert_fare_type(0, 'Full Fare');
 EXECUTE insert_fare_cap(0, 1060, 720);
 
 EXECUTE insert_fare_type(1, 'Concession');
-EXECUTE insert_fare_cap(1, 720, 360);
+EXECUTE insert_fare_cap(1, 530, 360);
 
 EXECUTE insert_fare_type(2, 'Child');
-EXECUTE insert_fare_cap(2, 720, 360);
+EXECUTE insert_fare_cap(2, 530, 360);
 
 EXECUTE insert_fare_type(3, 'Carers');
-EXECUTE insert_fare_cap(3, 720, 360);
+EXECUTE insert_fare_cap(3, 530, 360);
 INSERT INTO "static"."DailyFareCaps" VALUES (2, 3, 0);
 
 EXECUTE insert_fare_type(4, 'Disability Support Pension');
-EXECUTE insert_fare_cap(4, 720, 360);
+EXECUTE insert_fare_cap(4, 530, 360);
 
 EXECUTE insert_fare_type(5, 'Seniors');
-EXECUTE insert_fare_cap(5, 720, 360);
+EXECUTE insert_fare_cap(5, 530, 360);
 INSERT INTO "static"."DailyFareCaps" VALUES (4, 5, 0);
 
 EXECUTE insert_fare_type(6, 'War Veterans/Widow(er)s');
-EXECUTE insert_fare_cap(6, 720, 360);
+EXECUTE insert_fare_cap(6, 530, 360);
 INSERT INTO "static"."DailyFareCaps" VALUES (8, 6, 0);
