@@ -1,0 +1,4 @@
+postgres
+node_modules/
+.npm/
+*.backup

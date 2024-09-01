@@ -1,0 +1,674 @@
+[
+    {
+        "id": "216f0e6810bad0c9",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "c8ab439c6aeb96e1",
+        "type": "postgreSQLConfig",
+        "name": "",
+        "host": "172.17.0.2",
+        "hostFieldType": "str",
+        "port": "5432",
+        "portFieldType": "num",
+        "database": "ptticket",
+        "databaseFieldType": "str",
+        "ssl": "false",
+        "sslFieldType": "bool",
+        "applicationName": "",
+        "applicationNameType": "str",
+        "max": "10",
+        "maxFieldType": "num",
+        "idle": "1000",
+        "idleFieldType": "num",
+        "connectionTimeout": "10000",
+        "connectionTimeoutFieldType": "num",
+        "user": "dynamic",
+        "userFieldType": "str",
+        "password": "ptticket_dynamic",
+        "passwordFieldType": "str"
+    },
+    {
+        "id": "265d23c3673d17a1",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/healthcheck",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 180,
+        "y": 1180,
+        "wires": [
+            [
+                "05dd21f465e40a3f"
+            ]
+        ]
+    },
+    {
+        "id": "7aece52a10c1a443",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "x": 710,
+        "y": 1180,
+        "wires": []
+    },
+    {
+        "id": "05dd21f465e40a3f",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Generate health check response",
+        "func": "msg.statusCode = (Date.now() >= (flow.get('staticExpiry') || new Date(0))) ? 503 : 200;\nmsg.payload = {\n    status: msg.statusCode,\n    message: (msg.statusCode == 503)\n        ? 'Static database cache is expired'\n        : 'Database API is functional',\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 510,
+        "y": 1180,
+        "wires": [
+            [
+                "7aece52a10c1a443"
+            ]
+        ]
+    },
+    {
+        "id": "8dc608d7e34eaf52",
+        "type": "inject",
+        "z": "216f0e6810bad0c9",
+        "name": "Fetch static DB",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "00 03 * * *",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "object",
+        "payloadType": "date",
+        "x": 240,
+        "y": 560,
+        "wires": [
+            [
+                "0f7012e50c5181f0",
+                "383ad78cd1c32c9c",
+                "76712dbf4477aaac",
+                "04992652fc426024"
+            ]
+        ]
+    },
+    {
+        "id": "383ad78cd1c32c9c",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get 2-hour durations",
+        "query": "SELECT * FROM \"static\".\"FareDurations\";",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 820,
+        "y": 560,
+        "wires": [
+            [
+                "289458a6f87fe4c5"
+            ]
+        ]
+    },
+    {
+        "id": "289458a6f87fe4c5",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Save 2-hour durations to context",
+        "func": "let durations = Array(msg.payload.length).fill(0); msg.payload.forEach((entry) => {\n    // node.log(entry);\n    durations[entry['numZones'] - 1] = entry['2hDuration'];\n});\nflow.set('fareDurations', durations);\nreturn {\n    payload: durations\n};\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1170,
+        "y": 560,
+        "wires": [
+            [
+                "a030b80886673d51"
+            ]
+        ]
+    },
+    {
+        "id": "865d6c26df4c837c",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get conditions that apply for today",
+        "query": "SELECT bit_or(\"dateCondition\") AS \"cond\" FROM \"static\".\"SpecialDates\" WHERE \"from\" >= $date AND \"to\" <= $date;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 560,
+        "y": 680,
+        "wires": [
+            [
+                "9e14ff47e8a325e6"
+            ]
+        ]
+    },
+    {
+        "id": "0f7012e50c5181f0",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Extract date from Date object",
+        "func": "let dateObj = msg.payload;\nmsg.queryParameters = {};\nmsg.queryParameters.date = `${dateObj.getFullYear()}-${dateObj.getMonth()}-${dateObj.getDate()}`;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 540,
+        "y": 620,
+        "wires": [
+            [
+                "865d6c26df4c837c"
+            ]
+        ]
+    },
+    {
+        "id": "9e14ff47e8a325e6",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Save condition to context",
+        "func": "let cond = msg.payload[0].cond || 0;\nlet dayOfWeek = (new Date()).getDay();\nif(dayOfWeek == 0 || dayOfWeek == 6) cond |= 1; // set weekend bit\nflow.set('dateCondition', cond);\nreturn {\n    queryParameters: {\n        cond: cond\n    }\n};",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 530,
+        "y": 740,
+        "wires": [
+            [
+                "0044e78972a9a1de",
+                "519efc4e9572f5b0"
+            ]
+        ]
+    },
+    {
+        "id": "0044e78972a9a1de",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get fare types and fare cap for today",
+        "query": "SELECT\n\tfc.\"type\",\n\tft.\"name\" AS \"name\",\n\tfc.\"cap\"\nFROM (\n\tSELECT\n\t\tdfc.\"fareType\" AS \"type\",\n\t\tMIN(dfc.\"fareCap\") AS \"cap\"\n\tFROM\n\t\t\"static\".\"DailyFareCaps\" dfc\n\tWHERE\n\t\tdfc.\"dateCondition\" = 0\n\t\tOR $cond & dfc.\"dateCondition\" != 0\n\tGROUP BY\n\t\t\"type\"\n) fc\nJOIN\n\t\"static\".\"FareTypes\" ft\nON\n\tfc.\"type\" = ft.\"type\";",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 850,
+        "y": 740,
+        "wires": [
+            [
+                "031a3cb30fe63211"
+            ]
+        ]
+    },
+    {
+        "id": "519efc4e9572f5b0",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get product fares for today",
+        "query": "SELECT \n\t\"productID\",\n\t\"fareType\",\n\tMIN(\"fare\") AS \"fare\"\nFROM\n\t\"static\".\"ProductFares\"\nWHERE\n\t\"dateCondition\" = 0\n\tOR $cond & \"dateCondition\" != 0\nGROUP BY\n\t\"productID\", \"fareType\";",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 840,
+        "y": 800,
+        "wires": [
+            [
+                "0990c81a85cd00c8"
+            ]
+        ]
+    },
+    {
+        "id": "031a3cb30fe63211",
+        "type": "change",
+        "z": "216f0e6810bad0c9",
+        "name": "Tag fare types/caps message",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "fareTypes",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1140,
+        "y": 740,
+        "wires": [
+            [
+                "e0675b7935c7680c"
+            ]
+        ]
+    },
+    {
+        "id": "0990c81a85cd00c8",
+        "type": "change",
+        "z": "216f0e6810bad0c9",
+        "name": "Tag product fares message",
+        "rules": [
+            {
+                "t": "set",
+                "p": "topic",
+                "pt": "msg",
+                "to": "prodFares",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1140,
+        "y": 800,
+        "wires": [
+            [
+                "e0675b7935c7680c"
+            ]
+        ]
+    },
+    {
+        "id": "e0675b7935c7680c",
+        "type": "join",
+        "z": "216f0e6810bad0c9",
+        "name": "Join SQL results",
+        "mode": "custom",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "useparts": false,
+        "accumulate": false,
+        "timeout": "",
+        "count": "3",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 1430,
+        "y": 740,
+        "wires": [
+            [
+                "9ca237858ad323d9"
+            ]
+        ]
+    },
+    {
+        "id": "9ca237858ad323d9",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Save fare types and product fares to context",
+        "func": "let fareTypes = Array(msg.payload.fareTypes.length).fill(null);\n\nmsg.payload.fareTypes.forEach((entry) => {\n    fareTypes[entry.type] = {\n        name: entry.name,\n        cap: entry.cap,\n        productFares: Array(msg.payload.products.length).fill(0)\n    };\n});\n\nmsg.payload.prodFares.forEach((entry) => {\n    fareTypes[entry.fareType].productFares[entry.productID] = entry.fare;\n});\n\nflow.set('fareTypes', fareTypes);\n\nreturn {\n    payload: fareTypes\n};\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1510,
+        "y": 800,
+        "wires": [
+            [
+                "a030b80886673d51"
+            ]
+        ]
+    },
+    {
+        "id": "76712dbf4477aaac",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get products",
+        "query": "SELECT * FROM \"static\".\"Products\";",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 490,
+        "y": 880,
+        "wires": [
+            [
+                "3113a1f977da6f5b"
+            ]
+        ]
+    },
+    {
+        "id": "3113a1f977da6f5b",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Save products to context",
+        "func": "let products = Array(msg.payload.length).fill(null);\nmsg.payload.forEach((entry) => {\n    products[entry.id] = {\n        name: entry.name,\n        zoneBits: entry.coveredZones\n    };\n});\nflow.set('products', products);\nreturn {\n    payload: products,\n    topic: 'products'\n};",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1130,
+        "y": 880,
+        "wires": [
+            [
+                "e0675b7935c7680c"
+            ]
+        ]
+    },
+    {
+        "id": "ececa4cfd21d6f3d",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Set static data expiry timestamp",
+        "func": "let dateObj = new Date();\nif(dateObj.getHours() > 3) dateObj.setDate(dateObj.getDate() + 1); // next day\ndateObj.setHours(3, 0, 0, 0); // 3am\nflow.set('staticExpiry', dateObj);\nreturn {\n    payload: dateObj\n};\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1890,
+        "y": 860,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "a030b80886673d51",
+        "type": "join",
+        "z": "216f0e6810bad0c9",
+        "name": "Wait for update completion",
+        "mode": "custom",
+        "build": "array",
+        "property": "",
+        "propertyType": "full",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "useparts": false,
+        "accumulate": false,
+        "timeout": "",
+        "count": "3",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 1880,
+        "y": 800,
+        "wires": [
+            [
+                "ececa4cfd21d6f3d"
+            ]
+        ]
+    },
+    {
+        "id": "06cf2482fbbd5846",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Generate products list response",
+        "func": "let payload = (Date.now() >= (flow.get('staticExpiry') || new Date(0)))\n    ? null\n    : (flow.get('products') || null);\nif (payload !== null) {\n    if (msg.payload.hasOwnProperty('hideZones') && msg.payload.hideZones.toLowerCase() === 'true') {\n        let products = payload; payload = [];\n        products.forEach((entry) => payload.push(entry.name)); // names only\n    }\n    if (msg.payload.hasOwnProperty('dict') && msg.payload.dict.toLowerCase() === 'true') {\n        payload = Object.assign({}, payload); // convert to object\n    }\n}\n\nmsg.statusCode = (payload === null) ? 503 : 200;\nmsg.payload = {\n    status: msg.statusCode,\n    message: (msg.statusCode == 503)\n        ? 'Static database cache is expired'\n        : payload,\n    time: Date.now()\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 510,
+        "y": 1240,
+        "wires": [
+            [
+                "2126f90df7da0990"
+            ]
+        ]
+    },
+    {
+        "id": "0664e07e9d978adb",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/products",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 170,
+        "y": 1240,
+        "wires": [
+            [
+                "06cf2482fbbd5846"
+            ]
+        ]
+    },
+    {
+        "id": "2126f90df7da0990",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 710,
+        "y": 1240,
+        "wires": []
+    },
+    {
+        "id": "e5e85cfd6230bcfb",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Generate fare duration list response",
+        "func": "let payload = (Date.now() >= (flow.get('staticExpiry') || new Date(0)))\n    ? null\n    : (flow.get('fareDurations') || null);\nif (payload !== null) {\n    if (msg.payload.hasOwnProperty('dict') && msg.payload.dict.toLowerCase() === 'true') {\n        let durations = payload; payload = {};\n        for(let i = 0; i < durations.length; i++) payload[i + 1] = durations[i];\n    }\n}\n\nmsg.statusCode = (payload === null) ? 503 : 200;\nmsg.payload = {\n    status: msg.statusCode,\n    message: (msg.statusCode == 503)\n        ? 'Static database cache is expired'\n        : payload,\n    time: Date.now()\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 1300,
+        "wires": [
+            [
+                "723ec7642f09a41b"
+            ]
+        ]
+    },
+    {
+        "id": "2b85d7052d3ed4ae",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/fareDurations",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 180,
+        "y": 1300,
+        "wires": [
+            [
+                "e5e85cfd6230bcfb"
+            ]
+        ]
+    },
+    {
+        "id": "723ec7642f09a41b",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 710,
+        "y": 1300,
+        "wires": []
+    },
+    {
+        "id": "1b1e16f55ef0d687",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Generate fare types list response",
+        "func": "let payload = (Date.now() >= (flow.get('staticExpiry') || new Date(0)))\n    ? null\n    : (flow.get('fareTypes') || null);\nif (payload !== null) {\n    if (msg.payload.hasOwnProperty('hideFares') && msg.payload.hideFares.toLowerCase() === 'true') {\n        let types = payload; payload = [];\n        types.forEach((entry) => payload.push(entry.name)); // names only\n    }\n    if (msg.payload.hasOwnProperty('dict') && msg.payload.dict.toLowerCase() === 'true') {\n        payload = Object.assign({}, payload); // convert to object\n    }\n}\n\nmsg.statusCode = (payload === null) ? 503 : 200;\nmsg.payload = {\n    status: msg.statusCode,\n    message: (msg.statusCode == 503)\n        ? 'Static database cache is expired'\n        : payload,\n    time: Date.now()\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 1360,
+        "wires": [
+            [
+                "2b50c7ff92d174cd"
+            ]
+        ]
+    },
+    {
+        "id": "4a6f910350553c7d",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/fareTypes",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 170,
+        "y": 1360,
+        "wires": [
+            [
+                "1b1e16f55ef0d687"
+            ]
+        ]
+    },
+    {
+        "id": "2b50c7ff92d174cd",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 710,
+        "y": 1360,
+        "wires": []
+    },
+    {
+        "id": "6ab73dd7f1fa5906",
+        "type": "comment",
+        "z": "216f0e6810bad0c9",
+        "name": "Static data query",
+        "info": "",
+        "x": 860,
+        "y": 1240,
+        "wires": []
+    },
+    {
+        "id": "04992652fc426024",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get transaction types",
+        "query": "SELECT * FROM \"static\".\"TransactionTypes\";",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 520,
+        "y": 960,
+        "wires": [
+            [
+                "7bc06a341bd190be"
+            ]
+        ]
+    },
+    {
+        "id": "7bc06a341bd190be",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Save transaction types to context",
+        "func": "let types = Array(msg.payload.length).fill(null);\nmsg.payload.forEach((entry) => types[entry.type] = entry.name);\nflow.set('transactionTypes', types);\nreturn {\n    payload: types\n};",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1100,
+        "y": 960,
+        "wires": [
+            [
+                "a030b80886673d51"
+            ]
+        ]
+    },
+    {
+        "id": "6170ba65634e5270",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Generate transaction types list response",
+        "func": "let payload = (Date.now() >= (flow.get('staticExpiry') || new Date(0)))\n    ? null\n    : (flow.get('transactionTypes') || null);\nif (payload !== null) {\n    if (msg.payload.hasOwnProperty('dict') && msg.payload.dict.toLowerCase() === 'true') {\n        payload = Object.assign({}, payload); // convert to object\n    }\n}\n\nmsg.statusCode = (payload === null) ? 503 : 200;\nmsg.payload = {\n    status: msg.statusCode,\n    message: (msg.statusCode == 503)\n        ? 'Static database cache is expired'\n        : payload,\n    time: Date.now()\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 1420,
+        "wires": [
+            [
+                "14ad27052606b956"
+            ]
+        ]
+    },
+    {
+        "id": "cbd7725f758ade76",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/transactionTypes",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 190,
+        "y": 1420,
+        "wires": [
+            [
+                "6170ba65634e5270"
+            ]
+        ]
+    },
+    {
+        "id": "14ad27052606b956",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 710,
+        "y": 1420,
+        "wires": []
+    }
+]
