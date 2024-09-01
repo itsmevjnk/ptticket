@@ -16,7 +16,7 @@ with open('product_fares.sql', 'w') as f:
         for id in range(6, 19):
             f.write(f'EXECUTE insert_product_fare({id}, {type}, 0, {regional_fares[0] // div});\n') # Zone 3-15 only
         id = 19
-        for zones in range(2, 14):
+        for zones in range(2, 15):
             for i in range(15 - zones):
                 f.write(f'EXECUTE insert_product_fare({id}, {type}, 0, {regional_fares[zones - 1] // div});\n')
                 id += 1
