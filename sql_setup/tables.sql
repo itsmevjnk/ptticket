@@ -73,7 +73,7 @@ CREATE TABLE "dynamic"."Transactions" (
 );
 
 CREATE TABLE "dynamic"."PhysicalTickets" (
-    "id" BIGSERIAL PRIMARY KEY,
+    "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     "type" VARCHAR(8) NOT NULL,
     "disabled" BOOLEAN NOT NULL DEFAULT (FALSE),
     "expiryDate" DATE,
