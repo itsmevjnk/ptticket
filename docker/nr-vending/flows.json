@@ -438,8 +438,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 830,
-        "y": 520,
+        "x": 910,
+        "y": 480,
         "wires": [
             [
                 "2f13fc6bd84e3347"
@@ -488,7 +488,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 800,
+        "x": 820,
         "y": 360,
         "wires": [
             [
@@ -515,7 +515,7 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1030,
+        "x": 1050,
         "y": 540,
         "wires": [
             [
@@ -2058,5 +2058,53 @@
                 "b4629c449401ab81"
             ]
         ]
+    },
+    {
+        "id": "3d027c4ed2f27897",
+        "type": "http in",
+        "z": "fab23692fcecca97",
+        "name": "",
+        "url": "/api/healthcheck",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 220,
+        "y": 40,
+        "wires": [
+            [
+                "1a5744008db16476"
+            ]
+        ]
+    },
+    {
+        "id": "1a5744008db16476",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Return health check response",
+        "func": "msg.statusCode = 200;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Ticket vending API is operational',\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 40,
+        "wires": [
+            [
+                "d90bba12944ed8f9"
+            ]
+        ]
+    },
+    {
+        "id": "d90bba12944ed8f9",
+        "type": "http response",
+        "z": "fab23692fcecca97",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 670,
+        "y": 40,
+        "wires": []
     }
 ]
