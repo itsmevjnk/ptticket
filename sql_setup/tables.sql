@@ -85,7 +85,7 @@ CREATE TABLE "dynamic"."Passes" (
     "ticketID" UUID REFERENCES "dynamic"."Tickets" ("id"),
     "duration" INTEGER NOT NULL,
     "activationDate" DATE,
-    "productID" INTEGER REFERENCES "static"."Products" ("id")
+    "product" INTEGER REFERENCES "static"."Products" ("id")
 );
 
 GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES ON ALL TABLES IN SCHEMA "static" TO "static";
