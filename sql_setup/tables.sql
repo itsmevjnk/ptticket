@@ -68,8 +68,8 @@ CREATE TABLE "dynamic"."Transactions" (
     "ticketID" UUID REFERENCES "dynamic"."Tickets" ("id"),
     "timestamp" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "type" INTEGER REFERENCES "static"."TransactionTypes" ("type"),
-    "locationID" INTEGER REFERENCES "static"."Locations" ("id"),
-    "postBalance" INTEGER NOT NULL
+    "location" INTEGER REFERENCES "static"."Locations" ("id"),
+    "balance" INTEGER NOT NULL
 );
 
 CREATE TABLE "dynamic"."PhysicalTickets" (
