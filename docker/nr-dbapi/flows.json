@@ -3445,5 +3445,138 @@
                 "a030b80886673d51"
             ]
         ]
+    },
+    {
+        "id": "e24b4f729e7af1e4",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/tickets/:id/passes/:tid",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 1570,
+        "y": 2580,
+        "wires": [
+            [
+                "82fafe4c4b9103c4"
+            ]
+        ]
+    },
+    {
+        "id": "84886fc7120f393f",
+        "type": "comment",
+        "z": "216f0e6810bad0c9",
+        "name": "Activate transit pass",
+        "info": "",
+        "x": 1530,
+        "y": 2620,
+        "wires": []
+    },
+    {
+        "id": "82fafe4c4b9103c4",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Set query parameters",
+        "func": "msg.queryParameters = {\n    ticketID: msg.req.params.id,\n    transID: msg.req.params.tid\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1820,
+        "y": 2580,
+        "wires": [
+            [
+                "e6a0f8ec4d5cc26e"
+            ]
+        ]
+    },
+    {
+        "id": "e6a0f8ec4d5cc26e",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Activate pass",
+        "query": "UPDATE\n\t\"dynamic\".\"Passes\"\nSET\n\t\"activationDate\" = CURRENT_DATE\nWHERE\n\t\"ticketID\" = $ticketID\n\tAND \"transactionID\" = $transID\n\tAND \"activationDate\" IS NULL\nRETURNING\n\t\"ticketID\", \"transactionID\", \"activationDate\";",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2010,
+        "y": 2580,
+        "wires": [
+            [
+                "b29b6f34c8f5d334"
+            ]
+        ]
+    },
+    {
+        "id": "241faa29e85a2c51",
+        "type": "catch",
+        "z": "216f0e6810bad0c9",
+        "name": "Catch query errors",
+        "scope": [
+            "e6a0f8ec4d5cc26e"
+        ],
+        "uncaught": false,
+        "x": 1970,
+        "y": 2620,
+        "wires": [
+            [
+                "aa7d0b17428e6e72"
+            ]
+        ]
+    },
+    {
+        "id": "aa7d0b17428e6e72",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 500",
+        "func": "msg.statusCode = 500;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Query error: ' + msg.payload,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2150,
+        "y": 2620,
+        "wires": [
+            [
+                "5c29776afb04fa71"
+            ]
+        ]
+    },
+    {
+        "id": "b29b6f34c8f5d334",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return response",
+        "func": "if(msg.payload.length == 0) {\n    msg.statusCode = 400;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Pass ${msg.req.params.tid} for ticket ${msg.req.params.id} not found or already activated`\n    };\n} else {\n    msg.statusCode = 200;\n    msg.payload = {\n        status: msg.statusCode,\n        message: msg.payload[0]\n    };\n}\nmsg.payload.time = Date.now();\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2190,
+        "y": 2580,
+        "wires": [
+            [
+                "5c29776afb04fa71"
+            ]
+        ]
+    },
+    {
+        "id": "5c29776afb04fa71",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 2390,
+        "y": 2580,
+        "wires": []
     }
 ]
