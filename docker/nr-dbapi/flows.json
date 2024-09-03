@@ -42,7 +42,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 260,
-        "y": 1020,
+        "y": 1080,
         "wires": [
             [
                 "05dd21f465e40a3f"
@@ -59,7 +59,7 @@
             "Content-Type": "application/json"
         },
         "x": 790,
-        "y": 1020,
+        "y": 1080,
         "wires": []
     },
     {
@@ -75,7 +75,7 @@
         "finalize": "",
         "libs": [],
         "x": 590,
-        "y": 1020,
+        "y": 1080,
         "wires": [
             [
                 "7aece52a10c1a443"
@@ -106,7 +106,8 @@
                 "0f7012e50c5181f0",
                 "383ad78cd1c32c9c",
                 "76712dbf4477aaac",
-                "04992652fc426024"
+                "04992652fc426024",
+                "0d7e9812870ead24"
             ]
         ]
     },
@@ -417,7 +418,7 @@
         "useparts": false,
         "accumulate": false,
         "timeout": "",
-        "count": "3",
+        "count": "4",
         "reduceRight": false,
         "reduceExp": "",
         "reduceInit": "",
@@ -444,7 +445,7 @@
         "finalize": "",
         "libs": [],
         "x": 590,
-        "y": 1080,
+        "y": 1140,
         "wires": [
             [
                 "2126f90df7da0990"
@@ -461,7 +462,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 250,
-        "y": 1080,
+        "y": 1140,
         "wires": [
             [
                 "06cf2482fbbd5846"
@@ -476,7 +477,7 @@
         "statusCode": "",
         "headers": {},
         "x": 790,
-        "y": 1080,
+        "y": 1140,
         "wires": []
     },
     {
@@ -492,7 +493,7 @@
         "finalize": "",
         "libs": [],
         "x": 580,
-        "y": 1140,
+        "y": 1200,
         "wires": [
             [
                 "723ec7642f09a41b"
@@ -509,7 +510,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 260,
-        "y": 1140,
+        "y": 1200,
         "wires": [
             [
                 "e5e85cfd6230bcfb"
@@ -524,7 +525,7 @@
         "statusCode": "",
         "headers": {},
         "x": 790,
-        "y": 1140,
+        "y": 1200,
         "wires": []
     },
     {
@@ -540,7 +541,7 @@
         "finalize": "",
         "libs": [],
         "x": 580,
-        "y": 1200,
+        "y": 1260,
         "wires": [
             [
                 "2b50c7ff92d174cd"
@@ -557,7 +558,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 250,
-        "y": 1200,
+        "y": 1260,
         "wires": [
             [
                 "1b1e16f55ef0d687"
@@ -572,7 +573,7 @@
         "statusCode": "",
         "headers": {},
         "x": 790,
-        "y": 1200,
+        "y": 1260,
         "wires": []
     },
     {
@@ -582,7 +583,7 @@
         "name": "Static data query",
         "info": "",
         "x": 940,
-        "y": 1080,
+        "y": 1140,
         "wires": []
     },
     {
@@ -636,7 +637,7 @@
         "finalize": "",
         "libs": [],
         "x": 560,
-        "y": 1260,
+        "y": 1320,
         "wires": [
             [
                 "14ad27052606b956"
@@ -653,7 +654,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 270,
-        "y": 1260,
+        "y": 1320,
         "wires": [
             [
                 "6170ba65634e5270"
@@ -668,7 +669,7 @@
         "statusCode": "",
         "headers": {},
         "x": 790,
-        "y": 1260,
+        "y": 1320,
         "wires": []
     },
     {
@@ -3308,6 +3309,140 @@
         "wires": [
             [
                 "b66465bbcbc2fca0"
+            ]
+        ]
+    },
+    {
+        "id": "3b14ea7780663092",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/locations",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 250,
+        "y": 1380,
+        "wires": [
+            [
+                "b8faad5356599643"
+            ]
+        ]
+    },
+    {
+        "id": "b8faad5356599643",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Generate locations list response",
+        "func": "let payload = (Date.now() >= (flow.get('staticExpiry') || new Date(0)))\n    ? null\n    : (flow.get('locations') || null);\nif (payload !== null) {\n    if (msg.payload.hasOwnProperty('dict') && msg.payload.dict.toLowerCase() === 'true') {\n        payload = Object.assign({}, payload); // convert to object\n    }\n}\n\nmsg.statusCode = (payload === null) ? 503 : 200;\nmsg.payload = {\n    status: msg.statusCode,\n    message: (msg.statusCode == 503)\n        ? 'Static database cache is expired'\n        : payload,\n    time: Date.now()\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 590,
+        "y": 1380,
+        "wires": [
+            [
+                "d3cb9480b54083dd"
+            ]
+        ]
+    },
+    {
+        "id": "d3cb9480b54083dd",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 790,
+        "y": 1380,
+        "wires": []
+    },
+    {
+        "id": "22e2bc9a223ae8fb",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/locations/:id",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 260,
+        "y": 1440,
+        "wires": [
+            [
+                "95ec89c797d2f380"
+            ]
+        ]
+    },
+    {
+        "id": "95ec89c797d2f380",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Generate location details response",
+        "func": "let locations = (Date.now() >= (flow.get('staticExpiry') || new Date(0)))\n    ? null\n    : (flow.get('locations') || null);\nif (locations !== null) {\n    let id = parseInt(msg.req.params.id);\n    if(!isNaN(msg.req.params.id) && id >= 0 && id < locations.length) {\n        msg.statusCode = 200;\n        msg.payload = {\n            status: msg.statusCode,\n            message: {\n                name: locations[id].name,\n                minProduct: locations[id].minProduct\n            }\n        };\n    } else {\n        msg.statusCode = 400;\n        msg.payload = {\n            status: msg.statusCode,\n            message: 'Invalid location ID given'\n        };\n    }\n} else {\n    msg.statusCode = 503;\n    msg.payload = {\n        status: msg.statusCode,\n        message: 'Static database cache is expired'\n    };\n}\nmsg.payload.time = Date.now();\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 1440,
+        "wires": [
+            [
+                "6028d8ca42b68732"
+            ]
+        ]
+    },
+    {
+        "id": "6028d8ca42b68732",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 790,
+        "y": 1440,
+        "wires": []
+    },
+    {
+        "id": "0d7e9812870ead24",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get locations",
+        "query": "SELECT * FROM \"static\".\"Locations\" ORDER BY \"id\" ASC;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 490,
+        "y": 1020,
+        "wires": [
+            [
+                "873bc948835e2e1e"
+            ]
+        ]
+    },
+    {
+        "id": "873bc948835e2e1e",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Save locations to context",
+        "func": "flow.set('locations', msg.payload); // since we've ordered location IDs there's no need to change anything\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1130,
+        "y": 1020,
+        "wires": [
+            [
+                "a030b80886673d51"
             ]
         ]
     }
