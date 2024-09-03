@@ -1,0 +1,1301 @@
+[
+    {
+        "id": "fab23692fcecca97",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "9341c9d4c7a2bc9e",
+        "type": "http in",
+        "z": "fab23692fcecca97",
+        "name": "",
+        "url": "/api/tickets",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 200,
+        "y": 160,
+        "wires": [
+            [
+                "eafc5410b1b3d53c"
+            ]
+        ]
+    },
+    {
+        "id": "7d32a4f25f27a9a5",
+        "type": "comment",
+        "z": "fab23692fcecca97",
+        "name": "Create new ticket",
+        "info": "",
+        "x": 200,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "eafc5410b1b3d53c",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Extract options",
+        "func": "msg.createTicketBody = {\n    cardType: 'qr',\n    fareType: 0\n}; // request body for ticket creation\n\nmsg.topupBalanceBody = {\n    amount: 0,\n    location: 0\n}; // request body for balance topup\n\nmsg.topupPassBody = {\n    product: 0,\n    duration: 0,\n    location: 0\n}; // request body for pass topup\n\nmsg.ok = true; // flag for indicating if request is valid\n\nif (typeof msg.payload === 'object') {\n    if (msg.payload.hasOwnProperty('cardType')) {\n        if (typeof msg.payload.cardType === 'string')\n            msg.createTicketBody.cardType = msg.payload.cardType;\n        else msg.ok = false;\n    }\n\n    if (msg.payload.hasOwnProperty('fareType')) {\n        if (typeof msg.payload.fareType === 'number')\n            msg.createTicketBody.fareType = msg.payload.fareType;\n        else msg.ok = false;\n    }\n\n    if (msg.ok && msg.payload.hasOwnProperty('location')) {\n        if (typeof msg.payload.location === 'number')\n            msg.topupBalanceBody = msg.topupPassBody = msg.payload.location;\n        else msg.ok = false;\n    }\n\n    if (msg.payload.hasOwnProperty('balance')) {\n        if (typeof msg.payload.balance === 'number' && msg.payload.balance > 0)\n            msg.topupBalanceBody.amount = msg.payload.balance;\n        else msg.ok = false;\n    }\n\n    if (msg.ok && msg.payload.hasOwnProperty('pass')) {\n        if (\n            typeof msg.payload.pass === 'object'\n            && msg.payload.pass.hasOwnProperty('product') && typeof msg.payload.pass.product === 'number'\n            && msg.payload.pass.hasOwnProperty('duration') && typeof msg.payload.pass.duration === 'number'\n        ) {\n            msg.topupPassBody.product = msg.payload.pass.product;\n            msg.topupPassBody.duration = msg.payload.pass.duration;\n        }\n        else msg.ok = false;\n    }\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 420,
+        "y": 160,
+        "wires": [
+            [
+                "688ce0fdd9b92eb7"
+            ]
+        ]
+    },
+    {
+        "id": "688ce0fdd9b92eb7",
+        "type": "switch",
+        "z": "fab23692fcecca97",
+        "name": "Check if request is valid",
+        "property": "ok",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 690,
+        "y": 160,
+        "wires": [
+            [
+                "6224c0d425f98b6b"
+            ],
+            [
+                "bb0bc38c0134d523"
+            ]
+        ]
+    },
+    {
+        "id": "6224c0d425f98b6b",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Return 400",
+        "func": "msg.statusCode = 400;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Invalid body',\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 200,
+        "wires": [
+            [
+                "2f13fc6bd84e3347"
+            ]
+        ]
+    },
+    {
+        "id": "2f13fc6bd84e3347",
+        "type": "http response",
+        "z": "fab23692fcecca97",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1290,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "f2e194b8b5f11b34",
+        "type": "http request",
+        "z": "fab23692fcecca97",
+        "name": "Create new ticket",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "body",
+        "url": "http://172.17.0.4:1880/api/tickets",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 510,
+        "y": 260,
+        "wires": [
+            [
+                "888849462350abe7"
+            ]
+        ]
+    },
+    {
+        "id": "888849462350abe7",
+        "type": "switch",
+        "z": "fab23692fcecca97",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 730,
+        "y": 240,
+        "wires": [
+            [
+                "2f13fc6bd84e3347"
+            ],
+            [
+                "f3c89d6b8d8b5b15"
+            ]
+        ]
+    },
+    {
+        "id": "1263cb6aa9a6363d",
+        "type": "switch",
+        "z": "fab23692fcecca97",
+        "name": "Check if ticket is to be topped up",
+        "property": "topupBalanceBody.amount",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gt",
+                "v": "0",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 290,
+        "y": 380,
+        "wires": [
+            [
+                "39822c160b997241"
+            ],
+            [
+                "01ebbfe5250f782e"
+            ]
+        ]
+    },
+    {
+        "id": "bb0bc38c0134d523",
+        "type": "change",
+        "z": "fab23692fcecca97",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "createTicketBody",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 500,
+        "y": 220,
+        "wires": [
+            [
+                "f2e194b8b5f11b34"
+            ]
+        ]
+    },
+    {
+        "id": "39822c160b997241",
+        "type": "change",
+        "z": "fab23692fcecca97",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "topupBalanceBody",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 560,
+        "y": 360,
+        "wires": [
+            [
+                "05339ecd320ca699"
+            ]
+        ]
+    },
+    {
+        "id": "05339ecd320ca699",
+        "type": "http request",
+        "z": "fab23692fcecca97",
+        "name": "Top up balance",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://127.0.0.1:1880/api/tickets/{{{createResult.ticketID}}}/balance",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 560,
+        "y": 400,
+        "wires": [
+            [
+                "53be7ee43d108277"
+            ]
+        ]
+    },
+    {
+        "id": "f3c89d6b8d8b5b15",
+        "type": "change",
+        "z": "fab23692fcecca97",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "createResult",
+                "pt": "msg",
+                "to": "payload.message",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 280,
+        "y": 320,
+        "wires": [
+            [
+                "1263cb6aa9a6363d"
+            ]
+        ]
+    },
+    {
+        "id": "53be7ee43d108277",
+        "type": "switch",
+        "z": "fab23692fcecca97",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 790,
+        "y": 300,
+        "wires": [
+            [
+                "2f13fc6bd84e3347"
+            ],
+            [
+                "d4668bcf852d724a"
+            ]
+        ]
+    },
+    {
+        "id": "01ebbfe5250f782e",
+        "type": "switch",
+        "z": "fab23692fcecca97",
+        "name": "Check if pass is to be added",
+        "property": "topupPassBody.product",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gt",
+                "v": "0",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 340,
+        "y": 500,
+        "wires": [
+            [
+                "acb17a887a1ebf4f"
+            ],
+            [
+                "b0bf49267673424d"
+            ]
+        ]
+    },
+    {
+        "id": "acb17a887a1ebf4f",
+        "type": "change",
+        "z": "fab23692fcecca97",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "topupPassBody",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 560,
+        "y": 480,
+        "wires": [
+            [
+                "a52f619efe09bbeb"
+            ]
+        ]
+    },
+    {
+        "id": "a52f619efe09bbeb",
+        "type": "http request",
+        "z": "fab23692fcecca97",
+        "name": "Top up pass",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://127.0.0.1:1880/api/tickets/{{{createResult.ticketID}}}/pass",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 730,
+        "y": 480,
+        "wires": [
+            [
+                "561acb6944992ae3"
+            ]
+        ]
+    },
+    {
+        "id": "561acb6944992ae3",
+        "type": "switch",
+        "z": "fab23692fcecca97",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 830,
+        "y": 520,
+        "wires": [
+            [
+                "2f13fc6bd84e3347"
+            ],
+            [
+                "50d0592fd96155e0"
+            ]
+        ]
+    },
+    {
+        "id": "b0bf49267673424d",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Set response",
+        "func": "msg.statusCode = 200;\nmsg.payload = {\n    status: msg.statusCode,\n    message: {\n        create: msg.createResult,\n        balance: msg.balanceResult || null,\n        pass: msg.passResult || null\n    },\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1090,
+        "y": 580,
+        "wires": [
+            [
+                "2f13fc6bd84e3347"
+            ]
+        ]
+    },
+    {
+        "id": "d4668bcf852d724a",
+        "type": "change",
+        "z": "fab23692fcecca97",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "balanceResult",
+                "pt": "msg",
+                "to": "payload.message",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 800,
+        "y": 360,
+        "wires": [
+            [
+                "01ebbfe5250f782e"
+            ]
+        ]
+    },
+    {
+        "id": "50d0592fd96155e0",
+        "type": "change",
+        "z": "fab23692fcecca97",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "passResult",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1030,
+        "y": 540,
+        "wires": [
+            [
+                "b0bf49267673424d"
+            ]
+        ]
+    },
+    {
+        "id": "ab147b3a9135db3e",
+        "type": "http in",
+        "z": "fab23692fcecca97",
+        "name": "",
+        "url": "/api/tickets/:id/balance",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 240,
+        "y": 660,
+        "wires": [
+            [
+                "b0f656eb2dbe918d"
+            ]
+        ]
+    },
+    {
+        "id": "101c8289ee80d712",
+        "type": "comment",
+        "z": "fab23692fcecca97",
+        "name": "Top up balance",
+        "info": "",
+        "x": 200,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "b0f656eb2dbe918d",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Extract options",
+        "func": "msg.ok = true;\n\nif (\n    typeof msg.payload === 'object'\n    && msg.payload.hasOwnProperty('amount') && typeof msg.payload.amount === 'number' && msg.payload.amount > 0\n    && (!msg.payload.hasOwnProperty('location') || (typeof msg.payload.location === 'number' && msg.payload.location >= 0))\n) {\n    msg.ticketID = msg.req.params.id;\n    msg.amount = msg.payload.amount; // for later\n    msg.location = msg.payload.hasOwnProperty('location') ? msg.payload.location : 0;\n} else msg.ok = false;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 460,
+        "y": 660,
+        "wires": [
+            [
+                "2777400f4db319cc"
+            ]
+        ]
+    },
+    {
+        "id": "2777400f4db319cc",
+        "type": "switch",
+        "z": "fab23692fcecca97",
+        "name": "Check if request is valid",
+        "property": "ok",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 670,
+        "y": 660,
+        "wires": [
+            [
+                "9282e767a7d7608e"
+            ],
+            [
+                "f515ff01b38979d8"
+            ]
+        ]
+    },
+    {
+        "id": "9282e767a7d7608e",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Return 400",
+        "func": "msg.statusCode = 400;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Invalid body',\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 660,
+        "wires": [
+            [
+                "b828f3b3848a4fa6"
+            ]
+        ]
+    },
+    {
+        "id": "b828f3b3848a4fa6",
+        "type": "http response",
+        "z": "fab23692fcecca97",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1130,
+        "y": 840,
+        "wires": []
+    },
+    {
+        "id": "f515ff01b38979d8",
+        "type": "http request",
+        "z": "fab23692fcecca97",
+        "name": "Get ticket details",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/tickets/{{{ticketID}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 410,
+        "y": 720,
+        "wires": [
+            [
+                "0e30f168f146eb7e"
+            ]
+        ]
+    },
+    {
+        "id": "0e30f168f146eb7e",
+        "type": "switch",
+        "z": "fab23692fcecca97",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 630,
+        "y": 720,
+        "wires": [
+            [
+                "b828f3b3848a4fa6"
+            ],
+            [
+                "070cddd13c65173a",
+                "838e76ca160dcbba"
+            ]
+        ]
+    },
+    {
+        "id": "070cddd13c65173a",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Set payload",
+        "func": "msg.payload = {\n    balance: msg.payload.message.balance + msg.amount\n};\nmsg.method = 'PATCH';\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 230,
+        "y": 780,
+        "wires": [
+            [
+                "899d4b05e557ee43"
+            ]
+        ]
+    },
+    {
+        "id": "899d4b05e557ee43",
+        "type": "http request",
+        "z": "fab23692fcecca97",
+        "name": "Modify balance",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/tickets/{{{ticketID}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 420,
+        "y": 780,
+        "wires": [
+            [
+                "f1fab62f27e9cf8a"
+            ]
+        ]
+    },
+    {
+        "id": "f1fab62f27e9cf8a",
+        "type": "switch",
+        "z": "fab23692fcecca97",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 630,
+        "y": 780,
+        "wires": [
+            [
+                "b828f3b3848a4fa6"
+            ],
+            [
+                "99f8925283748043"
+            ]
+        ]
+    },
+    {
+        "id": "99f8925283748043",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Set payload",
+        "func": "msg.payload = {\n    type: 4, // top up\n    location: msg.location,\n    balance: msg.payload.message.balance // use result from last request\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 230,
+        "y": 840,
+        "wires": [
+            [
+                "ebb3be628f783609"
+            ]
+        ]
+    },
+    {
+        "id": "ebb3be628f783609",
+        "type": "http request",
+        "z": "fab23692fcecca97",
+        "name": "Write transaction",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/tickets/{{{ticketID}}}/transactions",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 430,
+        "y": 840,
+        "wires": [
+            [
+                "b828f3b3848a4fa6"
+            ]
+        ]
+    },
+    {
+        "id": "9cac5501551d86ae",
+        "type": "http in",
+        "z": "fab23692fcecca97",
+        "name": "",
+        "url": "/api/tickets/:id/pass",
+        "method": "post",
+        "upload": true,
+        "swaggerDoc": "",
+        "x": 230,
+        "y": 940,
+        "wires": [
+            [
+                "64ed878e3bb5c3f6"
+            ]
+        ]
+    },
+    {
+        "id": "aefe6fd868f5a9e3",
+        "type": "comment",
+        "z": "fab23692fcecca97",
+        "name": "Top up pass",
+        "info": "",
+        "x": 190,
+        "y": 980,
+        "wires": []
+    },
+    {
+        "id": "64ed878e3bb5c3f6",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Extract options",
+        "func": "msg.ok = true;\n\nif (\n    typeof msg.payload === 'object'\n    && msg.payload.hasOwnProperty('product') && typeof msg.payload.product === 'number' && msg.payload.product > 0\n    && msg.payload.hasOwnProperty('duration') && typeof msg.payload.duration === 'number' && msg.payload.duration > 0\n    && (!msg.payload.hasOwnProperty('location') || (typeof msg.payload.location === 'number' && msg.payload.location >= 0))\n) {\n    msg.ticketID = msg.req.params.id;\n    msg.product = msg.payload.product; // for later\n    msg.duration = msg.payload.duration;\n    msg.location = msg.payload.hasOwnProperty('location') ? msg.payload.location : 0;\n} else msg.ok = false;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 440,
+        "y": 940,
+        "wires": [
+            [
+                "63c606fd80bc9494"
+            ]
+        ]
+    },
+    {
+        "id": "63c606fd80bc9494",
+        "type": "switch",
+        "z": "fab23692fcecca97",
+        "name": "Check if request is valid",
+        "property": "ok",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 650,
+        "y": 940,
+        "wires": [
+            [
+                "f26494046b0c258a"
+            ],
+            [
+                "f34a6a0daa357cf9"
+            ]
+        ]
+    },
+    {
+        "id": "f26494046b0c258a",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Return 400",
+        "func": "msg.statusCode = 400;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Invalid body',\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 930,
+        "y": 940,
+        "wires": [
+            [
+                "4dcd8dc21cfd6e60"
+            ]
+        ]
+    },
+    {
+        "id": "4dcd8dc21cfd6e60",
+        "type": "http response",
+        "z": "fab23692fcecca97",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1350,
+        "y": 940,
+        "wires": []
+    },
+    {
+        "id": "413de2390ced90ba",
+        "type": "http request",
+        "z": "fab23692fcecca97",
+        "name": "Get current passes",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/tickets/{{{ticketID}}}/passes",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 410,
+        "y": 1060,
+        "wires": [
+            [
+                "49659462f1ebed4d"
+            ]
+        ]
+    },
+    {
+        "id": "49659462f1ebed4d",
+        "type": "switch",
+        "z": "fab23692fcecca97",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 610,
+        "y": 1060,
+        "wires": [
+            [
+                "4dcd8dc21cfd6e60"
+            ],
+            [
+                "034a41a3072c4652"
+            ]
+        ]
+    },
+    {
+        "id": "034a41a3072c4652",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Get number of passes",
+        "func": "msg.payload = msg.payload.message.length;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 1080,
+        "wires": [
+            [
+                "de31013463946b2b"
+            ]
+        ]
+    },
+    {
+        "id": "de31013463946b2b",
+        "type": "switch",
+        "z": "fab23692fcecca97",
+        "name": "Check if there are 2 passes",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "gte",
+                "v": "2",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1060,
+        "y": 1060,
+        "wires": [
+            [
+                "3d9a4d89a675cca6"
+            ],
+            [
+                "fddeb2bf7fabd114"
+            ]
+        ]
+    },
+    {
+        "id": "3d9a4d89a675cca6",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Return 403",
+        "func": "msg.statusCode = 403;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Cannot store more than two passes',\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1130,
+        "y": 1000,
+        "wires": [
+            [
+                "4dcd8dc21cfd6e60"
+            ]
+        ]
+    },
+    {
+        "id": "fddeb2bf7fabd114",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Set payload",
+        "func": "msg.payload = {\n    type: 5, // purchase pass\n    location: msg.location,\n    balance: msg.balance,\n    pass: {\n        duration: msg.duration,\n        product: msg.product\n    }\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 930,
+        "y": 1140,
+        "wires": [
+            [
+                "d084819fcf8b97c7"
+            ]
+        ]
+    },
+    {
+        "id": "f34a6a0daa357cf9",
+        "type": "http request",
+        "z": "fab23692fcecca97",
+        "name": "Get ticket details",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/tickets/{{{ticketID}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 410,
+        "y": 1000,
+        "wires": [
+            [
+                "25cd18f66a8e6dd9"
+            ]
+        ]
+    },
+    {
+        "id": "25cd18f66a8e6dd9",
+        "type": "switch",
+        "z": "fab23692fcecca97",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 610,
+        "y": 1000,
+        "wires": [
+            [
+                "4dcd8dc21cfd6e60"
+            ],
+            [
+                "4ebb49d0cafa0441"
+            ]
+        ]
+    },
+    {
+        "id": "4ebb49d0cafa0441",
+        "type": "change",
+        "z": "fab23692fcecca97",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "balance",
+                "pt": "msg",
+                "to": "payload.message.balance",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 220,
+        "y": 1060,
+        "wires": [
+            [
+                "413de2390ced90ba"
+            ]
+        ]
+    },
+    {
+        "id": "d084819fcf8b97c7",
+        "type": "http request",
+        "z": "fab23692fcecca97",
+        "name": "Write transaction",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/tickets/{{{ticketID}}}/transactions",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1110,
+        "y": 1140,
+        "wires": [
+            [
+                "4dcd8dc21cfd6e60"
+            ]
+        ]
+    },
+    {
+        "id": "94e06525c3bf6428",
+        "type": "catch",
+        "z": "fab23692fcecca97",
+        "name": "Catch request errors",
+        "scope": [
+            "f2e194b8b5f11b34",
+            "05339ecd320ca699",
+            "a52f619efe09bbeb"
+        ],
+        "uncaught": false,
+        "x": 630,
+        "y": 120,
+        "wires": [
+            [
+                "2e41d405475ead88"
+            ]
+        ]
+    },
+    {
+        "id": "2e41d405475ead88",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Return 500",
+        "func": "msg.statusCode = 500;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Internal server error: ' + msg.error.message,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 120,
+        "wires": [
+            [
+                "2f13fc6bd84e3347"
+            ]
+        ]
+    },
+    {
+        "id": "fd91695341aa8e66",
+        "type": "catch",
+        "z": "fab23692fcecca97",
+        "name": "Catch request errors",
+        "scope": [
+            "f515ff01b38979d8",
+            "899d4b05e557ee43",
+            "ebb3be628f783609"
+        ],
+        "uncaught": false,
+        "x": 670,
+        "y": 880,
+        "wires": [
+            [
+                "b1a06881a536ae78"
+            ]
+        ]
+    },
+    {
+        "id": "b1a06881a536ae78",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Return 500",
+        "func": "msg.statusCode = 500;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Internal server error: ' + msg.error.message,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 880,
+        "wires": [
+            [
+                "b828f3b3848a4fa6"
+            ]
+        ]
+    },
+    {
+        "id": "a66b05110a42fc2f",
+        "type": "catch",
+        "z": "fab23692fcecca97",
+        "name": "Catch request errors",
+        "scope": [
+            "f34a6a0daa357cf9",
+            "413de2390ced90ba",
+            "d084819fcf8b97c7"
+        ],
+        "uncaught": false,
+        "x": 950,
+        "y": 1180,
+        "wires": [
+            [
+                "def14deaabdcdbcd"
+            ]
+        ]
+    },
+    {
+        "id": "def14deaabdcdbcd",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Return 500",
+        "func": "msg.statusCode = 500;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Internal server error: ' + msg.error.message,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1150,
+        "y": 1180,
+        "wires": [
+            [
+                "4dcd8dc21cfd6e60"
+            ]
+        ]
+    },
+    {
+        "id": "838e76ca160dcbba",
+        "type": "debug",
+        "z": "fab23692fcecca97",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 860,
+        "y": 700,
+        "wires": []
+    }
+]
