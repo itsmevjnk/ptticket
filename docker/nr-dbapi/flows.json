@@ -41,8 +41,8 @@
         "method": "get",
         "upload": false,
         "swaggerDoc": "",
-        "x": 180,
-        "y": 1180,
+        "x": 260,
+        "y": 1020,
         "wires": [
             [
                 "05dd21f465e40a3f"
@@ -58,8 +58,8 @@
         "headers": {
             "Content-Type": "application/json"
         },
-        "x": 710,
-        "y": 1180,
+        "x": 790,
+        "y": 1020,
         "wires": []
     },
     {
@@ -74,8 +74,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 510,
-        "y": 1180,
+        "x": 590,
+        "y": 1020,
         "wires": [
             [
                 "7aece52a10c1a443"
@@ -133,7 +133,7 @@
         "type": "function",
         "z": "216f0e6810bad0c9",
         "name": "Save 2-hour durations to context",
-        "func": "let durations = Array(msg.payload.length).fill(0); msg.payload.forEach((entry) => {\n    // node.log(entry);\n    durations[entry['numZones'] - 1] = entry['2hDuration'];\n});\nflow.set('fareDurations', durations);\nreturn {\n    payload: durations\n};\n",
+        "func": "let durations = Array(msg.payload.length).fill(0); msg.payload.forEach((entry) => {\n    // node.log(entry);\n    durations[entry['numZones'] - 1] = entry['2hDuration'];\n});\nmsg.payload = durations;\nflow.set('fareDurations', msg.payload);\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -191,7 +191,7 @@
         "type": "function",
         "z": "216f0e6810bad0c9",
         "name": "Save condition to context",
-        "func": "let cond = msg.payload[0].cond || 0;\nlet dayOfWeek = (new Date()).getDay();\nif(dayOfWeek == 0 || dayOfWeek == 6) cond |= 1; // set weekend bit\nflow.set('dateCondition', cond);\nreturn {\n    queryParameters: {\n        cond: cond\n    }\n};",
+        "func": "let cond = msg.payload[0].cond || 0;\nlet dayOfWeek = (new Date()).getDay();\nif(dayOfWeek == 0 || dayOfWeek == 6) cond |= 1; // set weekend bit\nflow.set('dateCondition', cond);\nmsg.queryParameters = { cond: cond };\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -331,7 +331,7 @@
         "type": "function",
         "z": "216f0e6810bad0c9",
         "name": "Save fare types and product fares to context",
-        "func": "let fareTypes = Array(msg.payload.fareTypes.length).fill(null);\n\nmsg.payload.fareTypes.forEach((entry) => {\n    fareTypes[entry.type] = {\n        name: entry.name,\n        cap: entry.cap,\n        productFares: Array(msg.payload.products.length).fill(0)\n    };\n});\n\nmsg.payload.prodFares.forEach((entry) => {\n    fareTypes[entry.fareType].productFares[entry.productID] = entry.fare;\n});\n\nflow.set('fareTypes', fareTypes);\n\nreturn {\n    payload: fareTypes\n};\n",
+        "func": "let fareTypes = Array(msg.payload.fareTypes.length).fill(null);\n\nmsg.payload.fareTypes.forEach((entry) => {\n    fareTypes[entry.type] = {\n        name: entry.name,\n        cap: entry.cap,\n        productFares: Array(msg.payload.products.length).fill(0)\n    };\n});\n\nmsg.payload.prodFares.forEach((entry) => {\n    fareTypes[entry.fareType].productFares[entry.productID] = entry.fare;\n});\n\nmsg.payload = fareTypes;\nflow.set('fareTypes', msg.payload);\n\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -369,7 +369,7 @@
         "type": "function",
         "z": "216f0e6810bad0c9",
         "name": "Save products to context",
-        "func": "let products = Array(msg.payload.length).fill(null);\nmsg.payload.forEach((entry) => {\n    products[entry.id] = {\n        name: entry.name,\n        zoneBits: entry.coveredZones\n    };\n});\nflow.set('products', products);\nreturn {\n    payload: products,\n    topic: 'products'\n};",
+        "func": "let products = Array(msg.payload.length).fill(null);\nmsg.payload.forEach((entry) => {\n    products[entry.id] = {\n        name: entry.name,\n        zoneBits: entry.coveredZones\n    };\n});\n\nmsg.payload = products;\nmsg.topic = 'products';\nflow.set(msg.topic, msg.payload);\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -389,7 +389,7 @@
         "type": "function",
         "z": "216f0e6810bad0c9",
         "name": "Set static data expiry timestamp",
-        "func": "let dateObj = new Date();\nif(dateObj.getHours() > 3) dateObj.setDate(dateObj.getDate() + 1); // next day\ndateObj.setHours(3, 0, 0, 0); // 3am\nflow.set('staticExpiry', dateObj);\nreturn {\n    payload: dateObj\n};\n",
+        "func": "let dateObj = new Date();\nif(dateObj.getHours() > 3) dateObj.setDate(dateObj.getDate() + 1); // next day\ndateObj.setHours(3, 0, 0, 0); // 3am\n\nmsg.payload = dateObj;\nflow.set('staticExpiry', msg.payload);\n\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -443,8 +443,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 510,
-        "y": 1240,
+        "x": 590,
+        "y": 1080,
         "wires": [
             [
                 "2126f90df7da0990"
@@ -460,8 +460,8 @@
         "method": "get",
         "upload": false,
         "swaggerDoc": "",
-        "x": 170,
-        "y": 1240,
+        "x": 250,
+        "y": 1080,
         "wires": [
             [
                 "06cf2482fbbd5846"
@@ -475,8 +475,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 710,
-        "y": 1240,
+        "x": 790,
+        "y": 1080,
         "wires": []
     },
     {
@@ -491,8 +491,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 500,
-        "y": 1300,
+        "x": 580,
+        "y": 1140,
         "wires": [
             [
                 "723ec7642f09a41b"
@@ -508,8 +508,8 @@
         "method": "get",
         "upload": false,
         "swaggerDoc": "",
-        "x": 180,
-        "y": 1300,
+        "x": 260,
+        "y": 1140,
         "wires": [
             [
                 "e5e85cfd6230bcfb"
@@ -523,8 +523,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 710,
-        "y": 1300,
+        "x": 790,
+        "y": 1140,
         "wires": []
     },
     {
@@ -539,8 +539,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 500,
-        "y": 1360,
+        "x": 580,
+        "y": 1200,
         "wires": [
             [
                 "2b50c7ff92d174cd"
@@ -556,8 +556,8 @@
         "method": "get",
         "upload": false,
         "swaggerDoc": "",
-        "x": 170,
-        "y": 1360,
+        "x": 250,
+        "y": 1200,
         "wires": [
             [
                 "1b1e16f55ef0d687"
@@ -571,8 +571,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 710,
-        "y": 1360,
+        "x": 790,
+        "y": 1200,
         "wires": []
     },
     {
@@ -581,8 +581,8 @@
         "z": "216f0e6810bad0c9",
         "name": "Static data query",
         "info": "",
-        "x": 860,
-        "y": 1240,
+        "x": 940,
+        "y": 1080,
         "wires": []
     },
     {
@@ -608,7 +608,7 @@
         "type": "function",
         "z": "216f0e6810bad0c9",
         "name": "Save transaction types to context",
-        "func": "let types = Array(msg.payload.length).fill(null);\nmsg.payload.forEach((entry) => types[entry.type] = entry.name);\nflow.set('transactionTypes', types);\nreturn {\n    payload: types\n};",
+        "func": "let types = Array(msg.payload.length).fill(null);\nmsg.payload.forEach((entry) => types[entry.type] = entry.name);\n\nmsg.payload = types;\nflow.set('transactionTypes', msg.payload);\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -635,8 +635,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 480,
-        "y": 1420,
+        "x": 560,
+        "y": 1260,
         "wires": [
             [
                 "14ad27052606b956"
@@ -652,8 +652,8 @@
         "method": "get",
         "upload": false,
         "swaggerDoc": "",
-        "x": 190,
-        "y": 1420,
+        "x": 270,
+        "y": 1260,
         "wires": [
             [
                 "6170ba65634e5270"
@@ -667,8 +667,2648 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 710,
+        "x": 790,
+        "y": 1260,
+        "wires": []
+    },
+    {
+        "id": "73077bc1906149aa",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/tickets",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 240,
+        "y": 1740,
+        "wires": [
+            [
+                "7b0ebad88019613a"
+            ]
+        ]
+    },
+    {
+        "id": "7b0ebad88019613a",
+        "type": "switch",
+        "z": "216f0e6810bad0c9",
+        "name": "Check if request body is valid",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "istype",
+                "v": "object",
+                "vt": "object"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 480,
+        "y": 1740,
+        "wires": [
+            [
+                "d52f5afb57915d25"
+            ],
+            [
+                "5e11d8f11f995e44"
+            ]
+        ]
+    },
+    {
+        "id": "5e11d8f11f995e44",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 400",
+        "func": "msg.statusCode = 400;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Invalid body or SQL operation error: ' + msg.payload,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 750,
+        "y": 1900,
+        "wires": [
+            [
+                "5719f874cb02ba68"
+            ]
+        ]
+    },
+    {
+        "id": "5719f874cb02ba68",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1250,
+        "y": 1900,
+        "wires": []
+    },
+    {
+        "id": "d52f5afb57915d25",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Set up query parameters",
+        "func": "msg.queryParameters = msg.payload;\nif(!msg.queryParameters.hasOwnProperty('type'))\n    msg.queryParameters.type = 'qr'; // defaults to QR codes (since their physical ticket IDs are randomly generated)\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 750,
+        "y": 1740,
+        "wires": [
+            [
+                "c4970c38d00656c5"
+            ]
+        ]
+    },
+    {
+        "id": "c4970c38d00656c5",
+        "type": "switch",
+        "z": "216f0e6810bad0c9",
+        "name": "Check if ID is given",
+        "property": "queryParameters",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "hask",
+                "v": "id",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 750,
+        "y": 1780,
+        "wires": [
+            [
+                "adb7fd41214475bd"
+            ],
+            [
+                "e2b28c5635146e38"
+            ]
+        ]
+    },
+    {
+        "id": "e2b28c5635146e38",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Create ticket entry (ID not given)",
+        "query": "WITH ticket AS (\n\tINSERT\n\t\tINTO \"dynamic\".\"Tickets\"\n\t\tDEFAULT VALUES\n\t\tRETURNING \"id\"\n) INSERT\n\tINTO \"dynamic\".\"PhysicalTickets\"\n\t\t(\"type\", \"ticketID\")\n\tSELECT\n\t\t$type, \"id\"\n\t\tFROM ticket\n\tRETURNING \"id\", \"ticketID\";",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 1030,
+        "y": 1800,
+        "wires": [
+            [
+                "7ca27fb83eda0ae6"
+            ]
+        ]
+    },
+    {
+        "id": "adb7fd41214475bd",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Create ticket entry (ID given)",
+        "query": "WITH ticket AS (\n\tINSERT\n\t\tINTO \"dynamic\".\"Tickets\"\n\t\t\t(id)\n\t\tVALUES\n\t\t\t($id)\n\t\tRETURNING \"id\"\n) INSERT\n\tINTO \"dynamic\".\"PhysicalTickets\"\n\t\t(\"type\", \"ticketID\")\n\tSELECT\n\t\t$type, \"id\"\n\t\tFROM ticket\n\tRETURNING \"id\", \"ticketID\";",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 1040,
+        "y": 1760,
+        "wires": [
+            [
+                "7ca27fb83eda0ae6"
+            ]
+        ]
+    },
+    {
+        "id": "58f6d6e61d022aad",
+        "type": "catch",
+        "z": "216f0e6810bad0c9",
+        "name": "Catch ticket entry creation error",
+        "scope": [
+            "adb7fd41214475bd",
+            "e2b28c5635146e38"
+        ],
+        "uncaught": false,
+        "x": 470,
+        "y": 1900,
+        "wires": [
+            [
+                "5e11d8f11f995e44"
+            ]
+        ]
+    },
+    {
+        "id": "7ca27fb83eda0ae6",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return response",
+        "func": "if (msg.payload.length != 1) {\n    msg.statusCode = 500;\n    msg.payload = {\n        status: msg.statusCode,\n        message: 'Unexpected SQL query output',\n        time: Date.now()\n    };\n} else {\n    let queryResp = msg.payload[0];\n    msg.statusCode = 200;\n    msg.payload = {\n        status: msg.statusCode,\n        message: {\n            ticketID: queryResp.ticketID,\n            cardID: queryResp.id,\n            cardType: msg.queryParameters.type\n        },\n        time: Date.now()\n    };\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1070,
+        "y": 1860,
+        "wires": [
+            [
+                "5719f874cb02ba68"
+            ]
+        ]
+    },
+    {
+        "id": "dc06f9b44e3a917a",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/cards/:type/:id",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 1540,
+        "y": 1620,
+        "wires": [
+            [
+                "7317e9a8b396bde4"
+            ]
+        ]
+    },
+    {
+        "id": "7317e9a8b396bde4",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Set query parameters",
+        "func": "msg.queryParameters = {\n    type: msg.req.params.type,\n    id: msg.req.params.id\n};\nmsg.idOnly = (msg.payload.hasOwnProperty('idOnly') && msg.payload.idOnly.toLowerCase() === 'true');\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1760,
+        "y": 1620,
+        "wires": [
+            [
+                "186a17307b530a37"
+            ]
+        ]
+    },
+    {
+        "id": "e84002f37c8f8737",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get ticket information",
+        "query": "SELECT\n\tti.\"id\" AS \"ticketID\",\n\tpti.\"expiryDate\" AS \"expiryDate\",\n\tpti.\"disabled\" AS \"disabled\",\n\tti.\"fareType\" AS \"fareType\",\n\tti.\"balance\" AS \"balance\",\n\tti.\"dailyExpenditure\" AS \"dailyExpenditure\",\n\tti.\"touchedOn\" AS \"touchedOn\",\n\tti.\"currentProduct\" AS \"currentProduct\",\n\tti.\"productExpiry\" AS \"prodExpiry\",\n\tti.\"travelledZones\" AS \"travelledZones\"\nFROM\n\t\"dynamic\".\"PhysicalTickets\" pti\nJOIN\n\t\"dynamic\".\"Tickets\" ti\nON\n\tpti.\"ticketID\" = ti.\"id\"\nWHERE\n\tpti.\"id\" = $id\n\tAND pti.\"type\" = $type;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2080,
+        "y": 1620,
+        "wires": [
+            [
+                "6a0831b6495b7f3d"
+            ]
+        ]
+    },
+    {
+        "id": "6a0831b6495b7f3d",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return response",
+        "func": "if(msg.payload.length == 0) {\n    msg.statusCode = 404;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Ticket card ${msg.queryParameters.type}/${msg.queryParameters.id} not found`\n    };\n} else {\n    msg.statusCode = 200;\n    msg.payload = {\n        status: msg.statusCode,\n        message: msg.payload[0]\n    };\n}\nmsg.payload.time = Date.now();\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2290,
+        "y": 1580,
+        "wires": [
+            [
+                "a9da3c9395df356a"
+            ]
+        ]
+    },
+    {
+        "id": "a9da3c9395df356a",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 2470,
+        "y": 1580,
+        "wires": []
+    },
+    {
+        "id": "99f8de5a2c20b8c7",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/cards/:type/:id",
+        "method": "delete",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 1550,
+        "y": 1720,
+        "wires": [
+            [
+                "e99e142edadd278f"
+            ]
+        ]
+    },
+    {
+        "id": "e99e142edadd278f",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Set query parameters",
+        "func": "msg.queryParameters = {\n    type: msg.req.params.type,\n    id: msg.req.params.id\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1780,
+        "y": 1720,
+        "wires": [
+            [
+                "b57105718d3f8a7b"
+            ]
+        ]
+    },
+    {
+        "id": "b57105718d3f8a7b",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Disable card",
+        "query": "UPDATE\n\t\"dynamic\".\"PhysicalTickets\"\nSET\n\t\"disabled\" = true\nWHERE\n\t\"id\" = $id\n\tAND \"type\" = $type;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 1970,
+        "y": 1720,
+        "wires": [
+            [
+                "737609c08094e5cb"
+            ]
+        ]
+    },
+    {
+        "id": "737609c08094e5cb",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return response",
+        "func": "if(msg.pgsql.rowCount == 0) {\n    msg.statusCode = 404;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Ticket card ${msg.queryParameters.type}/${msg.queryParameters.id} not found`\n    };\n} else {\n    msg.statusCode = 200;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Ticket card ${msg.queryParameters.type}/${msg.queryParameters.id} disabled`\n    };\n}\nmsg.payload.time = Date.now();\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2150,
+        "y": 1720,
+        "wires": [
+            [
+                "380dc7f55b783b4b"
+            ]
+        ]
+    },
+    {
+        "id": "380dc7f55b783b4b",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 2330,
+        "y": 1720,
+        "wires": []
+    },
+    {
+        "id": "186a17307b530a37",
+        "type": "switch",
+        "z": "216f0e6810bad0c9",
+        "name": "Check if only the ID is requested",
+        "property": "idOnly",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "eq",
+                "v": "",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1810,
+        "y": 1580,
+        "wires": [
+            [
+                "5bcf7b2148a063a3"
+            ],
+            [
+                "e84002f37c8f8737"
+            ]
+        ]
+    },
+    {
+        "id": "5bcf7b2148a063a3",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get ticket ID",
+        "query": "SELECT\n\tpti.\"ticketID\" AS \"ticketID\"\nFROM\n\t\"dynamic\".\"PhysicalTickets\" pti\nWHERE\n\tpti.\"id\" = $id\n\tAND pti.\"type\" = $type;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2050,
+        "y": 1560,
+        "wires": [
+            [
+                "6a0831b6495b7f3d"
+            ]
+        ]
+    },
+    {
+        "id": "60459ba706522910",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/tickets/:id",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 250,
+        "y": 2020,
+        "wires": [
+            [
+                "0c5c93ae94aff45b"
+            ]
+        ]
+    },
+    {
+        "id": "0c5c93ae94aff45b",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Set query parameters",
+        "func": "msg.queryParameters = {\n    id: msg.req.params.id\n};\nmsg.card = msg.payload.hasOwnProperty('card') && msg.payload.card.toLowerCase() === 'true';\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 460,
+        "y": 2020,
+        "wires": [
+            [
+                "c134161ca2e9e058"
+            ]
+        ]
+    },
+    {
+        "id": "c134161ca2e9e058",
+        "type": "switch",
+        "z": "216f0e6810bad0c9",
+        "name": "Check if the associated card's information is also to be fetched",
+        "property": "card",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 430,
+        "y": 2060,
+        "wires": [
+            [
+                "38769624112c2a4b"
+            ],
+            [
+                "40b1c0ccf420fd49"
+            ]
+        ]
+    },
+    {
+        "id": "40b1c0ccf420fd49",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get ticket information",
+        "query": "SELECT\n\tti.\"fareType\" AS \"fareType\",\n\tti.\"balance\" AS \"balance\",\n\tti.\"dailyExpenditure\" AS \"dailyExpenditure\",\n\tti.\"touchedOn\" AS \"touchedOn\",\n\tti.\"currentProduct\" AS \"currentProduct\",\n\tti.\"productExpiry\" AS \"prodExpiry\",\n\tti.\"travelledZones\" AS \"travelledZones\"\nFROM\n\t\"dynamic\".\"Tickets\" ti\nWHERE\n\tti.\"id\" = $id;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 780,
+        "y": 2080,
+        "wires": [
+            [
+                "5708ee6e84a79236"
+            ]
+        ]
+    },
+    {
+        "id": "5708ee6e84a79236",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return response",
+        "func": "if(msg.payload.length == 0) {\n    msg.statusCode = 404;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Ticket ${msg.queryParameters.id} not found`\n    };\n} else {\n    msg.statusCode = 200;\n    msg.payload = {\n        status: msg.statusCode,\n        message: msg.payload[0]\n    };\n}\nmsg.payload.time = Date.now();\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 2040,
+        "wires": [
+            [
+                "0e71638816c5abdc"
+            ]
+        ]
+    },
+    {
+        "id": "0e71638816c5abdc",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1210,
+        "y": 2040,
+        "wires": []
+    },
+    {
+        "id": "38769624112c2a4b",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get ticket and card info",
+        "query": "SELECT\n\tti.\"fareType\" AS \"fareType\",\n\tti.\"balance\" AS \"balance\",\n\tti.\"dailyExpenditure\" AS \"dailyExpenditure\",\n\tti.\"touchedOn\" AS \"touchedOn\",\n\tti.\"currentProduct\" AS \"currentProduct\",\n\tti.\"productExpiry\" AS \"prodExpiry\",\n\tti.\"travelledZones\" AS \"travelledZones\",\n\tpti.\"id\" AS \"cardID\",\n\tpti.\"type\" AS \"cardType\",\n\tpti.\"expiryDate\" AS \"cardExpiry\",\n\tpti.\"disabled\" AS \"cardDisabled\"\nFROM\n\t\"dynamic\".\"Tickets\" ti\nJOIN\n\t\"dynamic\".\"PhysicalTickets\" pti\nON\n\tpti.\"ticketID\" = ti.\"id\"\nWHERE\n\tti.\"id\" = $id\n\tAND pti.\"disabled\" = false;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 790,
+        "y": 2020,
+        "wires": [
+            [
+                "5708ee6e84a79236"
+            ]
+        ]
+    },
+    {
+        "id": "f76168664b8798f2",
+        "type": "comment",
+        "z": "216f0e6810bad0c9",
+        "name": "Create ticket",
+        "info": "",
+        "x": 230,
+        "y": 1780,
+        "wires": []
+    },
+    {
+        "id": "ee6a61201f53ef2e",
+        "type": "comment",
+        "z": "216f0e6810bad0c9",
+        "name": "Query ticket information",
+        "info": "",
+        "x": 260,
+        "y": 2100,
+        "wires": []
+    },
+    {
+        "id": "53556b08bc8efd21",
+        "type": "comment",
+        "z": "216f0e6810bad0c9",
+        "name": "Query card information",
+        "info": "",
+        "x": 1540,
+        "y": 1660,
+        "wires": []
+    },
+    {
+        "id": "0df96a4d7f95e734",
+        "type": "comment",
+        "z": "216f0e6810bad0c9",
+        "name": "Disable card",
+        "info": "",
+        "x": 1510,
+        "y": 1760,
+        "wires": []
+    },
+    {
+        "id": "28fe67c2adb5bbd0",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/tickets/:id/card",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 1540,
+        "y": 1040,
+        "wires": [
+            [
+                "6efdff8039bace59"
+            ]
+        ]
+    },
+    {
+        "id": "6efdff8039bace59",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Set query parameters",
+        "func": "msg.queryParameters = {\n    id: msg.req.params.id\n};\nmsg.all = (msg.payload.hasOwnProperty('all') && msg.payload.all.toLowerCase() === 'true');\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1760,
+        "y": 1040,
+        "wires": [
+            [
+                "f25ebf3d5f43d9d3"
+            ]
+        ]
+    },
+    {
+        "id": "6b48e37860657708",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get card information",
+        "query": "SELECT\n\t\"id\", \"type\", \"expiryDate\", \"disabled\"\nFROM\n\t\"dynamic\".\"PhysicalTickets\"\nWHERE\n\t\"ticketID\" = $id\n\tAND \"disabled\" = false;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2120,
+        "y": 1040,
+        "wires": [
+            [
+                "d0efc3d0f215d3a2"
+            ]
+        ]
+    },
+    {
+        "id": "d0efc3d0f215d3a2",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return response",
+        "func": "if(msg.payload.length == 0) {\n    msg.statusCode = 404;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Cannot find cards associated with ticket ${msg.queryParameters.id}`\n    };\n} else {\n    msg.statusCode = 200;\n    msg.payload = {\n        status: msg.statusCode,\n        message: msg.payload[0]\n    };\n}\nmsg.payload.time = Date.now();\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2330,
+        "y": 1040,
+        "wires": [
+            [
+                "d7964d29e8ef5252"
+            ]
+        ]
+    },
+    {
+        "id": "d7964d29e8ef5252",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 2550,
+        "y": 1040,
+        "wires": []
+    },
+    {
+        "id": "56b454370f1d824c",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/tickets/:id/card",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 1550,
+        "y": 1140,
+        "wires": [
+            [
+                "550ec01c2b8e05c0"
+            ]
+        ]
+    },
+    {
+        "id": "9e745f8e3158c3b9",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get existing card",
+        "query": "SELECT \"id\", \"type\" FROM \"dynamic\".\"PhysicalTickets\" WHERE \"ticketID\" = $ticketID;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2210,
+        "y": 1140,
+        "wires": [
+            [
+                "80b8e95177428e4b"
+            ]
+        ]
+    },
+    {
+        "id": "80b8e95177428e4b",
+        "type": "switch",
+        "z": "216f0e6810bad0c9",
+        "name": "Check if there's a card",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nempty"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1960,
+        "y": 1180,
+        "wires": [
+            [
+                "ceb663f415567b36"
+            ],
+            [
+                "7f1c026d495069b2"
+            ]
+        ]
+    },
+    {
+        "id": "ceb663f415567b36",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Set query parameters",
+        "func": "msg.queryParameters.cardID = msg.payload[0].id;\nif (!msg.queryParameters.hasOwnProperty('cardType')) msg.queryParameters.cardType = msg.payload[0].type;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2220,
+        "y": 1180,
+        "wires": [
+            [
+                "9d861cc07acfd8ce"
+            ]
+        ]
+    },
+    {
+        "id": "d0f2934c85713d4c",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 404",
+        "func": "msg.statusCode = 404;\nmsg.payload = {\n    status: msg.statusCode,\n    message: `Cannot find cards associated with ticket ${msg.queryParameters.id}`,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2450,
+        "y": 1300,
+        "wires": [
+            [
+                "92cf84a073b0b2df"
+            ]
+        ]
+    },
+    {
+        "id": "92cf84a073b0b2df",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 3150,
+        "y": 1260,
+        "wires": []
+    },
+    {
+        "id": "9d861cc07acfd8ce",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Begin transaction",
+        "query": "BEGIN;\n",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2430,
+        "y": 1120,
+        "wires": [
+            [
+                "3a6decd67d54dd9e"
+            ]
+        ]
+    },
+    {
+        "id": "7f1c026d495069b2",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Query DB for ticket existence",
+        "query": "SELECT 1 FROM \"dynamic\".\"Tickets\" WHERE \"id\" = $ticketID;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 1940,
+        "y": 1240,
+        "wires": [
+            [
+                "6dbde003f59b9897"
+            ]
+        ]
+    },
+    {
+        "id": "6dbde003f59b9897",
+        "type": "switch",
+        "z": "216f0e6810bad0c9",
+        "name": "Check if ticket exists",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nempty"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2200,
+        "y": 1220,
+        "wires": [
+            [
+                "0a9e43ebb9812fb2"
+            ],
+            [
+                "d0f2934c85713d4c"
+            ]
+        ]
+    },
+    {
+        "id": "550ec01c2b8e05c0",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Set query parameters",
+        "func": "msg.queryParameters = {\n    ticketID: msg.req.params.id\n};\nif (typeof msg.payload === 'object' && msg.payload.hasOwnProperty('newType')) msg.queryParameters.cardType = msg.payload.newType; // new card type override\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1780,
+        "y": 1140,
+        "wires": [
+            [
+                "914afef51c277553"
+            ]
+        ]
+    },
+    {
+        "id": "f25ebf3d5f43d9d3",
+        "type": "switch",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "property": "all",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1930,
+        "y": 1040,
+        "wires": [
+            [
+                "530329055ae55e71"
+            ],
+            [
+                "6b48e37860657708"
+            ]
+        ]
+    },
+    {
+        "id": "530329055ae55e71",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get ALL card information",
+        "query": "SELECT\n\t\"id\", \"type\", \"expiryDate\", \"disabled\"\nFROM\n\t\"dynamic\".\"PhysicalTickets\"\nWHERE\n\t\"ticketID\" = $id;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2130,
+        "y": 1000,
+        "wires": [
+            [
+                "fcce2bc578bf718d"
+            ]
+        ]
+    },
+    {
+        "id": "fcce2bc578bf718d",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return response",
+        "func": "if(msg.payload.length == 0) {\n    msg.statusCode = 404;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Cannot find cards associated with ticket ${msg.queryParameters.id}`\n    };\n} else {\n    msg.statusCode = 200;\n    msg.payload = {\n        status: msg.statusCode,\n        message: msg.payload\n    };\n}\nmsg.payload.time = Date.now();\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2350,
+        "y": 1000,
+        "wires": [
+            [
+                "d7964d29e8ef5252"
+            ]
+        ]
+    },
+    {
+        "id": "0a9e43ebb9812fb2",
+        "type": "switch",
+        "z": "216f0e6810bad0c9",
+        "name": "Check if new card type has been set",
+        "property": "queryParameters",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "hask",
+                "v": "cardType",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2490,
+        "y": 1220,
+        "wires": [
+            [
+                "776393f70f21c404"
+            ],
+            [
+                "41ba0be76720ecbd"
+            ]
+        ]
+    },
+    {
+        "id": "41ba0be76720ecbd",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 400",
+        "func": "msg.statusCode = 400;\nmsg.payload = {\n    status: msg.statusCode,\n    message: `No new card types specified for ticket ${msg.queryParameters.id} with no currently valid card`,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2450,
+        "y": 1260,
+        "wires": [
+            [
+                "92cf84a073b0b2df"
+            ]
+        ]
+    },
+    {
+        "id": "776393f70f21c404",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Create new card",
+        "query": "INSERT INTO \"dynamic\".\"PhysicalTickets\" (\"id\", \"type\", \"ticketID\") VALUES ($newCardID, $cardType, $ticketID);",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2760,
+        "y": 1240,
+        "wires": [
+            [
+                "7187f7a8c06c3644"
+            ]
+        ]
+    },
+    {
+        "id": "914afef51c277553",
+        "type": "uuid",
+        "z": "216f0e6810bad0c9",
+        "uuidVersion": "v4",
+        "namespaceType": "",
+        "namespace": "",
+        "namespaceCustom": "",
+        "name": "Generate new card ID",
+        "field": "queryParameters.newCardID",
+        "fieldType": "msg",
+        "x": 2000,
+        "y": 1140,
+        "wires": [
+            [
+                "9e745f8e3158c3b9"
+            ]
+        ]
+    },
+    {
+        "id": "3a6decd67d54dd9e",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Disable old card",
+        "query": "UPDATE \"dynamic\".\"PhysicalTickets\" SET \"disabled\" = true WHERE \"id\" = $cardID;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2460,
+        "y": 1160,
+        "wires": [
+            [
+                "391fb2046440c408"
+            ]
+        ]
+    },
+    {
+        "id": "391fb2046440c408",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Create new card",
+        "query": "INSERT INTO \"dynamic\".\"PhysicalTickets\" (\"id\", \"type\", \"ticketID\") VALUES ($newCardID, $cardType, $ticketID);",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2660,
+        "y": 1120,
+        "wires": [
+            [
+                "c118151c8e10fdec"
+            ]
+        ]
+    },
+    {
+        "id": "c118151c8e10fdec",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Commit transaction",
+        "query": "COMMIT;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2690,
+        "y": 1160,
+        "wires": [
+            [
+                "7187f7a8c06c3644"
+            ]
+        ]
+    },
+    {
+        "id": "7187f7a8c06c3644",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return response",
+        "func": "msg.statusCode = 200;\nmsg.payload = {\n    status: msg.statusCode,\n    message: {\n        cardID: msg.queryParameters.newCardID,\n        cardType: msg.queryParameters.cardType\n    },\n    time: Date.now()\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2950,
+        "y": 1220,
+        "wires": [
+            [
+                "92cf84a073b0b2df"
+            ]
+        ]
+    },
+    {
+        "id": "cb8bcaa8e9d6acdd",
+        "type": "comment",
+        "z": "216f0e6810bad0c9",
+        "name": "Generate new card for ticket",
+        "info": "",
+        "x": 1560,
+        "y": 1180,
+        "wires": []
+    },
+    {
+        "id": "065fac396aaa6894",
+        "type": "comment",
+        "z": "216f0e6810bad0c9",
+        "name": "Get ticket's associated card",
+        "info": "",
+        "x": 1560,
+        "y": 1080,
+        "wires": []
+    },
+    {
+        "id": "b68e76cbe7d58619",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/tickets/:id/card",
+        "method": "delete",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 1550,
+        "y": 1380,
+        "wires": [
+            [
+                "fd597230f51c98ca"
+            ]
+        ]
+    },
+    {
+        "id": "fd597230f51c98ca",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Set query parameters",
+        "func": "msg.queryParameters = {\n    id: msg.req.params.id\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1780,
+        "y": 1380,
+        "wires": [
+            [
+                "3985c78ceabc1e39"
+            ]
+        ]
+    },
+    {
+        "id": "3985c78ceabc1e39",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Disable card",
+        "query": "UPDATE\n\t\"dynamic\".\"PhysicalTickets\"\nSET\n\t\"disabled\" = true\nWHERE\n\t\"ticketID\" = $id;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 1970,
+        "y": 1380,
+        "wires": [
+            [
+                "6a7094752c97c0f7"
+            ]
+        ]
+    },
+    {
+        "id": "6a7094752c97c0f7",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return response",
+        "func": "if(msg.pgsql.rowCount == 0) {\n    msg.statusCode = 404;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Ticket ${msg.queryParameters.id} not found`\n    };\n} else {\n    msg.statusCode = 200;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Card(s) associated with ${msg.queryParameters.id} disabled`\n    };\n}\nmsg.payload.time = Date.now();\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2150,
+        "y": 1380,
+        "wires": [
+            [
+                "b4fb39c569009a3c"
+            ]
+        ]
+    },
+    {
+        "id": "b4fb39c569009a3c",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 2330,
+        "y": 1380,
+        "wires": []
+    },
+    {
+        "id": "c1625c8d1858106d",
+        "type": "comment",
+        "z": "216f0e6810bad0c9",
+        "name": "Disable card associated with ticket",
+        "info": "",
+        "x": 1580,
         "y": 1420,
         "wires": []
+    },
+    {
+        "id": "ae8d6045ddd5647d",
+        "type": "catch",
+        "z": "216f0e6810bad0c9",
+        "name": "Catch query errors",
+        "scope": [
+            "38769624112c2a4b",
+            "40b1c0ccf420fd49"
+        ],
+        "uncaught": false,
+        "x": 770,
+        "y": 1980,
+        "wires": [
+            [
+                "c9f515cb25de2502"
+            ]
+        ]
+    },
+    {
+        "id": "c9f515cb25de2502",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 500",
+        "func": "msg.statusCode = 500;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Query error: ' + msg.payload,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 970,
+        "y": 1980,
+        "wires": [
+            [
+                "0e71638816c5abdc"
+            ]
+        ]
+    },
+    {
+        "id": "93fa7f129c68fe79",
+        "type": "catch",
+        "z": "216f0e6810bad0c9",
+        "name": "Catch query errors",
+        "scope": [
+            "530329055ae55e71",
+            "6b48e37860657708"
+        ],
+        "uncaught": false,
+        "x": 2150,
+        "y": 960,
+        "wires": [
+            [
+                "d9eb92a6b4e20485"
+            ]
+        ]
+    },
+    {
+        "id": "d9eb92a6b4e20485",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 500",
+        "func": "msg.statusCode = 500;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Query error: ' + msg.payload,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2350,
+        "y": 960,
+        "wires": [
+            [
+                "d7964d29e8ef5252"
+            ]
+        ]
+    },
+    {
+        "id": "bef51f9716784662",
+        "type": "catch",
+        "z": "216f0e6810bad0c9",
+        "name": "Catch query errors",
+        "scope": [
+            "7f1c026d495069b2",
+            "9e745f8e3158c3b9"
+        ],
+        "uncaught": false,
+        "x": 2790,
+        "y": 1320,
+        "wires": [
+            [
+                "24e0064e7c2c8927"
+            ]
+        ]
+    },
+    {
+        "id": "24e0064e7c2c8927",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 500",
+        "func": "msg.statusCode = 500;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Query error: ' + msg.payload,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2970,
+        "y": 1320,
+        "wires": [
+            [
+                "92cf84a073b0b2df"
+            ]
+        ]
+    },
+    {
+        "id": "bf456f50f9efd058",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 500",
+        "func": "msg.statusCode = 500;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Error occurred performing transaction: ' + msg.payload,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2970,
+        "y": 1180,
+        "wires": [
+            [
+                "92cf84a073b0b2df"
+            ]
+        ]
+    },
+    {
+        "id": "2a1c3fe8bcca75a0",
+        "type": "catch",
+        "z": "216f0e6810bad0c9",
+        "name": "Catch transaction errors",
+        "scope": [
+            "9d861cc07acfd8ce",
+            "3a6decd67d54dd9e",
+            "391fb2046440c408",
+            "c118151c8e10fdec"
+        ],
+        "uncaught": false,
+        "x": 2900,
+        "y": 1140,
+        "wires": [
+            [
+                "bf456f50f9efd058"
+            ]
+        ]
+    },
+    {
+        "id": "0f768881fc077920",
+        "type": "catch",
+        "z": "216f0e6810bad0c9",
+        "name": "Catch operation error",
+        "scope": [
+            "3985c78ceabc1e39"
+        ],
+        "uncaught": false,
+        "x": 1960,
+        "y": 1420,
+        "wires": [
+            [
+                "5ff6801067fa2576"
+            ]
+        ]
+    },
+    {
+        "id": "5ff6801067fa2576",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 500",
+        "func": "msg.statusCode = 500;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Error occurred disabling card: ' + msg.payload,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2150,
+        "y": 1420,
+        "wires": [
+            [
+                "b4fb39c569009a3c"
+            ]
+        ]
+    },
+    {
+        "id": "131c1f631523408b",
+        "type": "catch",
+        "z": "216f0e6810bad0c9",
+        "name": "Catch operation error",
+        "scope": [
+            "b57105718d3f8a7b"
+        ],
+        "uncaught": false,
+        "x": 1960,
+        "y": 1760,
+        "wires": [
+            [
+                "ed61ae4af85228b7"
+            ]
+        ]
+    },
+    {
+        "id": "ed61ae4af85228b7",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 500",
+        "func": "msg.statusCode = 500;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Error occurred disabling card: ' + msg.payload,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2170,
+        "y": 1760,
+        "wires": [
+            [
+                "380dc7f55b783b4b"
+            ]
+        ]
+    },
+    {
+        "id": "6d7c87b56c8b3ee5",
+        "type": "catch",
+        "z": "216f0e6810bad0c9",
+        "name": "Catch query errors",
+        "scope": [
+            "e84002f37c8f8737",
+            "5bcf7b2148a063a3"
+        ],
+        "uncaught": false,
+        "x": 2090,
+        "y": 1520,
+        "wires": [
+            [
+                "0c86b6465b177594"
+            ]
+        ]
+    },
+    {
+        "id": "0c86b6465b177594",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 500",
+        "func": "msg.statusCode = 500;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Query error: ' + msg.payload,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2290,
+        "y": 1540,
+        "wires": [
+            [
+                "a9da3c9395df356a"
+            ]
+        ]
+    },
+    {
+        "id": "3a4ace16e67fdce0",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/tickets/:id",
+        "method": "patch",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 260,
+        "y": 2160,
+        "wires": [
+            [
+                "b0a3b09696f52da3"
+            ]
+        ]
+    },
+    {
+        "id": "b0a3b09696f52da3",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Form list of attributes to change",
+        "func": "let attribs = {\n    'fareType': 'fareType',\n    'balance': 'balance',\n    'dailyExpenditure': 'dailyExpenditure',\n    'touchedOn': 'touchedOn',\n    'currentProduct': 'currentProduct',\n    'prodExpiry': 'productExpiry',\n    'travelledZones': 'travelledZones'\n}; // mapping from request key to column\n\nmsg.sqlQuery = {\n    table: '\"dynamic\".\"Tickets\"',\n    whereCol: '\"id\"',\n    whereVal: msg.req.params.id,\n    val: {}\n};\nif (typeof msg.payload === 'object') {\n    for (const key in attribs) {\n        if(msg.payload.hasOwnProperty(key)) msg.sqlQuery.val[key] = msg.payload[key];\n    }\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 510,
+        "y": 2160,
+        "wires": [
+            [
+                "94444023f509e328"
+            ]
+        ]
+    },
+    {
+        "id": "94444023f509e328",
+        "type": "switch",
+        "z": "216f0e6810bad0c9",
+        "name": "Check if there are values to update",
+        "property": "sqlQuery.val",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nempty"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 520,
+        "y": 2200,
+        "wires": [
+            [
+                "cff3b0e91217ddcd"
+            ],
+            [
+                "bd043128789c9616"
+            ]
+        ]
+    },
+    {
+        "id": "bd043128789c9616",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 400",
+        "func": "msg.statusCode = 400;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Invalid body',\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 790,
+        "y": 2260,
+        "wires": [
+            [
+                "4168021b8fe0200d"
+            ]
+        ]
+    },
+    {
+        "id": "4168021b8fe0200d",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1030,
+        "y": 2220,
+        "wires": []
+    },
+    {
+        "id": "cff3b0e91217ddcd",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Form SQL query",
+        "func": "msg.params = Object.values(msg.sqlQuery.val);\nmsg.params.push(msg.sqlQuery.whereVal);\n\nlet values = [];\nlet i = 1;\nfor (const key in msg.sqlQuery.val)\n    values.push(`\"${key}\" = \\$${i++}`);\n\nmsg.query = `UPDATE ${msg.sqlQuery.table} SET ${values.join(', ')} WHERE ${msg.sqlQuery.whereCol} = \\$${i} RETURNING *;`\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 780,
+        "y": 2160,
+        "wires": [
+            [
+                "c675abdde12f6c3e"
+            ]
+        ]
+    },
+    {
+        "id": "c675abdde12f6c3e",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Run SQL query",
+        "query": "SELECT * FROM ;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 980,
+        "y": 2160,
+        "wires": [
+            [
+                "82e0bdcfd0640505"
+            ]
+        ]
+    },
+    {
+        "id": "82e0bdcfd0640505",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return response",
+        "func": "if(msg.payload.length == 0) {\n    msg.statusCode = 404;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Ticket ${msg.req.params.id} not found`\n    };\n} else {\n    msg.statusCode = 200;\n    msg.payload = {\n        status: msg.statusCode,\n        message: msg.payload[0]\n    };\n    msg.payload.message.prodExpiry = msg.payload.message.productExpiry;\n    delete msg.payload.message.productExpiry; // rename\n}\nmsg.payload.time = Date.now();\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 810,
+        "y": 2220,
+        "wires": [
+            [
+                "4168021b8fe0200d"
+            ]
+        ]
+    },
+    {
+        "id": "7e56467fce74625c",
+        "type": "comment",
+        "z": "216f0e6810bad0c9",
+        "name": "Change ticket data",
+        "info": "",
+        "x": 250,
+        "y": 2200,
+        "wires": []
+    },
+    {
+        "id": "70fdfe684e61598b",
+        "type": "catch",
+        "z": "216f0e6810bad0c9",
+        "name": "Catch operation error",
+        "scope": [
+            "c675abdde12f6c3e"
+        ],
+        "uncaught": false,
+        "x": 520,
+        "y": 2300,
+        "wires": [
+            [
+                "b9f1b444d7b033e5"
+            ]
+        ]
+    },
+    {
+        "id": "b9f1b444d7b033e5",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 400 (for SQL operation error)",
+        "func": "msg.statusCode = 400;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'SQL operation failed: ' + msg.payload,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 790,
+        "y": 2300,
+        "wires": [
+            [
+                "4168021b8fe0200d"
+            ]
+        ]
+    },
+    {
+        "id": "84f50cc7f58d7242",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/tickets/:id/transactions",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 1570,
+        "y": 1820,
+        "wires": [
+            [
+                "0393932867b35b8b"
+            ]
+        ]
+    },
+    {
+        "id": "3a52bb1dc39aef00",
+        "type": "comment",
+        "z": "216f0e6810bad0c9",
+        "name": "Get transactions associated with ticket",
+        "info": "",
+        "x": 1590,
+        "y": 1860,
+        "wires": []
+    },
+    {
+        "id": "0393932867b35b8b",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Set query parameters",
+        "func": "msg.queryParameters = {\n    id: msg.req.params.id\n};\nif (msg.payload.hasOwnProperty('limit') && !isNaN(msg.payload.limit))\n    msg.queryParameters.limit = parseInt(msg.payload.limit);\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1820,
+        "y": 1820,
+        "wires": [
+            [
+                "aaf883ff0ad52540"
+            ]
+        ]
+    },
+    {
+        "id": "aaf883ff0ad52540",
+        "type": "switch",
+        "z": "216f0e6810bad0c9",
+        "name": "Check if limit is specified",
+        "property": "queryParameters",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "hask",
+                "v": "limit",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1890,
+        "y": 1860,
+        "wires": [
+            [
+                "d235afb153a94490"
+            ],
+            [
+                "475de6df55aad125"
+            ]
+        ]
+    },
+    {
+        "id": "d235afb153a94490",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get transactions (with limit)",
+        "query": "SELECT\n    \"id\", \"timestamp\", \"type\", \"locationID\" AS \"location\", \"postBalance\" AS \"balance\"\nFROM\n    \"dynamic\".\"Transactions\"\nWHERE\n    \"ticketID\" = $id\nORDER BY\n    \"timestamp\" DESC\nLIMIT\n    $limit;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2160,
+        "y": 1820,
+        "wires": [
+            [
+                "9fa43e7992204eb1"
+            ]
+        ]
+    },
+    {
+        "id": "475de6df55aad125",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get transactions (w/o limit)",
+        "query": "SELECT\n    \"id\", \"timestamp\", \"type\", \"locationID\" AS \"location\", \"postBalance\" AS \"balance\"\nFROM\n    \"dynamic\".\"Transactions\"\nWHERE\n    \"ticketID\" = $id\nORDER BY\n    \"timestamp\" DESC;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2160,
+        "y": 1860,
+        "wires": [
+            [
+                "9fa43e7992204eb1"
+            ]
+        ]
+    },
+    {
+        "id": "01671c1b76da7fed",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 2630,
+        "y": 1820,
+        "wires": []
+    },
+    {
+        "id": "3cd68ab9f9219a60",
+        "type": "catch",
+        "z": "216f0e6810bad0c9",
+        "name": "Catch query errors",
+        "scope": [
+            "d235afb153a94490",
+            "475de6df55aad125"
+        ],
+        "uncaught": false,
+        "x": 2250,
+        "y": 1900,
+        "wires": [
+            [
+                "10e08ba75b5cad21"
+            ]
+        ]
+    },
+    {
+        "id": "10e08ba75b5cad21",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 500",
+        "func": "msg.statusCode = 500;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Query error: ' + msg.payload,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2450,
+        "y": 1900,
+        "wires": [
+            [
+                "01671c1b76da7fed"
+            ]
+        ]
+    },
+    {
+        "id": "9fa43e7992204eb1",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return response",
+        "func": "msg.statusCode = 200;\nmsg.payload = {\n    status: msg.statusCode,\n    message: msg.payload,\n    time: Date.now()\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2430,
+        "y": 1820,
+        "wires": [
+            [
+                "01671c1b76da7fed"
+            ]
+        ]
+    },
+    {
+        "id": "6aa6ddccbb38ce2d",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/tickets/:id/transactions/:tid",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 1580,
+        "y": 1960,
+        "wires": [
+            [
+                "ad331bd93c2ad7f4"
+            ]
+        ]
+    },
+    {
+        "id": "9665d74a34912ad0",
+        "type": "comment",
+        "z": "216f0e6810bad0c9",
+        "name": "Get transaction details",
+        "info": "",
+        "x": 1540,
+        "y": 2000,
+        "wires": []
+    },
+    {
+        "id": "ad331bd93c2ad7f4",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Set query parameters",
+        "func": "msg.queryParameters = msg.req.params;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1840,
+        "y": 1960,
+        "wires": [
+            [
+                "d1eb7892d58da622"
+            ]
+        ]
+    },
+    {
+        "id": "d1eb7892d58da622",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get transaction details",
+        "query": "SELECT\n    \"id\", \"timestamp\", \"type\", \"locationID\" AS \"location\", \"postBalance\" AS \"balance\"\nFROM\n    \"dynamic\".\"Transactions\"\nWHERE\n    \"id\" = $tid\n    AND \"ticketID\" = $id;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2060,
+        "y": 1960,
+        "wires": [
+            [
+                "59a2dc40783fce30"
+            ]
+        ]
+    },
+    {
+        "id": "59a2dc40783fce30",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return response",
+        "func": "if(msg.payload.length == 0) {\n    msg.statusCode = 404;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Transaction ${msg.queryParameters.tid} for ticket ${msg.queryParameters.id} not found`\n    };\n} else {\n    msg.statusCode = 200;\n    msg.payload = {\n        status: msg.statusCode,\n        message: msg.payload[0]\n    };\n}\nmsg.payload.time = Date.now();\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2270,
+        "y": 1960,
+        "wires": [
+            [
+                "f7ef8dcddf0b1f81"
+            ]
+        ]
+    },
+    {
+        "id": "f7ef8dcddf0b1f81",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 2450,
+        "y": 1960,
+        "wires": []
+    },
+    {
+        "id": "1891c609c1106693",
+        "type": "catch",
+        "z": "216f0e6810bad0c9",
+        "name": "Catch query errors",
+        "scope": [
+            "d1eb7892d58da622"
+        ],
+        "uncaught": false,
+        "x": 2070,
+        "y": 2000,
+        "wires": [
+            [
+                "c1bf38d9f370563d"
+            ]
+        ]
+    },
+    {
+        "id": "c1bf38d9f370563d",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 500",
+        "func": "msg.statusCode = 500;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Query error: ' + msg.payload,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2270,
+        "y": 2000,
+        "wires": [
+            [
+                "f7ef8dcddf0b1f81"
+            ]
+        ]
+    },
+    {
+        "id": "7a1295909e46d093",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/tickets/:id/transactions",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 1570,
+        "y": 2060,
+        "wires": [
+            [
+                "de63dfed72c34983"
+            ]
+        ]
+    },
+    {
+        "id": "4dc735d96d309a28",
+        "type": "comment",
+        "z": "216f0e6810bad0c9",
+        "name": "Add transaction",
+        "info": "",
+        "x": 1520,
+        "y": 2100,
+        "wires": []
+    },
+    {
+        "id": "de63dfed72c34983",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Set query parameters",
+        "func": "msg.queryParameters = {\n    ticketID: msg.req.params.id,\n    id: crypto.randomUUID(),\n    timestamp: new Date().toISOString()\n};\n\nif (typeof msg.payload === 'object') {\n    if (msg.payload.hasOwnProperty('id') && typeof msg.payload.id === 'string')\n        msg.queryParameters.id = msg.payload.id;\n    if (msg.payload.hasOwnProperty('timestamp') && typeof msg.payload.timestamp === 'string')\n        msg.queryParameters.timestamp = msg.payload.timestamp;\n    if (msg.payload.hasOwnProperty('type') && typeof msg.payload.type === 'number')\n        msg.queryParameters.type = msg.payload.type;\n    if (msg.payload.hasOwnProperty('location') && typeof msg.payload.location === 'number')\n        msg.queryParameters.locationID = msg.payload.location;\n    if (msg.payload.hasOwnProperty('balance') && typeof msg.payload.balance === 'number')\n        msg.queryParameters.postBalance = msg.payload.balance;\n    \n    if (msg.queryParameters.type == 5 && msg.payload.hasOwnProperty('pass') && typeof msg.payload.pass === 'object') {\n        /* pass purchase */\n        if (msg.payload.pass.hasOwnProperty('duration') && typeof msg.payload.pass.duration === 'number')\n            msg.queryParameters.passDuration = msg.payload.pass.duration;\n        // if (msg.payload.pass.hasOwnProperty('activationDate') && typeof msg.payload.pass.activationDate === 'string')\n        //     msg.queryParameters.passDate = msg.payload.pass.activationDate;\n        // else\n        //     msg.queryParameters.passDate = new Date().toDateString();\n        if (msg.payload.pass.hasOwnProperty('product') && typeof msg.payload.pass.product === 'number')\n            msg.queryParameters.passProduct = msg.payload.pass.product;\n    }\n}\n\nmsg.ok = (\n    msg.queryParameters.hasOwnProperty('type')\n    && msg.queryParameters.hasOwnProperty('locationID')\n    && msg.queryParameters.hasOwnProperty('postBalance')\n) && (\n    msg.queryParameters.type != 5\n    || (\n        msg.queryParameters.hasOwnProperty('passDuration')\n        // && msg.queryParameters.hasOwnProperty('passDate')\n        && msg.queryParameters.hasOwnProperty('passProduct')\n    )\n);\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [
+            {
+                "var": "crypto",
+                "module": "crypto"
+            }
+        ],
+        "x": 1820,
+        "y": 2060,
+        "wires": [
+            [
+                "dce53df4ec0784d7"
+            ]
+        ]
+    },
+    {
+        "id": "dce53df4ec0784d7",
+        "type": "switch",
+        "z": "216f0e6810bad0c9",
+        "name": "Check if request is OK",
+        "property": "ok",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2060,
+        "y": 2060,
+        "wires": [
+            [
+                "3455b73e5dac85cf"
+            ],
+            [
+                "89ed8951d38377ff"
+            ]
+        ]
+    },
+    {
+        "id": "3455b73e5dac85cf",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 400",
+        "func": "msg.statusCode = 400;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Invalid body',\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2350,
+        "y": 2060,
+        "wires": [
+            [
+                "536828419d6dc501"
+            ]
+        ]
+    },
+    {
+        "id": "536828419d6dc501",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 2710,
+        "y": 2040,
+        "wires": []
+    },
+    {
+        "id": "f1da67b1478fa151",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Insert transaction",
+        "query": "INSERT INTO\n    \"dynamic\".\"Transactions\"\n    (\"id\", \"ticketID\", \"timestamp\", \"type\", \"locationID\", \"postBalance\")\nVALUES\n    ($id, $ticketID, $timestamp, $type, $locationID, $postBalance)\nRETURNING\n    \"id\", \"timestamp\", \"type\", \"locationID\" AS \"location\", \"postBalance\" AS \"balance\";",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2270,
+        "y": 2120,
+        "wires": [
+            [
+                "b66465bbcbc2fca0"
+            ]
+        ]
+    },
+    {
+        "id": "f6491c3f4663a912",
+        "type": "catch",
+        "z": "216f0e6810bad0c9",
+        "name": "Catch operation error",
+        "scope": [
+            "f1da67b1478fa151",
+            "5efa96c2d1a34475",
+            "bcb718bb7da91a58",
+            "b1c4776e9a6865f4",
+            "eab9056422f4e84d",
+            "57f31eaed7344a74"
+        ],
+        "uncaught": false,
+        "x": 2240,
+        "y": 2280,
+        "wires": [
+            [
+                "894c13bad33e5c2f"
+            ]
+        ]
+    },
+    {
+        "id": "894c13bad33e5c2f",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 400 (for SQL operation error)",
+        "func": "msg.statusCode = 400;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'SQL operation failed: ' + msg.payload,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2550,
+        "y": 2280,
+        "wires": [
+            [
+                "536828419d6dc501"
+            ]
+        ]
+    },
+    {
+        "id": "b66465bbcbc2fca0",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return response",
+        "func": "if (msg.payload.length == 0) {\n    msg.statusCode = 500;\n    msg.payload = {\n        status: msg.statusCode,\n        message: 'Transaction not recorded',\n        time: Date.now()\n    };\n} else {\n    msg.statusCode = 200;\n    msg.payload = {\n        status: msg.statusCode,\n        message: msg.payload[0],\n        time: Date.now()\n    };\n    if(msg.payload.message.hasOwnProperty('passProduct')) {\n        msg.payload.message.pass = {\n            duration: msg.payload.message.passDuration,\n            product: msg.payload.message.passProduct\n        };\n        delete msg.payload.message.passDuration;\n        delete msg.payload.message.passProduct;\n    }\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2510,
+        "y": 2100,
+        "wires": [
+            [
+                "536828419d6dc501"
+            ]
+        ]
+    },
+    {
+        "id": "9ad497bcc97213e0",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/tickets/:id/passes",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 1550,
+        "y": 2340,
+        "wires": [
+            [
+                "318a083392544f70"
+            ]
+        ]
+    },
+    {
+        "id": "ec1409c877b56b96",
+        "type": "comment",
+        "z": "216f0e6810bad0c9",
+        "name": "Get transit passes associated with ticket",
+        "info": "",
+        "x": 1590,
+        "y": 2380,
+        "wires": []
+    },
+    {
+        "id": "318a083392544f70",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Set query parameters",
+        "func": "msg.queryParameters = {\n    ticketID: msg.req.params.id\n};\nmsg.all = (msg.payload.hasOwnProperty('all') && msg.payload.all.toLowerCase() === 'true');\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1780,
+        "y": 2340,
+        "wires": [
+            [
+                "c15809b452448dd8"
+            ]
+        ]
+    },
+    {
+        "id": "c15809b452448dd8",
+        "type": "switch",
+        "z": "216f0e6810bad0c9",
+        "name": "Check if all passes are to be retrieved",
+        "property": "all",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1930,
+        "y": 2380,
+        "wires": [
+            [
+                "c6c46b081f3442fd"
+            ],
+            [
+                "1ab0dc1295bac028"
+            ]
+        ]
+    },
+    {
+        "id": "c6c46b081f3442fd",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get all passes",
+        "query": "SELECT\n\tp.\"transactionID\", p.\"duration\", p.\"activationDate\", p.\"product\"\nFROM\n\t\"dynamic\".\"Passes\" p\nJOIN\n\t\"dynamic\".\"Transactions\" t\nON\n\tt.\"id\" = p.\"transactionID\"\nWHERE\n\tt.\"ticketID\" = $ticketID\nORDER BY\n\tt.\"timestamp\" DESC;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2180,
+        "y": 2340,
+        "wires": [
+            [
+                "fe8dc79f761b31fe"
+            ]
+        ]
+    },
+    {
+        "id": "1ab0dc1295bac028",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get unactivated and non-expired passes",
+        "query": "SELECT\n\tp.\"transactionID\", p.\"duration\", p.\"activationDate\", p.\"product\"\nFROM\n\t\"dynamic\".\"Passes\" p\nJOIN\n\t\"dynamic\".\"Transactions\" t\nON\n\tt.\"id\" = p.\"transactionID\"\nWHERE\n\tt.\"ticketID\" = $ticketID\n    AND (\n        p.\"activationDate\" IS NULL\n        OR p.\"activationDate\" + p.\"duration\" * INTERVAL '1 day' > CURRENT_DATE\n    )\nORDER BY\n\tt.\"timestamp\" DESC;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2260,
+        "y": 2380,
+        "wires": [
+            [
+                "fe8dc79f761b31fe"
+            ]
+        ]
+    },
+    {
+        "id": "b5017bcb023dafcc",
+        "type": "catch",
+        "z": "216f0e6810bad0c9",
+        "name": "Catch query errors",
+        "scope": [
+            "1ab0dc1295bac028",
+            "c6c46b081f3442fd"
+        ],
+        "uncaught": false,
+        "x": 2350,
+        "y": 2420,
+        "wires": [
+            [
+                "baec7bc17db18cf9"
+            ]
+        ]
+    },
+    {
+        "id": "baec7bc17db18cf9",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 500",
+        "func": "msg.statusCode = 500;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Query error: ' + msg.payload,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2550,
+        "y": 2420,
+        "wires": [
+            [
+                "a7b72d6485158870"
+            ]
+        ]
+    },
+    {
+        "id": "fe8dc79f761b31fe",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return response",
+        "func": "msg.statusCode = 200;\nmsg.payload = {\n    status: msg.statusCode,\n    message: msg.payload,\n    time: Date.now()\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2530,
+        "y": 2340,
+        "wires": [
+            [
+                "a7b72d6485158870"
+            ]
+        ]
+    },
+    {
+        "id": "a7b72d6485158870",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 2710,
+        "y": 2320,
+        "wires": []
+    },
+    {
+        "id": "0588a9d7426e1357",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/tickets/:id/passes/:tid",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 1560,
+        "y": 2480,
+        "wires": [
+            [
+                "bb87c5e3f7c802f8"
+            ]
+        ]
+    },
+    {
+        "id": "f9b088804fac7542",
+        "type": "comment",
+        "z": "216f0e6810bad0c9",
+        "name": "Get transit pass details",
+        "info": "",
+        "x": 1540,
+        "y": 2500,
+        "wires": []
+    },
+    {
+        "id": "bb87c5e3f7c802f8",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Set query parameters",
+        "func": "msg.queryParameters = {\n    ticketID: msg.req.params.id,\n    transID: msg.req.params.tid\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1800,
+        "y": 2480,
+        "wires": [
+            [
+                "afedf0010d3b8d37"
+            ]
+        ]
+    },
+    {
+        "id": "afedf0010d3b8d37",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Get pass",
+        "query": "SELECT\n\tp.\"transactionID\", p.\"duration\", p.\"activationDate\", p.\"product\"\nFROM\n\t\"dynamic\".\"Passes\" p\nJOIN\n\t\"dynamic\".\"Transactions\" t\nON\n\tt.\"id\" = p.\"transactionID\"\nWHERE\n\tt.\"ticketID\" = $ticketID\n\tAND p.\"transactionID\" = $transID;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 1980,
+        "y": 2480,
+        "wires": [
+            [
+                "e64c7b1315d1d07e"
+            ]
+        ]
+    },
+    {
+        "id": "fdd0cce98d00a564",
+        "type": "catch",
+        "z": "216f0e6810bad0c9",
+        "name": "Catch query errors",
+        "scope": [
+            "afedf0010d3b8d37"
+        ],
+        "uncaught": false,
+        "x": 1970,
+        "y": 2520,
+        "wires": [
+            [
+                "a92159f643756810"
+            ]
+        ]
+    },
+    {
+        "id": "a92159f643756810",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return 500",
+        "func": "msg.statusCode = 500;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Query error: ' + msg.payload,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2150,
+        "y": 2520,
+        "wires": [
+            [
+                "a71f72fb5f0b9cda"
+            ]
+        ]
+    },
+    {
+        "id": "e64c7b1315d1d07e",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Return response",
+        "func": "if(msg.payload.length == 0) {\n    msg.statusCode = 404;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Pass transaction ${msg.queryParameters.tid} for ticket ${msg.queryParameters.id} not found`\n    };\n} else {\n    msg.statusCode = 200;\n    msg.payload = {\n        status: msg.statusCode,\n        message: msg.payload[0]\n    };\n}\nmsg.payload.time = Date.now();\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2150,
+        "y": 2480,
+        "wires": [
+            [
+                "a71f72fb5f0b9cda"
+            ]
+        ]
+    },
+    {
+        "id": "a71f72fb5f0b9cda",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 2330,
+        "y": 2480,
+        "wires": []
+    },
+    {
+        "id": "89ed8951d38377ff",
+        "type": "switch",
+        "z": "216f0e6810bad0c9",
+        "name": "Check if pass purchase",
+        "property": "queryParameters.type",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "5",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1730,
+        "y": 2140,
+        "wires": [
+            [
+                "f1da67b1478fa151"
+            ],
+            [
+                "5efa96c2d1a34475"
+            ]
+        ]
+    },
+    {
+        "id": "5efa96c2d1a34475",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Begin transaction",
+        "query": "BEGIN;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 1950,
+        "y": 2160,
+        "wires": [
+            [
+                "bcb718bb7da91a58"
+            ]
+        ]
+    },
+    {
+        "id": "eab9056422f4e84d",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Commit transaction",
+        "query": "COMMIT;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2130,
+        "y": 2220,
+        "wires": [
+            [
+                "57f31eaed7344a74"
+            ]
+        ]
+    },
+    {
+        "id": "bcb718bb7da91a58",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Insert transaction",
+        "query": "INSERT INTO\n    \"dynamic\".\"Transactions\"\n    (\"id\", \"ticketID\", \"timestamp\", \"type\", \"locationID\", \"postBalance\")\nVALUES\n    ($id, $ticketID, $timestamp, $type, $locationID, $postBalance);",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2170,
+        "y": 2160,
+        "wires": [
+            [
+                "b1c4776e9a6865f4"
+            ]
+        ]
+    },
+    {
+        "id": "b1c4776e9a6865f4",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Insert pass",
+        "query": "INSERT INTO\n    \"dynamic\".\"Passes\"\n    (\"transactionID\", \"ticketID\", \"duration\", \"product\")\nVALUES\n    ($id, $ticketID, $passDuration, $passProduct);",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 1930,
+        "y": 2220,
+        "wires": [
+            [
+                "eab9056422f4e84d"
+            ]
+        ]
+    },
+    {
+        "id": "57f31eaed7344a74",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Re-fetch transaction",
+        "query": "SELECT\n    t.\"id\", t.\"timestamp\", t.\"type\", t.\"locationID\" AS \"location\", t.\"postBalance\" AS \"balance\",\n    p.\"duration\" AS \"passDuration\", p.\"product\" AS \"passProduct\"\nFROM\n    \"dynamic\".\"Transactions\" t\nJOIN\n\t\"dynamic\".\"Passes\" p\nON\n\tt.\"id\" = p.\"transactionID\"\nWHERE\n    t.\"id\" = $id;",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 2360,
+        "y": 2220,
+        "wires": [
+            [
+                "b66465bbcbc2fca0"
+            ]
+        ]
     }
 ]
