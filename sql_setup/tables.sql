@@ -30,10 +30,15 @@ CREATE TABLE "static"."SpecialDates" (
     PRIMARY KEY ("from", "to")
 );
 
+CREATE TABLE "static"."TransportModes" (
+    "mode" INTEGER PRIMARY KEY,
+    "name" VARCHAR(24) NOT NULL
+);
 
 CREATE TABLE "static"."Locations" (
     "id" SERIAL PRIMARY KEY,
     "name" VARCHAR(64),
+    "mode" INTEGER REFERENCES "static"."TransportModes" ("mode"),
     "minProduct" INTEGER REFERENCES "static"."Products" ("id")
 );
 
