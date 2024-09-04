@@ -493,7 +493,7 @@
         "finalize": "",
         "libs": [],
         "x": 580,
-        "y": 1200,
+        "y": 1260,
         "wires": [
             [
                 "723ec7642f09a41b"
@@ -510,7 +510,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 260,
-        "y": 1200,
+        "y": 1260,
         "wires": [
             [
                 "e5e85cfd6230bcfb"
@@ -525,7 +525,7 @@
         "statusCode": "",
         "headers": {},
         "x": 790,
-        "y": 1200,
+        "y": 1260,
         "wires": []
     },
     {
@@ -541,7 +541,7 @@
         "finalize": "",
         "libs": [],
         "x": 580,
-        "y": 1260,
+        "y": 1320,
         "wires": [
             [
                 "2b50c7ff92d174cd"
@@ -558,7 +558,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 250,
-        "y": 1260,
+        "y": 1320,
         "wires": [
             [
                 "1b1e16f55ef0d687"
@@ -573,7 +573,7 @@
         "statusCode": "",
         "headers": {},
         "x": 790,
-        "y": 1260,
+        "y": 1320,
         "wires": []
     },
     {
@@ -637,7 +637,7 @@
         "finalize": "",
         "libs": [],
         "x": 560,
-        "y": 1320,
+        "y": 1380,
         "wires": [
             [
                 "14ad27052606b956"
@@ -654,7 +654,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 270,
-        "y": 1320,
+        "y": 1380,
         "wires": [
             [
                 "6170ba65634e5270"
@@ -669,7 +669,7 @@
         "statusCode": "",
         "headers": {},
         "x": 790,
-        "y": 1320,
+        "y": 1380,
         "wires": []
     },
     {
@@ -3322,7 +3322,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 250,
-        "y": 1380,
+        "y": 1440,
         "wires": [
             [
                 "b8faad5356599643"
@@ -3342,7 +3342,7 @@
         "finalize": "",
         "libs": [],
         "x": 590,
-        "y": 1380,
+        "y": 1440,
         "wires": [
             [
                 "d3cb9480b54083dd"
@@ -3357,7 +3357,7 @@
         "statusCode": "",
         "headers": {},
         "x": 790,
-        "y": 1380,
+        "y": 1440,
         "wires": []
     },
     {
@@ -3370,7 +3370,7 @@
         "upload": false,
         "swaggerDoc": "",
         "x": 260,
-        "y": 1440,
+        "y": 1500,
         "wires": [
             [
                 "95ec89c797d2f380"
@@ -3390,7 +3390,7 @@
         "finalize": "",
         "libs": [],
         "x": 580,
-        "y": 1440,
+        "y": 1500,
         "wires": [
             [
                 "6028d8ca42b68732"
@@ -3405,7 +3405,7 @@
         "statusCode": "",
         "headers": {},
         "x": 790,
-        "y": 1440,
+        "y": 1500,
         "wires": []
     },
     {
@@ -3577,6 +3577,54 @@
         "headers": {},
         "x": 2390,
         "y": 2580,
+        "wires": []
+    },
+    {
+        "id": "60814e32e0a4bda5",
+        "type": "function",
+        "z": "216f0e6810bad0c9",
+        "name": "Generate product details response",
+        "func": "let products = (Date.now() >= (flow.get('staticExpiry') || new Date(0)))\n    ? null\n    : (flow.get('products') || null);\nif (products !== null) {\n    let id = parseInt(msg.req.params.id);\n    if (!isNaN(msg.req.params.id) && id >= 0 && id < products.length) {\n        msg.statusCode = 200;\n        msg.payload = {\n            status: msg.statusCode,\n            message: products[id]\n        };\n    } else {\n        msg.statusCode = 400;\n        msg.payload = {\n            status: msg.statusCode,\n            message: 'Invalid product ID given'\n        };\n    }\n} else {\n    msg.statusCode = 503;\n    msg.payload = {\n        status: msg.statusCode,\n        message: 'Static database cache is expired'\n    };\n}\nmsg.payload.time = Date.now();\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 1200,
+        "wires": [
+            [
+                "465990403f5c1775"
+            ]
+        ]
+    },
+    {
+        "id": "4eab7772f0431889",
+        "type": "http in",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "url": "/api/products/:id",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 250,
+        "y": 1200,
+        "wires": [
+            [
+                "60814e32e0a4bda5"
+            ]
+        ]
+    },
+    {
+        "id": "465990403f5c1775",
+        "type": "http response",
+        "z": "216f0e6810bad0c9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 790,
+        "y": 1200,
         "wires": []
     }
 ]
