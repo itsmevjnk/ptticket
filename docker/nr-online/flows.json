@@ -87,7 +87,7 @@
         "type": "function",
         "z": "743b84be8cadd541",
         "name": "Check request validity and extract data",
-        "func": "msg.ok = true;\n\nif (msg.payload.hasOwnProperty('card') && msg.payload.hasOwnProperty('ticketID')) msg.ok = false; // can't have both card and ticket ID\nelse if (msg.payload.hasOwnProperty('card')) {\n    /* card given */\n    if (\n        typeof msg.payload.card === 'object'\n        && typeof msg.payload.card.type === 'string'\n        && typeof msg.payload.card.id === 'string'\n    ) {\n        if (!msg.payload.card.hasOwnProperty('details')) msg.verifyCard = false; // no need to verify card\n        else if (\n            typeof msg.payload.card.fareType === 'number'\n            && typeof msg.payload.card.balance === 'number'\n            && typeof msg.payload.card.dailyExpenditure === 'number' && msg.payload.card.dailyExpenditure >= 0\n            && typeof msg.payload.card.currentProduct === 'number' && msg.payload.card.currentProduct >= 0\n            && typeof msg.payload.card.touchedOn === 'number' && msg.payload.card.touchedOn >= 0\n            && typeof msg.payload.card.prodValidated === 'string'\n            && typeof msg.payload.card.prodDuration === 'number'\n            && typeof msg.payload.card.passes === 'object' && Array.isArray(msg.payload.card.passes) && msg.payload.card.passes.length <= 2\n            // && typeof msg.payload.card.lastTransaction === 'object'\n            // && (\n            //     msg.payload.card.lastTransaction === null\n            //     || (\n            //         typeof msg.payload.card.lastTransaction.id === 'string'\n            //         && typeof msg.payload.card.lastTransaction.timestamp === 'string'\n            //         && typeof msg.payload.card.lastTransaction.type === 'number'\n            //         && typeof msg.payload.card.lastTransaction.location === 'number'\n            //         && typeof msg.payload.card.lastTransaction.balance === 'number'\n            //     )\n            // )\n            && typeof msg.payload.card.prodBits === 'object' && Array.isArray(msg.payload.card.prodBits) && msg.payload.card.prodBits.length == 2\n            && typeof msg.payload.card.prodBits[0] === 'string' && typeof msg.payload.card.prodBits[1] === 'string' // product bits can be up to 128 bits long so they must be transmitted as 128-bit little endian integers encoded into base64\n        ) {\n            let passes = msg.payload.card.passes;\n            for (let i = 0; i < passes.length; i++) {\n                if (\n                    typeof passes[i].transactionID !== 'string'\n                    || typeof passes[i].product !== 'number'\n                    || !(passes[i].hasOwnProperty('duration') ^ passes[i].hasOwnProperty('expiryDate')) // exclusive OR ensures only one of the two properties exist\n                    || (passes[i].hasOwnProperty('duration') && typeof passes[i].duration !== 'number')\n                    || (passes[i].hasOwnProperty('expiryDate') && typeof passes[i].expiryDate !== 'string')\n                ) {\n                    msg.ok = false;\n                    break;\n                }\n            }\n\n            if (msg.ok) {\n                msg.verifyCard = true; // verify card\n                msg.verifyDetails = msg.payload.card.details;\n            }\n        } else msg.ok = false; // malformed msg.payload.card\n    } else msg.ok = false;\n} else if (typeof msg.payload.ticketID === 'string') {\n    /* valid ticket ID given */\n    msg.ticketID = msg.payload.ticketID; // we'll query this for cards too\n    msg.verifyCard = false; // we're not even checking a card :)\n} else msg.ok = false; // no ticket info given\n\nif (typeof msg.payload.location === 'number') msg.location = msg.payload.location;\nelse msg.ok = false;\n\nmsg.direction = {\n    entry: true,\n    exit: true\n};\nif (msg.payload.hasOwnProperty('direction')) {\n    if (typeof msg.payload.direction === 'object') {\n        if (msg.payload.direction.hasOwnProperty('entry')) {\n            if (typeof msg.payload.direction.entry === 'boolean')\n                msg.direction.entry = msg.payload.direction.entry;\n            else msg.ok = false;\n        }\n        if (msg.payload.direction.hasOwnProperty('exit')) {\n            if (typeof msg.payload.direction.exit === 'boolean')\n                msg.direction.exit = msg.payload.direction.exit;\n            else msg.ok = false;\n        }\n    }\n}\nmsg.direction.entryOnly = msg.direction.entry && !msg.direction.exit;\nmsg.direction.exitOnly = !msg.direction.entry && msg.direction.exit;\n\nmsg.timestamp = new Date(); // get current timestamp for reference\n\nreturn msg;",
+        "func": "msg.ok = true;\n\nif (msg.payload.hasOwnProperty('card') && msg.payload.hasOwnProperty('ticketID')) msg.ok = false; // can't have both card and ticket ID\nelse if (msg.payload.hasOwnProperty('card')) {\n    /* card given */\n    if (\n        typeof msg.payload.card === 'object'\n        && typeof msg.payload.card.type === 'string'\n        && typeof msg.payload.card.id === 'string'\n    ) {\n        if (msg.payload.card.hasOwnProperty('skipValidation')) msg.verifyCard = false; // no need to verify card\n        else if (\n            typeof msg.payload.card.fareType === 'number'\n            && typeof msg.payload.card.balance === 'number'\n            && typeof msg.payload.card.dailyExpenditure === 'number' && msg.payload.card.dailyExpenditure >= 0\n            && typeof msg.payload.card.currentProduct === 'number' && msg.payload.card.currentProduct >= 0\n            && typeof msg.payload.card.touchedOn === 'number' && msg.payload.card.touchedOn >= 0\n            && typeof msg.payload.card.prodValidated === 'string'\n            && typeof msg.payload.card.prodDuration === 'number'\n            && typeof msg.payload.card.passes === 'object' && Array.isArray(msg.payload.card.passes) && msg.payload.card.passes.length <= 2\n            // && typeof msg.payload.card.lastTransaction === 'object'\n            // && (\n            //     msg.payload.card.lastTransaction === null\n            //     || (\n            //         typeof msg.payload.card.lastTransaction.id === 'string'\n            //         && typeof msg.payload.card.lastTransaction.timestamp === 'string'\n            //         && typeof msg.payload.card.lastTransaction.type === 'number'\n            //         && typeof msg.payload.card.lastTransaction.location === 'number'\n            //         && typeof msg.payload.card.lastTransaction.balance === 'number'\n            //     )\n            // )\n            && typeof msg.payload.card.prodBits === 'object' && Array.isArray(msg.payload.card.prodBits) && msg.payload.card.prodBits.length == 2\n            && typeof msg.payload.card.prodBits[0] === 'string' && typeof msg.payload.card.prodBits[1] === 'string' // product bits can be up to 128 bits long so they must be transmitted as 128-bit little endian integers encoded into base64\n        ) {\n            let passes = msg.payload.card.passes;\n            for (let i = 0; i < passes.length; i++) {\n                if (\n                    typeof passes[i].transactionID !== 'string'\n                    || typeof passes[i].product !== 'number'\n                    || !(passes[i].hasOwnProperty('duration') ^ passes[i].hasOwnProperty('expiryDate')) // exclusive OR ensures only one of the two properties exist\n                    || (passes[i].hasOwnProperty('duration') && typeof passes[i].duration !== 'number')\n                    || (passes[i].hasOwnProperty('expiryDate') && typeof passes[i].expiryDate !== 'string')\n                ) {\n                    msg.ok = false;\n                    break;\n                }\n            }\n\n            if (msg.ok) {\n                msg.verifyCard = true; // verify card\n                msg.verifyDetails = msg.payload.card;\n            }\n        } else msg.ok = false; // malformed msg.payload.card\n    } else msg.ok = false;\n} else if (typeof msg.payload.ticketID === 'string') {\n    /* valid ticket ID given */\n    msg.ticketID = msg.payload.ticketID; // we'll query this for cards too\n    msg.verifyCard = false; // we're not even checking a card :)\n} else msg.ok = false; // no ticket info given\n\nif (typeof msg.payload.location === 'number') msg.location = msg.payload.location;\nelse msg.ok = false;\n\nmsg.direction = {\n    entry: true,\n    exit: true\n};\nif (msg.payload.hasOwnProperty('direction')) {\n    if (typeof msg.payload.direction === 'object') {\n        if (msg.payload.direction.hasOwnProperty('entry')) {\n            if (typeof msg.payload.direction.entry === 'boolean')\n                msg.direction.entry = msg.payload.direction.entry;\n            else msg.ok = false;\n        }\n        if (msg.payload.direction.hasOwnProperty('exit')) {\n            if (typeof msg.payload.direction.exit === 'boolean')\n                msg.direction.exit = msg.payload.direction.exit;\n            else msg.ok = false;\n        }\n    }\n}\nmsg.direction.entryOnly = msg.direction.entry && !msg.direction.exit;\nmsg.direction.exitOnly = !msg.direction.entry && msg.direction.exit;\n\nmsg.timestamp = new Date(); // get current timestamp for reference\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -259,10 +259,11 @@
         "y": 520,
         "wires": [
             [
-                "01de6b48752a3262"
+                "01de6b48752a3262",
+                "f3ef321e200264fe"
             ],
             [
-                "059c70d511bf2d42"
+                "dd4b426bcbad5ae4"
             ]
         ]
     },
@@ -287,7 +288,7 @@
         "repair": false,
         "outputs": 2,
         "x": 220,
-        "y": 380,
+        "y": 400,
         "wires": [
             [
                 "a3079aba76142642"
@@ -317,7 +318,7 @@
         "to": "",
         "reg": false,
         "x": 500,
-        "y": 360,
+        "y": 380,
         "wires": [
             [
                 "3498c8b5469a8f09"
@@ -329,7 +330,7 @@
         "type": "function",
         "z": "743b84be8cadd541",
         "name": "Check card details against provided",
-        "func": "msg.cardOK = (\n    msg.details.disabled == msg.verifyDetails.disabled\n    && msg.details.fareType == msg.verifyDetails.fareType\n    && msg.details.balance == msg.verifyDetails.balance\n    && msg.details.dailyExpenditure == msg.verifyDetails.dailyExpenditure\n    && msg.details.touchedOn == msg.verifyDetails.touchedOn\n    && msg.details.currentProduct == msg.verifyDetails.currentProduct\n    && msg.details.prodValidated == msg.verifyDetails.prodValidated\n    && msg.details.prodDuration == msg.verifyDetails.prodDuration\n    && (\n        (msg.details.prodBits[0] == 'AAAAAAAAAAAAAAAAAAAAAA==' && msg.details.prodBits[1] == 'AAAAAAAAAAAAAAAAAAAAAA==') // TODO: this can lead to exploitable scenarios!\n        || (msg.details.prodBits[0] == msg.verifyDetails.prodBits[0] && msg.details.prodBits[1] == msg.verifyDetails.prodBits[1])\n    )\n);\n\n// if (msg.cardOK) {\n//     /* check last transaction */\n//     if (\n//         (msg.verifyDetails.lastTransaction !== null && msg.details.lastTransaction === null)\n//         || (msg.verifyDetails.lastTransaction === null && msg.details.lastTransaction !== null)\n//     ) msg.cardOK = false;\n//     else if (msg.verifyDetails.lastTransaction !== null) {\n//         msg.cardOK = (\n//             msg.verifyDetails.lastTransaction.id == msg.details.lastTransaction.id\n//             && msg.verifyDetails.lastTransaction.timestamp == msg.details.lastTransaction.timestamp\n//             && msg.verifyDetails.lastTransaction.type == msg.details.lastTransaction.type\n//             && msg.verifyDetails.lastTransaction.location == msg.details.lastTransaction.location\n//             && msg.verifyDetails.lastTransaction.balance == msg.details.lastTransaction.balance\n//         );\n//     }\n// }\n\nif (msg.cardOK) {\n    /* check passes */\n    if (msg.details.passes.length != msg.verifyDetails.passes) msg.cardOK = false;\n    else {\n        let a = msg.verifyDetails.passes;\n        let b = msg.details.passes;\n        for (let i = 0; i < a.length && msg.cardOK; i++) {\n            let foundB = false;\n            for (let j = 0; j < b.length; j++) {\n                if (b[j].transactionID === a[i].transactionID) {\n                    foundB = true;\n                    \n                    msg.cardOK = ((a[i].activationDate !== null) == b[j].hasOwnProperty('expiryDate'))\n                        && (a[i].hasOwnProperty('duration') == b[j].hasOwnProperty('duration'))\n                        && (a[i].product !== b[j].product);\n                    if (msg.cardOK) {\n                        if (a[i].hasOwnProperty('duration') == b[j].hasOwnProperty('duration')) {\n                            msg.cardOK = a[i].duration === b[j].duration;\n                        } else {\n                            let expiryDateA = new Date(a[i].activationDate);\n                            if (a[i].duration >= 0) {\n                                expiryDateA.setDate(expiryDateA.getDate() - a[i].duration);\n                            } else {\n                                if (expiryDateA.getHours() >= 3) expiryDateA.setDate(expiryDateA.getDate() + 1);\n                                expiryDateA.setHours(3, 0, 0, 0);\n                            }\n                            let expiryDateB = new Date(b[j].expiryDate);\n                            msg.cardOK = expiryDateA.getTime() == expiryDateB.getTime();\n                        }\n                    }\n                    break;\n                }\n            }\n            if (!foundB) {\n                msg.cardOK = false;\n                break;\n            }\n        }\n    }\n}\n\nreturn msg;",
+        "func": "msg.cardOK = (\n    msg.details.fareType == msg.verifyDetails.fareType\n    && msg.details.balance == msg.verifyDetails.balance\n    && msg.details.dailyExpenditure == msg.verifyDetails.dailyExpenditure\n    && msg.details.touchedOn == msg.verifyDetails.touchedOn\n    && msg.details.currentProduct == msg.verifyDetails.currentProduct\n    && msg.details.prodValidated == msg.verifyDetails.prodValidated\n    && msg.details.prodDuration == msg.verifyDetails.prodDuration\n    && (\n        (msg.details.prodBits[0] == 'AAAAAAAAAAAAAAAAAAAAAA==' && msg.details.prodBits[1] == 'AAAAAAAAAAAAAAAAAAAAAA==') // TODO: this can lead to exploitable scenarios!\n        || (msg.details.prodBits[0] == msg.verifyDetails.prodBits[0] && msg.details.prodBits[1] == msg.verifyDetails.prodBits[1])\n    )\n);\n\n// if (msg.cardOK) {\n//     /* check last transaction */\n//     if (\n//         (msg.verifyDetails.lastTransaction !== null && msg.details.lastTransaction === null)\n//         || (msg.verifyDetails.lastTransaction === null && msg.details.lastTransaction !== null)\n//     ) msg.cardOK = false;\n//     else if (msg.verifyDetails.lastTransaction !== null) {\n//         msg.cardOK = (\n//             msg.verifyDetails.lastTransaction.id == msg.details.lastTransaction.id\n//             && msg.verifyDetails.lastTransaction.timestamp == msg.details.lastTransaction.timestamp\n//             && msg.verifyDetails.lastTransaction.type == msg.details.lastTransaction.type\n//             && msg.verifyDetails.lastTransaction.location == msg.details.lastTransaction.location\n//             && msg.verifyDetails.lastTransaction.balance == msg.details.lastTransaction.balance\n//         );\n//     }\n// }\n\nif (msg.cardOK) {\n    /* check passes */\n    if (msg.details.passes.length != msg.verifyDetails.passes) msg.cardOK = false;\n    else {\n        let a = msg.verifyDetails.passes;\n        let b = msg.details.passes;\n        for (let i = 0; i < a.length && msg.cardOK; i++) {\n            let foundB = false;\n            for (let j = 0; j < b.length; j++) {\n                if (b[j].transactionID === a[i].transactionID) {\n                    foundB = true;\n                    \n                    msg.cardOK = ((a[i].activationDate !== null) == b[j].hasOwnProperty('expiryDate'))\n                        && (a[i].hasOwnProperty('duration') == b[j].hasOwnProperty('duration'))\n                        && (a[i].product !== b[j].product);\n                    if (msg.cardOK) {\n                        if (a[i].hasOwnProperty('duration') == b[j].hasOwnProperty('duration')) {\n                            msg.cardOK = a[i].duration === b[j].duration;\n                        } else {\n                            let expiryDateA = new Date(a[i].activationDate);\n                            if (a[i].duration >= 0) {\n                                expiryDateA.setDate(expiryDateA.getDate() - a[i].duration);\n                            } else {\n                                if (expiryDateA.getHours() >= 3) expiryDateA.setDate(expiryDateA.getDate() + 1);\n                                expiryDateA.setHours(3, 0, 0, 0);\n                            }\n                            let expiryDateB = new Date(b[j].expiryDate);\n                            msg.cardOK = expiryDateA.getTime() == expiryDateB.getTime();\n                        }\n                    }\n                    break;\n                }\n            }\n            if (!foundB) {\n                msg.cardOK = false;\n                break;\n            }\n        }\n    }\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -366,7 +367,7 @@
         "y": 480,
         "wires": [
             [
-                "986fde79247c517f"
+                "e356177a66e65159"
             ],
             [
                 "a64f09989e5b42e5"
@@ -409,7 +410,7 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 1330,
+        "x": 1310,
         "y": 420,
         "wires": [
             [
@@ -553,7 +554,7 @@
         "type": "function",
         "z": "743b84be8cadd541",
         "name": "Perform touch on",
-        "func": "msg.details.touchedOn = msg.location;\n\nlet setValidationTimestamp = (msg.details.prodDuration == 0);\nif (!setValidationTimestamp) {\n    /* check if expired */\n    if (msg.details.prodExpiry != 0) {\n        let prodExpiry = new Date(msg.details.prodValidated);\n        if (msg.details.prodExpiry < 0) {\n            /* daily fare */\n            if (prodExpiry.getHours() >= 3) prodExpiry.setDate(prodExpiry.getDate() + 1);\n            prodExpiry.setHours(3, 0, 0, 0);\n        } else prodExpiry.setMinutes(prodExpiry.getMinutes() + msg.details.prodExpiry);\n    }\n}\nmsg.details.prodValidated = msg.timestamp.toISOString();\n\nreturn msg;",
+        "func": "msg.details.touchedOn = msg.locDetails.minProduct;\n\nlet setValidationTimestamp = (msg.details.prodDuration == 0);\nif (!setValidationTimestamp) {\n    /* check if expired */\n    if (msg.details.prodExpiry != 0) {\n        let prodExpiry = new Date(msg.details.prodValidated);\n        if (msg.details.prodExpiry < 0) {\n            /* daily fare */\n            if (prodExpiry.getHours() >= 3) prodExpiry.setDate(prodExpiry.getDate() + 1);\n            prodExpiry.setHours(3, 0, 0, 0);\n        } else prodExpiry.setMinutes(prodExpiry.getMinutes() + msg.details.prodExpiry);\n    }\n}\nif (setValidationTimestamp) msg.details.prodValidated = msg.timestamp.toISOString();\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -723,7 +724,7 @@
         "finalize": "",
         "libs": [],
         "x": 700,
-        "y": 360,
+        "y": 380,
         "wires": [
             [
                 "b73fcc803ef57249"
@@ -1131,7 +1132,7 @@
             },
             {
                 "t": "delete",
-                "p": "payload.lastTransaction",
+                "p": "payload.message.lastTransaction",
                 "pt": "msg"
             }
         ],
@@ -1168,7 +1169,7 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 1510,
+        "x": 1490,
         "y": 420,
         "wires": [
             [
@@ -1257,7 +1258,7 @@
                 "7d8145d0ef33580d"
             ],
             [
-                "059c70d511bf2d42"
+                "dd4b426bcbad5ae4"
             ]
         ]
     },
@@ -2678,11 +2679,11 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 2310,
+        "x": 2290,
         "y": 1500,
         "wires": [
             [
-                "8e67afcd7c8c0b27"
+                "c2eef7436847d4cc"
             ]
         ]
     },
@@ -2759,7 +2760,7 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2570,
+        "x": 2890,
         "y": 1500,
         "wires": [
             [
@@ -3076,11 +3077,11 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 180,
-        "y": 340,
+        "x": 1140,
+        "y": 300,
         "wires": [
             [
-                "56a555d3f1a3c3a0"
+                "ee12ba527b28d936"
             ]
         ]
     },
@@ -3244,7 +3245,7 @@
         "type": "function",
         "z": "743b84be8cadd541",
         "name": "Prepare for transaction write",
-        "func": "msg.respPayload.message.transaction.location = msg.location;\nmsg.respPayload.message.transaction.balance = msg.details.balance;\nif (msg.hasOwnProperty('touchedOff'))\n    msg.respPayload.message.transaction.product = msg.details.currentProduct;\n\nmsg.payload = msg.respPayload.message.transaction;\n\nreturn msg;",
+        "func": "msg.respPayload.message.transaction.location = msg.location;\nmsg.respPayload.message.transaction.balance = msg.details.balance;\nif (msg.hasOwnProperty('touchedOff') && msg.details.currentProduct != msg.oldCurrentProduct)\n    msg.respPayload.message.transaction.product = msg.details.currentProduct;\n\nmsg.payload = msg.respPayload.message.transaction;\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -3423,6 +3424,137 @@
             ],
             [
                 "72f4a5baa4ed353c"
+            ]
+        ]
+    },
+    {
+        "id": "dd4b426bcbad5ae4",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "oldCurrentProduct",
+                "pt": "msg",
+                "to": "details.currentProduct",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 800,
+        "y": 580,
+        "wires": [
+            [
+                "059c70d511bf2d42"
+            ]
+        ]
+    },
+    {
+        "id": "f3ef321e200264fe",
+        "type": "debug",
+        "z": "743b84be8cadd541",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 920,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "e356177a66e65159",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "details.disabled",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1110,
+        "y": 420,
+        "wires": [
+            [
+                "986fde79247c517f"
+            ]
+        ]
+    },
+    {
+        "id": "ee12ba527b28d936",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if ticket disabled",
+        "property": "details.disabled",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1360,
+        "y": 280,
+        "wires": [
+            [
+                "7d8145d0ef33580d"
+            ],
+            [
+                "56a555d3f1a3c3a0"
+            ]
+        ]
+    },
+    {
+        "id": "c2eef7436847d4cc",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if current product has changed",
+        "property": "details.currentProduct",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "oldCurrentProduct",
+                "vt": "msg"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2610,
+        "y": 1500,
+        "wires": [
+            [
+                "8e67afcd7c8c0b27"
+            ],
+            [
+                "5f03720703ea9eb7"
             ]
         ]
     }
