@@ -1,0 +1,3429 @@
+[
+    {
+        "id": "743b84be8cadd541",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "3d027c4ed2f27897",
+        "type": "http in",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "url": "/api/healthcheck",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 280,
+        "y": 100,
+        "wires": [
+            [
+                "1a5744008db16476"
+            ]
+        ]
+    },
+    {
+        "id": "1a5744008db16476",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Return health check response",
+        "func": "msg.statusCode = 200;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Online ticket validation API is operational',\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 530,
+        "y": 100,
+        "wires": [
+            [
+                "d90bba12944ed8f9"
+            ]
+        ]
+    },
+    {
+        "id": "d90bba12944ed8f9",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 730,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "4617ea774ec280c3",
+        "type": "http in",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "url": "/api/validate",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 130,
+        "y": 240,
+        "wires": [
+            [
+                "5b42c619db0fb418"
+            ]
+        ]
+    },
+    {
+        "id": "8a75a5573afebd1a",
+        "type": "comment",
+        "z": "743b84be8cadd541",
+        "name": "Ticket validation",
+        "info": "",
+        "x": 120,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "5b42c619db0fb418",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Check request validity and extract data",
+        "func": "msg.ok = true;\n\nif (msg.payload.hasOwnProperty('card') && msg.payload.hasOwnProperty('ticketID')) msg.ok = false; // can't have both card and ticket ID\nelse if (msg.payload.hasOwnProperty('card')) {\n    /* card given */\n    if (\n        typeof msg.payload.card === 'object'\n        && typeof msg.payload.card.type === 'string'\n        && typeof msg.payload.card.id === 'string'\n    ) {\n        if (!msg.payload.card.hasOwnProperty('details')) msg.verifyCard = false; // no need to verify card\n        else if (\n            typeof msg.payload.card.fareType === 'number'\n            && typeof msg.payload.card.balance === 'number'\n            && typeof msg.payload.card.dailyExpenditure === 'number' && msg.payload.card.dailyExpenditure >= 0\n            && typeof msg.payload.card.currentProduct === 'number' && msg.payload.card.currentProduct >= 0\n            && typeof msg.payload.card.touchedOn === 'number' && msg.payload.card.touchedOn >= 0\n            && typeof msg.payload.card.prodValidated === 'string'\n            && typeof msg.payload.card.prodDuration === 'number'\n            && typeof msg.payload.card.passes === 'object' && Array.isArray(msg.payload.card.passes) && msg.payload.card.passes.length <= 2\n            // && typeof msg.payload.card.lastTransaction === 'object'\n            // && (\n            //     msg.payload.card.lastTransaction === null\n            //     || (\n            //         typeof msg.payload.card.lastTransaction.id === 'string'\n            //         && typeof msg.payload.card.lastTransaction.timestamp === 'string'\n            //         && typeof msg.payload.card.lastTransaction.type === 'number'\n            //         && typeof msg.payload.card.lastTransaction.location === 'number'\n            //         && typeof msg.payload.card.lastTransaction.balance === 'number'\n            //     )\n            // )\n            && typeof msg.payload.card.prodBits === 'object' && Array.isArray(msg.payload.card.prodBits) && msg.payload.card.prodBits.length == 2\n            && typeof msg.payload.card.prodBits[0] === 'string' && typeof msg.payload.card.prodBits[1] === 'string' // product bits can be up to 128 bits long so they must be transmitted as 128-bit little endian integers encoded into base64\n        ) {\n            let passes = msg.payload.card.passes;\n            for (let i = 0; i < passes.length; i++) {\n                if (\n                    typeof passes[i].transactionID !== 'string'\n                    || typeof passes[i].product !== 'number'\n                    || !(passes[i].hasOwnProperty('duration') ^ passes[i].hasOwnProperty('expiryDate')) // exclusive OR ensures only one of the two properties exist\n                    || (passes[i].hasOwnProperty('duration') && typeof passes[i].duration !== 'number')\n                    || (passes[i].hasOwnProperty('expiryDate') && typeof passes[i].expiryDate !== 'string')\n                ) {\n                    msg.ok = false;\n                    break;\n                }\n            }\n\n            if (msg.ok) {\n                msg.verifyCard = true; // verify card\n                msg.verifyDetails = msg.payload.card.details;\n            }\n        } else msg.ok = false; // malformed msg.payload.card\n    } else msg.ok = false;\n} else if (typeof msg.payload.ticketID === 'string') {\n    /* valid ticket ID given */\n    msg.ticketID = msg.payload.ticketID; // we'll query this for cards too\n    msg.verifyCard = false; // we're not even checking a card :)\n} else msg.ok = false; // no ticket info given\n\nif (typeof msg.payload.location === 'number') msg.location = msg.payload.location;\nelse msg.ok = false;\n\nmsg.direction = {\n    entry: true,\n    exit: true\n};\nif (msg.payload.hasOwnProperty('direction')) {\n    if (typeof msg.payload.direction === 'object') {\n        if (msg.payload.direction.hasOwnProperty('entry')) {\n            if (typeof msg.payload.direction.entry === 'boolean')\n                msg.direction.entry = msg.payload.direction.entry;\n            else msg.ok = false;\n        }\n        if (msg.payload.direction.hasOwnProperty('exit')) {\n            if (typeof msg.payload.direction.exit === 'boolean')\n                msg.direction.exit = msg.payload.direction.exit;\n            else msg.ok = false;\n        }\n    }\n}\nmsg.direction.entryOnly = msg.direction.entry && !msg.direction.exit;\nmsg.direction.exitOnly = !msg.direction.entry && msg.direction.exit;\n\nmsg.timestamp = new Date(); // get current timestamp for reference\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 240,
+        "wires": [
+            [
+                "496eabe5fae27a86"
+            ]
+        ]
+    },
+    {
+        "id": "496eabe5fae27a86",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if message is OK",
+        "property": "ok",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 710,
+        "y": 240,
+        "wires": [
+            [
+                "293478139ae221a3"
+            ],
+            [
+                "7c1b97ce098ec83c"
+            ]
+        ]
+    },
+    {
+        "id": "293478139ae221a3",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Return 400",
+        "func": "msg.statusCode = 400;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Invalid body',\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 950,
+        "y": 240,
+        "wires": [
+            [
+                "68bbbd1ef56b49e8"
+            ]
+        ]
+    },
+    {
+        "id": "68bbbd1ef56b49e8",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1130,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "7c1b97ce098ec83c",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Prepare for information query",
+        "func": "msg.urlBase = 'http://172.17.0.4:1880';\nif (msg.payload.hasOwnProperty('card')) {\n    msg.urlBase += `/api/cards/${msg.payload.card.type}/${msg.payload.card.id}`;\n} else msg.urlBase += `/api/tickets/${msg.payload.ticketID}`;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 500,
+        "y": 300,
+        "wires": [
+            [
+                "fdd93e75f25deac9"
+            ]
+        ]
+    },
+    {
+        "id": "fdd93e75f25deac9",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Get card/ticket details",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "{{{urlBase}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 740,
+        "y": 300,
+        "wires": [
+            [
+                "7ab16e35fd511b53"
+            ]
+        ]
+    },
+    {
+        "id": "7ab16e35fd511b53",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 950,
+        "y": 300,
+        "wires": [
+            [
+                "68bbbd1ef56b49e8"
+            ],
+            [
+                "c39d3ef1ceb1eee2"
+            ]
+        ]
+    },
+    {
+        "id": "e8929aab22eedb10",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if card needs verification",
+        "property": "verifyCard",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 810,
+        "y": 520,
+        "wires": [
+            [
+                "01de6b48752a3262"
+            ],
+            [
+                "059c70d511bf2d42"
+            ]
+        ]
+    },
+    {
+        "id": "56a555d3f1a3c3a0",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if ticket ID needs to be set",
+        "property": "payload.message",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "hask",
+                "v": "ticketID",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 220,
+        "y": 380,
+        "wires": [
+            [
+                "a3079aba76142642"
+            ],
+            [
+                "c8b0183a92b298b5"
+            ]
+        ]
+    },
+    {
+        "id": "a3079aba76142642",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "ticketID",
+                "pt": "msg",
+                "to": "payload.message.ticketID",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 500,
+        "y": 360,
+        "wires": [
+            [
+                "3498c8b5469a8f09"
+            ]
+        ]
+    },
+    {
+        "id": "01de6b48752a3262",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Check card details against provided",
+        "func": "msg.cardOK = (\n    msg.details.disabled == msg.verifyDetails.disabled\n    && msg.details.fareType == msg.verifyDetails.fareType\n    && msg.details.balance == msg.verifyDetails.balance\n    && msg.details.dailyExpenditure == msg.verifyDetails.dailyExpenditure\n    && msg.details.touchedOn == msg.verifyDetails.touchedOn\n    && msg.details.currentProduct == msg.verifyDetails.currentProduct\n    && msg.details.prodValidated == msg.verifyDetails.prodValidated\n    && msg.details.prodDuration == msg.verifyDetails.prodDuration\n    && (\n        (msg.details.prodBits[0] == 'AAAAAAAAAAAAAAAAAAAAAA==' && msg.details.prodBits[1] == 'AAAAAAAAAAAAAAAAAAAAAA==') // TODO: this can lead to exploitable scenarios!\n        || (msg.details.prodBits[0] == msg.verifyDetails.prodBits[0] && msg.details.prodBits[1] == msg.verifyDetails.prodBits[1])\n    )\n);\n\n// if (msg.cardOK) {\n//     /* check last transaction */\n//     if (\n//         (msg.verifyDetails.lastTransaction !== null && msg.details.lastTransaction === null)\n//         || (msg.verifyDetails.lastTransaction === null && msg.details.lastTransaction !== null)\n//     ) msg.cardOK = false;\n//     else if (msg.verifyDetails.lastTransaction !== null) {\n//         msg.cardOK = (\n//             msg.verifyDetails.lastTransaction.id == msg.details.lastTransaction.id\n//             && msg.verifyDetails.lastTransaction.timestamp == msg.details.lastTransaction.timestamp\n//             && msg.verifyDetails.lastTransaction.type == msg.details.lastTransaction.type\n//             && msg.verifyDetails.lastTransaction.location == msg.details.lastTransaction.location\n//             && msg.verifyDetails.lastTransaction.balance == msg.details.lastTransaction.balance\n//         );\n//     }\n// }\n\nif (msg.cardOK) {\n    /* check passes */\n    if (msg.details.passes.length != msg.verifyDetails.passes) msg.cardOK = false;\n    else {\n        let a = msg.verifyDetails.passes;\n        let b = msg.details.passes;\n        for (let i = 0; i < a.length && msg.cardOK; i++) {\n            let foundB = false;\n            for (let j = 0; j < b.length; j++) {\n                if (b[j].transactionID === a[i].transactionID) {\n                    foundB = true;\n                    \n                    msg.cardOK = ((a[i].activationDate !== null) == b[j].hasOwnProperty('expiryDate'))\n                        && (a[i].hasOwnProperty('duration') == b[j].hasOwnProperty('duration'))\n                        && (a[i].product !== b[j].product);\n                    if (msg.cardOK) {\n                        if (a[i].hasOwnProperty('duration') == b[j].hasOwnProperty('duration')) {\n                            msg.cardOK = a[i].duration === b[j].duration;\n                        } else {\n                            let expiryDateA = new Date(a[i].activationDate);\n                            if (a[i].duration >= 0) {\n                                expiryDateA.setDate(expiryDateA.getDate() - a[i].duration);\n                            } else {\n                                if (expiryDateA.getHours() >= 3) expiryDateA.setDate(expiryDateA.getDate() + 1);\n                                expiryDateA.setHours(3, 0, 0, 0);\n                            }\n                            let expiryDateB = new Date(b[j].expiryDate);\n                            msg.cardOK = expiryDateA.getTime() == expiryDateB.getTime();\n                        }\n                    }\n                    break;\n                }\n            }\n            if (!foundB) {\n                msg.cardOK = false;\n                break;\n            }\n        }\n    }\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1140,
+        "y": 480,
+        "wires": [
+            [
+                "6de3f6c35cfae252"
+            ]
+        ]
+    },
+    {
+        "id": "6de3f6c35cfae252",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if given details are valid",
+        "property": "cardOK",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1430,
+        "y": 480,
+        "wires": [
+            [
+                "986fde79247c517f"
+            ],
+            [
+                "a64f09989e5b42e5"
+            ]
+        ]
+    },
+    {
+        "id": "7d8145d0ef33580d",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Return 403 (block card)",
+        "func": "msg.statusCode = 403;\nmsg.payload = {\n    status: msg.statusCode,\n    message: {\n        state: 'blocked',\n        text: 'Card blocked - please contact support'\n    },\n    transaction: null,\n    details: msg.details,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1830,
+        "y": 400,
+        "wires": [
+            [
+                "9164dd914e43135b"
+            ]
+        ]
+    },
+    {
+        "id": "986fde79247c517f",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Block card",
+        "method": "DELETE",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "{{{urlBase}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1330,
+        "y": 420,
+        "wires": [
+            [
+                "d97bf390cb9eb755"
+            ]
+        ]
+    },
+    {
+        "id": "1abf6d00432a7d6b",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if ticket is touched off",
+        "property": "details.touchedOn",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1000,
+        "y": 680,
+        "wires": [
+            [
+                "3a5b57c5805349ef"
+            ],
+            [
+                "2f629a05b2c34225"
+            ]
+        ]
+    },
+    {
+        "id": "3a5b57c5805349ef",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if gate is exit-only",
+        "property": "direction.exitOnly",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "false"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1450,
+        "y": 580,
+        "wires": [
+            [
+                "e280b541539255d4"
+            ],
+            [
+                "a7bbc5aa6ed09ad4"
+            ]
+        ]
+    },
+    {
+        "id": "e280b541539255d4",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Return 403 (missing touch-on)",
+        "func": "msg.payload = {\n    status: 403,\n    message: {\n        state: 'missingTouchOn',\n        text: 'Missing touch on',\n        transaction: {\n            'type': 3\n        },\n        details: msg.details,\n    },\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2810,
+        "y": 420,
+        "wires": [
+            [
+                "363e9d7cf0096f0e"
+            ]
+        ]
+    },
+    {
+        "id": "76b82a0dfd836bec",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Return 403 (negative balance)",
+        "func": "msg.statusCode = 403;\nmsg.payload = {\n    status: msg.statusCode,\n    message: {\n        state: 'negBalance',\n        text: 'Negative balance',\n        transaction: null,\n        details: msg.details,\n    },\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1890,
+        "y": 440,
+        "wires": [
+            [
+                "9164dd914e43135b"
+            ]
+        ]
+    },
+    {
+        "id": "a7bbc5aa6ed09ad4",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check balance",
+        "property": "details.balance",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "lte",
+                "v": "0",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2340,
+        "y": 540,
+        "wires": [
+            [
+                "76b82a0dfd836bec"
+            ],
+            [
+                "95ffa054c22d112e"
+            ]
+        ]
+    },
+    {
+        "id": "95ffa054c22d112e",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Perform touch on",
+        "func": "msg.details.touchedOn = msg.location;\n\nlet setValidationTimestamp = (msg.details.prodDuration == 0);\nif (!setValidationTimestamp) {\n    /* check if expired */\n    if (msg.details.prodExpiry != 0) {\n        let prodExpiry = new Date(msg.details.prodValidated);\n        if (msg.details.prodExpiry < 0) {\n            /* daily fare */\n            if (prodExpiry.getHours() >= 3) prodExpiry.setDate(prodExpiry.getDate() + 1);\n            prodExpiry.setHours(3, 0, 0, 0);\n        } else prodExpiry.setMinutes(prodExpiry.getMinutes() + msg.details.prodExpiry);\n    }\n}\nmsg.details.prodValidated = msg.timestamp.toISOString();\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2530,
+        "y": 560,
+        "wires": [
+            [
+                "b6beb0607bd9ae0d"
+            ]
+        ]
+    },
+    {
+        "id": "67f88a1d3cd49924",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Get passes",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/tickets/{{{ticketID}}}/passes",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 170,
+        "y": 500,
+        "wires": [
+            [
+                "476993fbf7804b42"
+            ]
+        ]
+    },
+    {
+        "id": "476993fbf7804b42",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 290,
+        "y": 540,
+        "wires": [
+            [
+                "ae051db41b1f5a44"
+            ],
+            [
+                "9d432687c8bbdf4a"
+            ]
+        ]
+    },
+    {
+        "id": "9d432687c8bbdf4a",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "details.passes",
+                "pt": "msg",
+                "to": "payload.message",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 500,
+        "y": 560,
+        "wires": [
+            [
+                "2145a9c391c31116"
+            ]
+        ]
+    },
+    {
+        "id": "ae051db41b1f5a44",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 450,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "6ba6de2570e28515",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Compare product expiry",
+        "func": "msg.prodExpired = new Date(msg.details.prodExpiry) < msg.timestamp;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 800,
+        "wires": [
+            [
+                "b4ef72cc090c5f05"
+            ]
+        ]
+    },
+    {
+        "id": "b73fcc803ef57249",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if card is expired",
+        "property": "msg.cardExpired",
+        "propertyType": "jsonata",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 930,
+        "y": 360,
+        "wires": [
+            [
+                "fef6b07c45f8603e"
+            ],
+            [
+                "c8b0183a92b298b5"
+            ]
+        ]
+    },
+    {
+        "id": "3498c8b5469a8f09",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Compare expiry date",
+        "func": "msg.cardExpired = false;\nif (msg.details.expiryDate !== null) msg.cardExpired = new Date(msg.details.expiryDate) < msg.timestamp;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 360,
+        "wires": [
+            [
+                "b73fcc803ef57249"
+            ]
+        ]
+    },
+    {
+        "id": "fef6b07c45f8603e",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Return 403 (expired)",
+        "func": "msg.statusCode = 403;\nmsg.payload = {\n    status: msg.statusCode,\n    message: {\n        state: 'expired',\n        text: 'Ticket expired - time to get a new one'\n    },\n    transaction: null,\n    details: msg.details,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1180,
+        "y": 360,
+        "wires": [
+            [
+                "9164dd914e43135b"
+            ]
+        ]
+    },
+    {
+        "id": "1656a8b46bc76037",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if in zone 1/2 overlap",
+        "property": "payload.message.minProduct",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "3",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1080,
+        "y": 1020,
+        "wires": [
+            [
+                "58651e1b0afef04a"
+            ],
+            [
+                "d320ce947fbff975"
+            ]
+        ]
+    },
+    {
+        "id": "d320ce947fbff975",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if current product is Z1/2 or Z2",
+        "property": "details.touchedOn",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "3",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "5",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 3,
+        "x": 1130,
+        "y": 1080,
+        "wires": [
+            [
+                "80e9fc5bd96868df"
+            ],
+            [
+                "80e9fc5bd96868df"
+            ],
+            [
+                "acdb01b0f65ae025"
+            ]
+        ]
+    },
+    {
+        "id": "58651e1b0afef04a",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "Normal touch off",
+        "rules": [
+            {
+                "t": "set",
+                "p": "offProduct",
+                "pt": "msg",
+                "to": "locDetails.minProduct",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1320,
+        "y": 1000,
+        "wires": [
+            [
+                "d23474d06380d419"
+            ]
+        ]
+    },
+    {
+        "id": "80e9fc5bd96868df",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "Z2 touch off",
+        "rules": [
+            {
+                "t": "set",
+                "p": "offProduct",
+                "pt": "msg",
+                "to": "5",
+                "tot": "num"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1390,
+        "y": 1040,
+        "wires": [
+            [
+                "d23474d06380d419"
+            ]
+        ]
+    },
+    {
+        "id": "acdb01b0f65ae025",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "Z1+2 touch off",
+        "rules": [
+            {
+                "t": "set",
+                "p": "offProduct",
+                "pt": "msg",
+                "to": "1",
+                "tot": "num"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1400,
+        "y": 1080,
+        "wires": [
+            [
+                "d23474d06380d419"
+            ]
+        ]
+    },
+    {
+        "id": "88bb837d83dd7346",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if gate is entry-only",
+        "property": "direction.entryOnly",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2110,
+        "y": 620,
+        "wires": [
+            [
+                "a7bbc5aa6ed09ad4"
+            ],
+            [
+                "8f96f52e469a016a"
+            ]
+        ]
+    },
+    {
+        "id": "cfdd8f649f7fc7f4",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if last transaction's mode is different",
+        "property": "locDetails.mode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "lastLocDetails.mode",
+                "vt": "msg"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2670,
+        "y": 720,
+        "wires": [
+            [
+                "a7bbc5aa6ed09ad4"
+            ],
+            [
+                "b6c089719227cd1e"
+            ]
+        ]
+    },
+    {
+        "id": "d4d42c164957905d",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Fetch last location details",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/locations/{{{details.lastTransaction.location}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 2070,
+        "y": 720,
+        "wires": [
+            [
+                "aa45ee7ec0d521e9"
+            ]
+        ]
+    },
+    {
+        "id": "aa45ee7ec0d521e9",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2090,
+        "y": 760,
+        "wires": [
+            [
+                "f704c28440c96939"
+            ],
+            [
+                "707fdae789cf5208"
+            ]
+        ]
+    },
+    {
+        "id": "b6beb0607bd9ae0d",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Return 200 (touched on)",
+        "func": "msg.payload = {\n    status: 200,\n    message: {\n        state: 'touchedOn',\n        text: 'Touched on',\n        transaction: {\n            'type': (msg.hasOwnProperty('touchedOff')) ? 2 : 0\n        },\n        details: msg.details\n    },\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2790,
+        "y": 560,
+        "wires": [
+            [
+                "363e9d7cf0096f0e"
+            ]
+        ]
+    },
+    {
+        "id": "9164dd914e43135b",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 2110,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "ea4db924adc7a439",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Write transaction",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/tickets/{{{ticketID}}}/transactions",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 3250,
+        "y": 460,
+        "wires": [
+            [
+                "182f8d4b850b471b"
+            ]
+        ]
+    },
+    {
+        "id": "182f8d4b850b471b",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 3450,
+        "y": 460,
+        "wires": [
+            [
+                "b81f10ebd71c778b"
+            ],
+            [
+                "251f1e6246ec9723"
+            ]
+        ]
+    },
+    {
+        "id": "251f1e6246ec9723",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "Put transaction into payload",
+        "rules": [
+            {
+                "t": "set",
+                "p": "respPayload.message.transaction",
+                "pt": "msg",
+                "to": "payload.message",
+                "tot": "msg"
+            },
+            {
+                "t": "move",
+                "p": "respPayload",
+                "pt": "msg",
+                "to": "payload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "statusCode",
+                "pt": "msg",
+                "to": "payload.status",
+                "tot": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "payload.lastTransaction",
+                "pt": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 3680,
+        "y": 480,
+        "wires": [
+            [
+                "b81f10ebd71c778b"
+            ]
+        ]
+    },
+    {
+        "id": "d97bf390cb9eb755",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1510,
+        "y": 420,
+        "wires": [
+            [
+                "7d8145d0ef33580d"
+            ],
+            [
+                "84bef80f988701d5"
+            ]
+        ]
+    },
+    {
+        "id": "84bef80f988701d5",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1670,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "b81f10ebd71c778b",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 3850,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "f704c28440c96939",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 2290,
+        "y": 740,
+        "wires": []
+    },
+    {
+        "id": "b6c089719227cd1e",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Return 200 (touched off)",
+        "func": "msg.payload = {\n    status: 200,\n    message: {\n        state: 'touchedOff',\n        text: 'Touched off',\n        transaction: {\n            'type': 1\n        },\n        details: msg.details\n    },\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2990,
+        "y": 720,
+        "wires": [
+            [
+                "363e9d7cf0096f0e"
+            ]
+        ]
+    },
+    {
+        "id": "a64f09989e5b42e5",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if ticket is disabled",
+        "property": "details.disabled",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1150,
+        "y": 540,
+        "wires": [
+            [
+                "7d8145d0ef33580d"
+            ],
+            [
+                "059c70d511bf2d42"
+            ]
+        ]
+    },
+    {
+        "id": "2ddd89dd674dcb8f",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 250,
+        "y": 640,
+        "wires": [
+            [
+                "2657c8889225f0eb"
+            ],
+            [
+                "9b576b6a62f3c884"
+            ]
+        ]
+    },
+    {
+        "id": "2145a9c391c31116",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Get product bits",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/tickets/{{{ticketID}}}/prodbits",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 140,
+        "y": 600,
+        "wires": [
+            [
+                "2ddd89dd674dcb8f"
+            ]
+        ]
+    },
+    {
+        "id": "9b576b6a62f3c884",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "details.prodBits",
+                "pt": "msg",
+                "to": "payload.message",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 490,
+        "y": 660,
+        "wires": [
+            [
+                "e8929aab22eedb10"
+            ]
+        ]
+    },
+    {
+        "id": "b4ef72cc090c5f05",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if current product had expired",
+        "property": "prodExpired",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1150,
+        "y": 800,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "059c70d511bf2d42",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Fetch location details",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/locations/{{{location}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 780,
+        "y": 620,
+        "wires": [
+            [
+                "f9498ccb2018b14c"
+            ]
+        ]
+    },
+    {
+        "id": "f9498ccb2018b14c",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 990,
+        "y": 620,
+        "wires": [
+            [
+                "a1799a8acb4458db"
+            ],
+            [
+                "5547b11df0723452"
+            ]
+        ]
+    },
+    {
+        "id": "5547b11df0723452",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "locDetails",
+                "pt": "msg",
+                "to": "payload.message",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 770,
+        "y": 680,
+        "wires": [
+            [
+                "1abf6d00432a7d6b"
+            ]
+        ]
+    },
+    {
+        "id": "a1799a8acb4458db",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1170,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "2f629a05b2c34225",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Fetch touched on product details",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/products/{{{details.touchedOn}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 770,
+        "y": 740,
+        "wires": [
+            [
+                "bfa1cfa1250665b9"
+            ]
+        ]
+    },
+    {
+        "id": "bfa1cfa1250665b9",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1010,
+        "y": 740,
+        "wires": [
+            [
+                "d8d6b080c9908912"
+            ],
+            [
+                "4cd87b36bdec85eb"
+            ]
+        ]
+    },
+    {
+        "id": "d8d6b080c9908912",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1230,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "4cd87b36bdec85eb",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "onDetails",
+                "pt": "msg",
+                "to": "payload.message",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1230,
+        "y": 740,
+        "wires": [
+            [
+                "6ba6de2570e28515",
+                "3a349ea16f23c655"
+            ]
+        ]
+    },
+    {
+        "id": "35dfcdcaa1aae866",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "Default-fare touch off",
+        "rules": [
+            {
+                "t": "set",
+                "p": "offProduct",
+                "pt": "msg",
+                "to": "lastLocDetails.defaultProduct",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1080,
+        "y": 960,
+        "wires": [
+            [
+                "d23474d06380d419"
+            ]
+        ]
+    },
+    {
+        "id": "2657c8889225f0eb",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 430,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "9cd03ebc9e31d655",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Set msg.details.lastTransaction",
+        "func": "msg.details.lastTransaction = (msg.payload.message.length > 0) ? msg.payload.message[0] : null;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 650,
+        "y": 480,
+        "wires": [
+            [
+                "67f88a1d3cd49924"
+            ]
+        ]
+    },
+    {
+        "id": "7aca30d7bae79ea2",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 390,
+        "y": 460,
+        "wires": [
+            [
+                "be62c7d8fa854dab"
+            ],
+            [
+                "9cd03ebc9e31d655"
+            ]
+        ]
+    },
+    {
+        "id": "c8b0183a92b298b5",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Get last transaction",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/tickets/{{{ticketID}}}/transactions?validateOnly=true&limit=1",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 190,
+        "y": 460,
+        "wires": [
+            [
+                "7aca30d7bae79ea2"
+            ]
+        ]
+    },
+    {
+        "id": "be62c7d8fa854dab",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 590,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "d199eaa20a9080b2",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Get validation day",
+        "func": "msg.validatedDay = new Date(msg.details.prodValidated);\nif (msg.validatedDay.getHours() < 3) msg.validatedDay.setHours(msg.validatedDay.getHours() - 1); // belonging to previous PT day\nmsg.validatedDay.setHours(3, 0, 0, 0);\n\nmsg.today = new Date(msg.timestamp);\nif (msg.today.getHours() < 3) msg.today.setHours(msg.today.getHours() - 1); // belonging to previous PT day\nmsg.today.setHours(3, 0, 0, 0);\n\nmsg.prodExpired = msg.prodExpiredPrev\n    = (msg.validatedDay.getTime() != msg.today.getTime()); // indicates if product has already expired (in this case, if it has expired since the previous day)\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 490,
+        "y": 960,
+        "wires": [
+            [
+                "508766a58512205b"
+            ]
+        ]
+    },
+    {
+        "id": "508766a58512205b",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if product expired since prev. day",
+        "property": "prodExpiredPrev",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 760,
+        "y": 960,
+        "wires": [
+            [
+                "35dfcdcaa1aae866"
+            ],
+            [
+                "1656a8b46bc76037"
+            ]
+        ]
+    },
+    {
+        "id": "f870d0d99b649222",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Fetch last location details",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/locations/{{{details.lastTransaction.location}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 510,
+        "y": 880,
+        "wires": [
+            [
+                "41698f0b4cd1d994"
+            ]
+        ]
+    },
+    {
+        "id": "41698f0b4cd1d994",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 750,
+        "y": 880,
+        "wires": [
+            [
+                "86cbf47820f572ec"
+            ],
+            [
+                "d4c5ceb2395cf780"
+            ]
+        ]
+    },
+    {
+        "id": "d4c5ceb2395cf780",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "lastLocDetails",
+                "pt": "msg",
+                "to": "payload.message",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 980,
+        "y": 900,
+        "wires": [
+            [
+                "8f9da2b1fcac3182"
+            ]
+        ]
+    },
+    {
+        "id": "fee58f5552df0f99",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Fetch 2nd pass product details",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/products/{{{details.passes[1].product}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 2470,
+        "y": 1260,
+        "wires": [
+            [
+                "c531d05b1e8d3c09"
+            ]
+        ]
+    },
+    {
+        "id": "c531d05b1e8d3c09",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2710,
+        "y": 1260,
+        "wires": [
+            [
+                "b8ddebc980342e0c"
+            ],
+            [
+                "7aedcec4e4465c17"
+            ]
+        ]
+    },
+    {
+        "id": "7aedcec4e4465c17",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "details.passes[1].prodDetails",
+                "pt": "msg",
+                "to": "payload.message",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2990,
+        "y": 1260,
+        "wires": [
+            [
+                "dfac6eaa58c222d6"
+            ]
+        ]
+    },
+    {
+        "id": "b8ddebc980342e0c",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 2910,
+        "y": 1220,
+        "wires": []
+    },
+    {
+        "id": "e867ee4c20434e7d",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Determine number of passes to check",
+        "property": "$count(msg.details.passes)\t\t",
+        "propertyType": "jsonata",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "2",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 3,
+        "x": 2110,
+        "y": 1320,
+        "wires": [
+            [
+                "fee58f5552df0f99"
+            ],
+            [
+                "dfac6eaa58c222d6"
+            ],
+            [
+                "e3f17bb79b0443c4"
+            ]
+        ]
+    },
+    {
+        "id": "dfac6eaa58c222d6",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Fetch 1st pass product value",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/products/{{{details.passes[1].product}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 2460,
+        "y": 1320,
+        "wires": [
+            [
+                "a6c0930e5cc0c99b"
+            ]
+        ]
+    },
+    {
+        "id": "a6c0930e5cc0c99b",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2710,
+        "y": 1320,
+        "wires": [
+            [
+                "b8ddebc980342e0c"
+            ],
+            [
+                "0db8dd0f66889a08"
+            ]
+        ]
+    },
+    {
+        "id": "0db8dd0f66889a08",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "details.passes[0].prodDetails",
+                "pt": "msg",
+                "to": "payload.message",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2990,
+        "y": 1320,
+        "wires": [
+            [
+                "d6c35bf3eaa4b507"
+            ]
+        ]
+    },
+    {
+        "id": "3a349ea16f23c655",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Fetch fare type information",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/fareTypes/{{{details.fareType}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 520,
+        "y": 840,
+        "wires": [
+            [
+                "3c3217c50f767b75"
+            ]
+        ]
+    },
+    {
+        "id": "3c3217c50f767b75",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 750,
+        "y": 840,
+        "wires": [
+            [
+                "86cbf47820f572ec"
+            ],
+            [
+                "f3ec7e0f8f11d01e"
+            ]
+        ]
+    },
+    {
+        "id": "86cbf47820f572ec",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1130,
+        "y": 840,
+        "wires": []
+    },
+    {
+        "id": "f3ec7e0f8f11d01e",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "fareDetails",
+                "pt": "msg",
+                "to": "payload.message",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 970,
+        "y": 860,
+        "wires": [
+            [
+                "f870d0d99b649222"
+            ]
+        ]
+    },
+    {
+        "id": "d6c35bf3eaa4b507",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Find suitable pass to cover product",
+        "func": "let passIdx = -1;\n\nfor (let i = msg.details.passes.length - 1; i >= 0; i++) {\n    let prodDetails = msg.details.passes[i].prodDetails;\n    if (prodDetails.fromZone <= msg.minProd.details.fromZone && prodDetails.toZone >= msg.minProd.details.toZone) {\n        /* suitable product found */\n        passIdx = i;\n        if (msg.details.passes[i].activationDate !== null) break; // we've found a pre-activated pass\n    }\n}\n\nif (passIdx >= 0) {\n    msg.passIdx = passIdx;\n    msg.ticketValue = 2 * msg.fareDetails.productFares[msg.details.passes[passIdx].id];\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2980,
+        "y": 1360,
+        "wires": [
+            [
+                "1d8af34375a5f8cf"
+            ]
+        ]
+    },
+    {
+        "id": "d23474d06380d419",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Fetch touched off product details",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/products/{{{offProduct}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1610,
+        "y": 960,
+        "wires": [
+            [
+                "c3033b5826e4ceaf"
+            ]
+        ]
+    },
+    {
+        "id": "c3033b5826e4ceaf",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1610,
+        "y": 1000,
+        "wires": [
+            [
+                "2ef0adbc9aef4e05"
+            ],
+            [
+                "29f071dc9f66554f"
+            ]
+        ]
+    },
+    {
+        "id": "29f071dc9f66554f",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "offDetails",
+                "pt": "msg",
+                "to": "payload.message",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1630,
+        "y": 1040,
+        "wires": [
+            [
+                "adfad84f427e0600"
+            ]
+        ]
+    },
+    {
+        "id": "2ef0adbc9aef4e05",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1790,
+        "y": 1000,
+        "wires": []
+    },
+    {
+        "id": "1d8af34375a5f8cf",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if pass has been found",
+        "property": "msg",
+        "propertyType": "jsonata",
+        "rules": [
+            {
+                "t": "hask",
+                "v": "passIdx",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2970,
+        "y": 1400,
+        "wires": [
+            [
+                "a0ef6c9aec2e65be"
+            ],
+            [
+                "e3f17bb79b0443c4"
+            ]
+        ]
+    },
+    {
+        "id": "2e03a3837cab859a",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Activate pass locally",
+        "func": "let activationDate = new Date(msg.timestamp);\nactivationDate.setHours(0, 0, 0, 0);\nmsg.details.passes[msg.passIdx].activationDate = activationDate.toISOString();\n\nmsg.payload = {\n    date: msg.details.passes[msg.passIdx].activationDate\n};\nmsg.passID = msg.details.passes[msg.passIdx].transactionID;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3520,
+        "y": 1260,
+        "wires": [
+            [
+                "3b03cf35b41ce1da"
+            ]
+        ]
+    },
+    {
+        "id": "a0ef6c9aec2e65be",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if pass needs activation",
+        "property": "details.passes[msg.passIdx].activationDate",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "null"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 3310,
+        "y": 1380,
+        "wires": [
+            [
+                "2e03a3837cab859a"
+            ],
+            [
+                "82ba4c0713855f39"
+            ]
+        ]
+    },
+    {
+        "id": "3b03cf35b41ce1da",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Activate pass on server",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/tickets/{{{ticketID}}}/passes/{{{passID}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 3550,
+        "y": 1300,
+        "wires": [
+            [
+                "f497ebe6740a29f2"
+            ]
+        ]
+    },
+    {
+        "id": "f497ebe6740a29f2",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 3550,
+        "y": 1340,
+        "wires": [
+            [
+                "bf883cfd3b9997e8"
+            ],
+            [
+                "82ba4c0713855f39"
+            ]
+        ]
+    },
+    {
+        "id": "bf883cfd3b9997e8",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 3750,
+        "y": 1320,
+        "wires": []
+    },
+    {
+        "id": "4a74edb89065af42",
+        "type": "comment",
+        "z": "743b84be8cadd541",
+        "name": "Touch off",
+        "info": "",
+        "x": 540,
+        "y": 740,
+        "wires": []
+    },
+    {
+        "id": "8f9da2b1fcac3182",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "ticketValue",
+                "pt": "msg",
+                "to": "0",
+                "tot": "num"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 290,
+        "y": 960,
+        "wires": [
+            [
+                "d199eaa20a9080b2"
+            ]
+        ]
+    },
+    {
+        "id": "82ba4c0713855f39",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Set ticket value",
+        "func": "msg.ticketValue = 2 * msg.fareDetails.productFares[\n    msg.details.passes[msg.passIdx].product\n];\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3540,
+        "y": 1440,
+        "wires": [
+            [
+                "f5aa33c6ca693c74"
+            ]
+        ]
+    },
+    {
+        "id": "72f4a5baa4ed353c",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if current product has expired",
+        "property": "prodExpired",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1690,
+        "y": 1120,
+        "wires": [
+            [
+                "a8d1b3affdf97246"
+            ],
+            [
+                "5d64a5c6f365d309"
+            ]
+        ]
+    },
+    {
+        "id": "a8d1b3affdf97246",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Prep for min product fetch",
+        "func": "msg.minProd = {\n    idFrom: Math.min(msg.onDetails.fromZone, msg.offDetails.fromZone),\n    idTo: Math.max(msg.onDetails.toZone, msg.offDetails.toZone)\n};\n\nif (!msg.prodExpired && msg.details.currentProduct != 0) {\n    /* current product not expired, so there's current product details in msg.payload */\n    msg.minProd.idFrom = Math.min(msg.minProd.idFrom, msg.payload.message.fromZone);\n    msg.minProd.idTo = Math.max(msg.minProd.idTo, msg.payload.message.toZone);\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2150,
+        "y": 1100,
+        "wires": [
+            [
+                "58c82ac6ff5c789a"
+            ]
+        ]
+    },
+    {
+        "id": "58c82ac6ff5c789a",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Fetch min covering product",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/products/search/{{{minProd.idFrom}}}/{{{minProd.idTo}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 2160,
+        "y": 1160,
+        "wires": [
+            [
+                "38f6f791526a2781"
+            ]
+        ]
+    },
+    {
+        "id": "38f6f791526a2781",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2390,
+        "y": 1180,
+        "wires": [
+            [
+                "63eb7cb5c7008f2b"
+            ],
+            [
+                "5c4d3cebe982f7fc"
+            ]
+        ]
+    },
+    {
+        "id": "5c4d3cebe982f7fc",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "minProd",
+                "pt": "msg",
+                "to": "payload.message",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1870,
+        "y": 1260,
+        "wires": [
+            [
+                "e867ee4c20434e7d"
+            ]
+        ]
+    },
+    {
+        "id": "9e3fdb81034ad947",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Fetch current product details",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/products/{{{details.currentProduct}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1620,
+        "y": 1180,
+        "wires": [
+            [
+                "3b7dc35ee30eab9a"
+            ]
+        ]
+    },
+    {
+        "id": "3b7dc35ee30eab9a",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1850,
+        "y": 1180,
+        "wires": [
+            [
+                "a8d1b3affdf97246"
+            ],
+            [
+                "63eb7cb5c7008f2b"
+            ]
+        ]
+    },
+    {
+        "id": "63eb7cb5c7008f2b",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 2550,
+        "y": 1140,
+        "wires": []
+    },
+    {
+        "id": "5d64a5c6f365d309",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Set ticket value",
+        "func": "msg.ticketValue = msg.fareDetails.productFares[\n    msg.details.currentProduct\n];\n\nlet prodBits2 = Buffer.from(msg.details.prodBits[1], 'base64');\nlet byte = Math.floor(msg.details.currentProduct / 8), bit = msg.details.currentProduct % 8;\nif (prodBits2[byte] & (1 << bit)) msg.ticketValue *= 2; // daily\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1400,
+        "y": 1180,
+        "wires": [
+            [
+                "9e3fdb81034ad947"
+            ]
+        ]
+    },
+    {
+        "id": "3018bdde0bccba87",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "Set current product and fare duration",
+        "rules": [
+            {
+                "t": "set",
+                "p": "details.currentProduct",
+                "pt": "msg",
+                "to": "minProd.id",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "details.prodDuration",
+                "pt": "msg",
+                "to": "minProd.details.duration",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2310,
+        "y": 1500,
+        "wires": [
+            [
+                "8e67afcd7c8c0b27"
+            ]
+        ]
+    },
+    {
+        "id": "f5aa33c6ca693c74",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "Set current product, duration and fare",
+        "rules": [
+            {
+                "t": "set",
+                "p": "details.currentProduct",
+                "pt": "msg",
+                "to": "details.passes[msg.passIdx].id",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "details.prodDuration",
+                "pt": "msg",
+                "to": "-1",
+                "tot": "num"
+            },
+            {
+                "t": "set",
+                "p": "farePending",
+                "pt": "msg",
+                "to": "0",
+                "tot": "num"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 3610,
+        "y": 1480,
+        "wires": [
+            [
+                "9bd90d80bf5089dc"
+            ]
+        ]
+    },
+    {
+        "id": "9bd90d80bf5089dc",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Mark product on both bitmaps",
+        "func": "let byte = Math.floor(msg.details.passes[msg.passIdx].id / 8);\nlet bit = msg.details.passes[msg.passIdx].id % 8;\n\nfor (let i = 0; i < 2; i++) {\n    let buf = Buffer.from(msg.details.prodBits[i], 'base64');\n    buf[byte] |= (1 << bit);\n    msg.details.prodBits[i] = buf.toString('base64');\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3590,
+        "y": 1520,
+        "wires": [
+            [
+                "5cc81807a7477bcc"
+            ]
+        ]
+    },
+    {
+        "id": "8e67afcd7c8c0b27",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Check fare bitmaps",
+        "func": "let byte = Math.floor(msg.minProd.id / 8);\nlet bit = msg.minProd.id % 8;\n\nmsg.prodMarked = [false, false];\n\nfor (let i = 0; i < 2; i++) {\n    let buf = Buffer.from(msg.details.prodBits[i], 'base64');\n    msg.prodMarked[i] = (buf[byte] & (1 << bit)) != 0;\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2570,
+        "y": 1500,
+        "wires": [
+            [
+                "17b68b2dd913d5f8"
+            ]
+        ]
+    },
+    {
+        "id": "17b68b2dd913d5f8",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if product is on 2hr bitmap",
+        "property": "msg.prodMarked[0]",
+        "propertyType": "jsonata",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2300,
+        "y": 1560,
+        "wires": [
+            [
+                "06c2ff8cac101938"
+            ],
+            [
+                "3a8e1d69806f33f6"
+            ]
+        ]
+    },
+    {
+        "id": "06c2ff8cac101938",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Set fare to be paid",
+        "func": "msg.farePending = msg.fareDetails.productFares[\n    msg.minProd.id\n];\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2570,
+        "y": 1560,
+        "wires": [
+            [
+                "142ed0157bfe8825"
+            ]
+        ]
+    },
+    {
+        "id": "142ed0157bfe8825",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Set 2hr fare bitmap",
+        "func": "let byte = Math.floor(msg.minProd.id / 8);\nlet bit = msg.minProd.id % 8;\n\nlet buf = Buffer.from(msg.details.prodBits[0], 'base64');\nbuf[byte] |= (1 << bit);\nmsg.details.prodBits[0] = buf.toString('base64');\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2770,
+        "y": 1560,
+        "wires": [
+            [
+                "5cc81807a7477bcc"
+            ]
+        ]
+    },
+    {
+        "id": "3a8e1d69806f33f6",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if product is on daily bitmap",
+        "property": "msg.prodMarked[1]",
+        "propertyType": "jsonata",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2300,
+        "y": 1620,
+        "wires": [
+            [
+                "c312c51a791fca12"
+            ],
+            [
+                "5f03720703ea9eb7"
+            ]
+        ]
+    },
+    {
+        "id": "5f03720703ea9eb7",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "Set fare to be paid to 0",
+        "rules": [
+            {
+                "t": "set",
+                "p": "farePending",
+                "pt": "msg",
+                "to": "0",
+                "tot": "num"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2780,
+        "y": 1640,
+        "wires": [
+            [
+                "5cc81807a7477bcc"
+            ]
+        ]
+    },
+    {
+        "id": "c312c51a791fca12",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Set fare to be paid",
+        "func": "msg.farePending = 2 * msg.fareDetails.productFares[\n    msg.minProd.id\n];\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2570,
+        "y": 1600,
+        "wires": [
+            [
+                "5b0670a9585ef8ce"
+            ]
+        ]
+    },
+    {
+        "id": "5b0670a9585ef8ce",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Set daily fare bitmap",
+        "func": "let byte = Math.floor(msg.minProd.id / 8);\nlet bit = msg.minProd.id % 8;\n\nlet buf = Buffer.from(msg.details.prodBits[1], 'base64');\nbuf[byte] |= (1 << bit);\nmsg.details.prodBits[1] = buf.toString('base64');\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2780,
+        "y": 1600,
+        "wires": [
+            [
+                "5cc81807a7477bcc"
+            ]
+        ]
+    },
+    {
+        "id": "5cc81807a7477bcc",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "Finalise touch off",
+        "rules": [
+            {
+                "t": "set",
+                "p": "farePending",
+                "pt": "msg",
+                "to": "$max([0, msg.farePending - msg.ticketValue])",
+                "tot": "jsonata"
+            },
+            {
+                "t": "set",
+                "p": "farePending",
+                "pt": "msg",
+                "to": "$min([msg.farePending, msg.fareDetails.cap - msg.dailyExpenditure])\t",
+                "tot": "jsonata"
+            },
+            {
+                "t": "set",
+                "p": "details.balance",
+                "pt": "msg",
+                "to": "msg.details.balance - msg.farePending",
+                "tot": "jsonata"
+            },
+            {
+                "t": "set",
+                "p": "details.dailyExpenditure",
+                "pt": "msg",
+                "to": "msg.details.dailyExpenditure + msg.farePending",
+                "tot": "jsonata"
+            },
+            {
+                "t": "set",
+                "p": "details.touchedOn",
+                "pt": "msg",
+                "to": "0",
+                "tot": "num"
+            },
+            {
+                "t": "set",
+                "p": "touchedOff",
+                "pt": "msg",
+                "to": "true",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 3050,
+        "y": 1640,
+        "wires": [
+            [
+                "f60aba7b0b1e4bef"
+            ]
+        ]
+    },
+    {
+        "id": "f60aba7b0b1e4bef",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if expired from prev. day",
+        "property": "prodExpiredPrev",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1650,
+        "y": 620,
+        "wires": [
+            [
+                "55701c0773e70af5"
+            ],
+            [
+                "88bb837d83dd7346"
+            ]
+        ]
+    },
+    {
+        "id": "55701c0773e70af5",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "Reset for new day",
+        "rules": [
+            {
+                "t": "set",
+                "p": "details.prodBits",
+                "pt": "msg",
+                "to": "[\"AAAAAAAAAAAAAAAAAAAAAA==\",\"AAAAAAAAAAAAAAAAAAAAAA==\"]",
+                "tot": "json"
+            },
+            {
+                "t": "set",
+                "p": "currentProduct",
+                "pt": "msg",
+                "to": "0",
+                "tot": "num"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 1910,
+        "y": 580,
+        "wires": [
+            [
+                "88bb837d83dd7346"
+            ]
+        ]
+    },
+    {
+        "id": "c39d3ef1ceb1eee2",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "details",
+                "pt": "msg",
+                "to": "payload.message",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 180,
+        "y": 340,
+        "wires": [
+            [
+                "56a555d3f1a3c3a0"
+            ]
+        ]
+    },
+    {
+        "id": "df75a724dca2fa68",
+        "type": "comment",
+        "z": "743b84be8cadd541",
+        "name": "Touch on",
+        "info": "",
+        "x": 2180,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "363e9d7cf0096f0e",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "Prepare for ticket data write",
+        "rules": [
+            {
+                "t": "move",
+                "p": "payload",
+                "pt": "msg",
+                "to": "respPayload",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "payload",
+                "pt": "msg",
+                "to": "{}",
+                "tot": "json"
+            },
+            {
+                "t": "set",
+                "p": "payload.fareType",
+                "pt": "msg",
+                "to": "details.fareType",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "payload.balance",
+                "pt": "msg",
+                "to": "details.balance",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "payload.dailyExpenditure",
+                "pt": "msg",
+                "to": "details.dailyExpenditure",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "payload.touchedOn",
+                "pt": "msg",
+                "to": "details.touchedOn",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "payload.currentProduct",
+                "pt": "msg",
+                "to": "details.currentProduct",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "payload.prodValidated",
+                "pt": "msg",
+                "to": "details.prodValidated",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "payload.prodDuration",
+                "pt": "msg",
+                "to": "details.prodDuration",
+                "tot": "msg"
+            },
+            {
+                "t": "set",
+                "p": "method",
+                "pt": "msg",
+                "to": "PATCH",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 3200,
+        "y": 320,
+        "wires": [
+            [
+                "bafa7bc13d9bdc01"
+            ]
+        ]
+    },
+    {
+        "id": "bafa7bc13d9bdc01",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Write ticket data",
+        "method": "use",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "http://172.17.0.4:1880/api/tickets/{{{ticketID}}}",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 3200,
+        "y": 360,
+        "wires": [
+            [
+                "2fc4d027e64294c9"
+            ]
+        ]
+    },
+    {
+        "id": "2fc4d027e64294c9",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if successful",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 3410,
+        "y": 360,
+        "wires": [
+            [
+                "b81f10ebd71c778b"
+            ],
+            [
+                "2d66a5a204e617dd"
+            ]
+        ]
+    },
+    {
+        "id": "2d66a5a204e617dd",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Prepare for transaction write",
+        "func": "msg.respPayload.message.transaction.location = msg.location;\nmsg.respPayload.message.transaction.balance = msg.details.balance;\nif (msg.hasOwnProperty('touchedOff'))\n    msg.respPayload.message.transaction.product = msg.details.currentProduct;\n\nmsg.payload = msg.respPayload.message.transaction;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3260,
+        "y": 420,
+        "wires": [
+            [
+                "ea4db924adc7a439"
+            ]
+        ]
+    },
+    {
+        "id": "707fdae789cf5208",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "lastLocDetails",
+                "pt": "msg",
+                "to": "payload.message",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 2340,
+        "y": 780,
+        "wires": [
+            [
+                "cfdd8f649f7fc7f4"
+            ]
+        ]
+    },
+    {
+        "id": "8f96f52e469a016a",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if we need to get last location details",
+        "property": "msg",
+        "propertyType": "jsonata",
+        "rules": [
+            {
+                "t": "hask",
+                "v": "lastLocDetails",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2010,
+        "y": 680,
+        "wires": [
+            [
+                "cfdd8f649f7fc7f4"
+            ],
+            [
+                "d4d42c164957905d"
+            ]
+        ]
+    },
+    {
+        "id": "2a56d2e1ba13bcc0",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if product expired",
+        "property": "prodExpired",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1830,
+        "y": 1540,
+        "wires": [
+            [
+                "35dfcdcaa1aae866"
+            ],
+            [
+                "3018bdde0bccba87"
+            ]
+        ]
+    },
+    {
+        "id": "a3779b804e5b95ff",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Check product expiry (same day)",
+        "func": "let prodExpiry = new Date(msg.details.prodValidated);\n\nif (msg.details.prodDuration < 0) {\n    /* daily fare */\n    if (prodExpiry.getHours() >= 3) prodExpiry.setDate(prodExpiry.getDate() + 1);\n    prodExpiry.setHours(3, 0, 0, 0);\n} else {\n    prodExpiry.setMinutes(prodExpiry.getMinutes() + msg.minProd.details.duration);\n}\n\nmsg.prodExpired = (prodExpiry.getTime() < msg.timestamp.getTime());\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1860,
+        "y": 1500,
+        "wires": [
+            [
+                "2a56d2e1ba13bcc0"
+            ]
+        ]
+    },
+    {
+        "id": "e3f17bb79b0443c4",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if product is already marked as expired",
+        "property": "prodExpired",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1900,
+        "y": 1460,
+        "wires": [
+            [
+                "3018bdde0bccba87"
+            ],
+            [
+                "a3779b804e5b95ff"
+            ]
+        ]
+    },
+    {
+        "id": "adfad84f427e0600",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if current product is valid",
+        "property": "details.currentProduct",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "0",
+                "vt": "num"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1670,
+        "y": 1080,
+        "wires": [
+            [
+                "a8d1b3affdf97246"
+            ],
+            [
+                "72f4a5baa4ed353c"
+            ]
+        ]
+    }
+]

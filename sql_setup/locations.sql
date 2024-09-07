@@ -1,8 +1,8 @@
 -- NOTE: metropolitan train stations served by MTM only!
 
-PREPARE insert_location(varchar(64), int) AS INSERT INTO "static"."Locations" ("name", "minProduct", "mode") VALUES ($1 || ' Station', $2, 3);
+PREPARE insert_location(varchar(64), int) AS INSERT INTO "static"."Locations" ("name", "minProduct", "defaultProduct", "mode") VALUES ($1 || ' Station', $2, 1, 3);
 
-INSERT INTO "static"."Locations" ("id", "name", "minProduct", "mode") VALUES (0, 'Online', 0, 0); -- only for top up and pass purchases
+INSERT INTO "static"."Locations" ("id", "name", "minProduct", "defaultProduct", "mode") VALUES (0, 'Online', 0, 0, 0); -- only for top up and pass purchases
 
 -- CBD/City Loop
 EXECUTE insert_location('Flinders Street', 1);

@@ -9,17 +9,14 @@ CREATE TABLE "static"."FareTypes" (
 CREATE TABLE "static"."Products" (
     "id" INTEGER PRIMARY KEY,
     "name" VARCHAR(48) NOT NULL,
-    "coveredZones" INTEGER NOT NULL
+    "fromZone" INTEGER NOT NULL,
+    "toZone" INTEGER NOT NULL,
+    "duration" INTEGER NOT NULL
 );
 
 CREATE TABLE "static"."TransactionTypes" (
     "type" INTEGER PRIMARY KEY,
     "name" VARCHAR(48) NOT NULL
-);
-
-CREATE TABLE "static"."FareDurations" (
-    "numZones" INTEGER PRIMARY KEY,
-    "2hDuration" INTEGER NOT NULL
 );
 
 CREATE TABLE "static"."SpecialDates" (
@@ -39,7 +36,8 @@ CREATE TABLE "static"."Locations" (
     "id" SERIAL PRIMARY KEY,
     "name" VARCHAR(64),
     "mode" INTEGER REFERENCES "static"."TransportModes" ("mode"),
-    "minProduct" INTEGER REFERENCES "static"."Products" ("id")
+    "minProduct" INTEGER REFERENCES "static"."Products" ("id"),
+    "defaultProduct" INTEGER REFERENCES "static"."Products" ("id")
 );
 
 CREATE TABLE "static"."ProductFares" (
@@ -63,9 +61,9 @@ CREATE TABLE "dynamic"."Tickets" (
     "balance" INTEGER NOT NULL DEFAULT (0),
     "dailyExpenditure" INTEGER NOT NULL DEFAULT (0),
     "currentProduct" INTEGER REFERENCES "static"."Products" ("id") DEFAULT (0),
-    "touchedOn" BOOLEAN NOT NULL DEFAULT (FALSE),
-    "productExpiry" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "travelledZones" INTEGER NOT NULL DEFAULT (0)
+    "touchedOn" INTEGER REFERENCES "static"."Products" ("id") DEFAULT (0),
+    "prodValidated" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "prodDuration" INTEGER NOT NULL DEFAULT (0)
 );
 
 CREATE TABLE "dynamic"."Transactions" (
@@ -74,6 +72,7 @@ CREATE TABLE "dynamic"."Transactions" (
     "timestamp" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "type" INTEGER REFERENCES "static"."TransactionTypes" ("type"),
     "location" INTEGER REFERENCES "static"."Locations" ("id"),
+    "product" INTEGER REFERENCES "static"."Products" ("id"),
     "balance" INTEGER NOT NULL
 );
 

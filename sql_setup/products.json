@@ -1,442 +1,662 @@
 {
     "0": {
         "name": "None",
-        "coveredZones": 0
+        "fromZone": 0,
+        "toZone": 0,
+        "2hrDuration": 120
     },
     "1": {
         "name": "Zone 1+2",
-        "coveredZones": 3
+        "fromZone": 1,
+        "toZone": 2,
+        "2hrDuration": 120
     },
     "2": {
         "name": "Zone 1+2+3",
-        "coveredZones": 7
+        "fromZone": 1,
+        "toZone": 3,
+        "2hrDuration": 150
     },
     "3": {
         "name": "Zone 1/2 overlap",
-        "coveredZones": 0
+        "fromZone": 0,
+        "toZone": 0,
+        "2hrDuration": 120
     },
     "4": {
         "name": "Zones 1-15",
-        "coveredZones": 32767
+        "fromZone": 1,
+        "toZone": 15,
+        "2hrDuration": 270
     },
     "5": {
         "name": "Zone 2",
-        "coveredZones": 2
+        "fromZone": 2,
+        "toZone": 2,
+        "2hrDuration": 120
     },
     "6": {
         "name": "Zone 3",
-        "coveredZones": 4
+        "fromZone": 3,
+        "toZone": 3,
+        "2hrDuration": 120
     },
     "7": {
         "name": "Zone 4",
-        "coveredZones": 8
+        "fromZone": 4,
+        "toZone": 4,
+        "2hrDuration": 120
     },
     "8": {
         "name": "Zone 5",
-        "coveredZones": 16
+        "fromZone": 5,
+        "toZone": 5,
+        "2hrDuration": 120
     },
     "9": {
         "name": "Zone 6",
-        "coveredZones": 32
+        "fromZone": 6,
+        "toZone": 6,
+        "2hrDuration": 120
     },
     "10": {
         "name": "Zone 7",
-        "coveredZones": 64
+        "fromZone": 7,
+        "toZone": 7,
+        "2hrDuration": 120
     },
     "11": {
         "name": "Zone 8",
-        "coveredZones": 128
+        "fromZone": 8,
+        "toZone": 8,
+        "2hrDuration": 120
     },
     "12": {
         "name": "Zone 9",
-        "coveredZones": 256
+        "fromZone": 9,
+        "toZone": 9,
+        "2hrDuration": 120
     },
     "13": {
         "name": "Zone 10",
-        "coveredZones": 512
+        "fromZone": 10,
+        "toZone": 10,
+        "2hrDuration": 120
     },
     "14": {
         "name": "Zone 11",
-        "coveredZones": 1024
+        "fromZone": 11,
+        "toZone": 11,
+        "2hrDuration": 120
     },
     "15": {
         "name": "Zone 12",
-        "coveredZones": 2048
+        "fromZone": 12,
+        "toZone": 12,
+        "2hrDuration": 120
     },
     "16": {
         "name": "Zone 13",
-        "coveredZones": 4096
+        "fromZone": 13,
+        "toZone": 13,
+        "2hrDuration": 120
     },
     "17": {
         "name": "Zone 14",
-        "coveredZones": 8192
+        "fromZone": 14,
+        "toZone": 14,
+        "2hrDuration": 120
     },
     "18": {
         "name": "Zone 15",
-        "coveredZones": 16384
+        "fromZone": 15,
+        "toZone": 15,
+        "2hrDuration": 120
     },
     "19": {
         "name": "Zones 2-3",
-        "coveredZones": 6
+        "fromZone": 2,
+        "toZone": 3,
+        "2hrDuration": 120
     },
     "20": {
         "name": "Zones 3-4",
-        "coveredZones": 12
+        "fromZone": 3,
+        "toZone": 4,
+        "2hrDuration": 120
     },
     "21": {
         "name": "Zones 4-5",
-        "coveredZones": 24
+        "fromZone": 4,
+        "toZone": 5,
+        "2hrDuration": 120
     },
     "22": {
         "name": "Zones 5-6",
-        "coveredZones": 48
+        "fromZone": 5,
+        "toZone": 6,
+        "2hrDuration": 120
     },
     "23": {
         "name": "Zones 6-7",
-        "coveredZones": 96
+        "fromZone": 6,
+        "toZone": 7,
+        "2hrDuration": 120
     },
     "24": {
         "name": "Zones 7-8",
-        "coveredZones": 192
+        "fromZone": 7,
+        "toZone": 8,
+        "2hrDuration": 120
     },
     "25": {
         "name": "Zones 8-9",
-        "coveredZones": 384
+        "fromZone": 8,
+        "toZone": 9,
+        "2hrDuration": 120
     },
     "26": {
         "name": "Zones 9-10",
-        "coveredZones": 768
+        "fromZone": 9,
+        "toZone": 10,
+        "2hrDuration": 120
     },
     "27": {
         "name": "Zones 10-11",
-        "coveredZones": 1536
+        "fromZone": 10,
+        "toZone": 11,
+        "2hrDuration": 120
     },
     "28": {
         "name": "Zones 11-12",
-        "coveredZones": 3072
+        "fromZone": 11,
+        "toZone": 12,
+        "2hrDuration": 120
     },
     "29": {
         "name": "Zones 12-13",
-        "coveredZones": 6144
+        "fromZone": 12,
+        "toZone": 13,
+        "2hrDuration": 120
     },
     "30": {
         "name": "Zones 13-14",
-        "coveredZones": 12288
+        "fromZone": 13,
+        "toZone": 14,
+        "2hrDuration": 120
     },
     "31": {
         "name": "Zones 14-15",
-        "coveredZones": 24576
+        "fromZone": 14,
+        "toZone": 15,
+        "2hrDuration": 120
     },
     "32": {
         "name": "Zones 2-4",
-        "coveredZones": 14
+        "fromZone": 2,
+        "toZone": 4,
+        "2hrDuration": 150
     },
     "33": {
         "name": "Zones 3-5",
-        "coveredZones": 28
+        "fromZone": 3,
+        "toZone": 5,
+        "2hrDuration": 150
     },
     "34": {
         "name": "Zones 4-6",
-        "coveredZones": 56
+        "fromZone": 4,
+        "toZone": 6,
+        "2hrDuration": 150
     },
     "35": {
         "name": "Zones 5-7",
-        "coveredZones": 112
+        "fromZone": 5,
+        "toZone": 7,
+        "2hrDuration": 150
     },
     "36": {
         "name": "Zones 6-8",
-        "coveredZones": 224
+        "fromZone": 6,
+        "toZone": 8,
+        "2hrDuration": 150
     },
     "37": {
         "name": "Zones 7-9",
-        "coveredZones": 448
+        "fromZone": 7,
+        "toZone": 9,
+        "2hrDuration": 150
     },
     "38": {
         "name": "Zones 8-10",
-        "coveredZones": 896
+        "fromZone": 8,
+        "toZone": 10,
+        "2hrDuration": 150
     },
     "39": {
         "name": "Zones 9-11",
-        "coveredZones": 1792
+        "fromZone": 9,
+        "toZone": 11,
+        "2hrDuration": 150
     },
     "40": {
         "name": "Zones 10-12",
-        "coveredZones": 3584
+        "fromZone": 10,
+        "toZone": 12,
+        "2hrDuration": 150
     },
     "41": {
         "name": "Zones 11-13",
-        "coveredZones": 7168
+        "fromZone": 11,
+        "toZone": 13,
+        "2hrDuration": 150
     },
     "42": {
         "name": "Zones 12-14",
-        "coveredZones": 14336
+        "fromZone": 12,
+        "toZone": 14,
+        "2hrDuration": 150
     },
     "43": {
         "name": "Zones 13-15",
-        "coveredZones": 28672
+        "fromZone": 13,
+        "toZone": 15,
+        "2hrDuration": 150
     },
     "44": {
         "name": "Zones 2-5",
-        "coveredZones": 30
+        "fromZone": 2,
+        "toZone": 5,
+        "2hrDuration": 150
     },
     "45": {
         "name": "Zones 3-6",
-        "coveredZones": 60
+        "fromZone": 3,
+        "toZone": 6,
+        "2hrDuration": 150
     },
     "46": {
         "name": "Zones 4-7",
-        "coveredZones": 120
+        "fromZone": 4,
+        "toZone": 7,
+        "2hrDuration": 150
     },
     "47": {
         "name": "Zones 5-8",
-        "coveredZones": 240
+        "fromZone": 5,
+        "toZone": 8,
+        "2hrDuration": 150
     },
     "48": {
         "name": "Zones 6-9",
-        "coveredZones": 480
+        "fromZone": 6,
+        "toZone": 9,
+        "2hrDuration": 150
     },
     "49": {
         "name": "Zones 7-10",
-        "coveredZones": 960
+        "fromZone": 7,
+        "toZone": 10,
+        "2hrDuration": 150
     },
     "50": {
         "name": "Zones 8-11",
-        "coveredZones": 1920
+        "fromZone": 8,
+        "toZone": 11,
+        "2hrDuration": 150
     },
     "51": {
         "name": "Zones 9-12",
-        "coveredZones": 3840
+        "fromZone": 9,
+        "toZone": 12,
+        "2hrDuration": 150
     },
     "52": {
         "name": "Zones 10-13",
-        "coveredZones": 7680
+        "fromZone": 10,
+        "toZone": 13,
+        "2hrDuration": 150
     },
     "53": {
         "name": "Zones 11-14",
-        "coveredZones": 15360
+        "fromZone": 11,
+        "toZone": 14,
+        "2hrDuration": 150
     },
     "54": {
         "name": "Zones 12-15",
-        "coveredZones": 30720
+        "fromZone": 12,
+        "toZone": 15,
+        "2hrDuration": 150
     },
     "55": {
         "name": "Zones 2-6",
-        "coveredZones": 62
+        "fromZone": 2,
+        "toZone": 6,
+        "2hrDuration": 150
     },
     "56": {
         "name": "Zones 3-7",
-        "coveredZones": 124
+        "fromZone": 3,
+        "toZone": 7,
+        "2hrDuration": 150
     },
     "57": {
         "name": "Zones 4-8",
-        "coveredZones": 248
+        "fromZone": 4,
+        "toZone": 8,
+        "2hrDuration": 150
     },
     "58": {
         "name": "Zones 5-9",
-        "coveredZones": 496
+        "fromZone": 5,
+        "toZone": 9,
+        "2hrDuration": 150
     },
     "59": {
         "name": "Zones 6-10",
-        "coveredZones": 992
+        "fromZone": 6,
+        "toZone": 10,
+        "2hrDuration": 150
     },
     "60": {
         "name": "Zones 7-11",
-        "coveredZones": 1984
+        "fromZone": 7,
+        "toZone": 11,
+        "2hrDuration": 150
     },
     "61": {
         "name": "Zones 8-12",
-        "coveredZones": 3968
+        "fromZone": 8,
+        "toZone": 12,
+        "2hrDuration": 150
     },
     "62": {
         "name": "Zones 9-13",
-        "coveredZones": 7936
+        "fromZone": 9,
+        "toZone": 13,
+        "2hrDuration": 150
     },
     "63": {
         "name": "Zones 10-14",
-        "coveredZones": 15872
+        "fromZone": 10,
+        "toZone": 14,
+        "2hrDuration": 150
     },
     "64": {
         "name": "Zones 11-15",
-        "coveredZones": 31744
+        "fromZone": 11,
+        "toZone": 15,
+        "2hrDuration": 150
     },
     "65": {
         "name": "Zones 2-7",
-        "coveredZones": 126
+        "fromZone": 2,
+        "toZone": 7,
+        "2hrDuration": 180
     },
     "66": {
         "name": "Zones 3-8",
-        "coveredZones": 252
+        "fromZone": 3,
+        "toZone": 8,
+        "2hrDuration": 180
     },
     "67": {
         "name": "Zones 4-9",
-        "coveredZones": 504
+        "fromZone": 4,
+        "toZone": 9,
+        "2hrDuration": 180
     },
     "68": {
         "name": "Zones 5-10",
-        "coveredZones": 1008
+        "fromZone": 5,
+        "toZone": 10,
+        "2hrDuration": 180
     },
     "69": {
         "name": "Zones 6-11",
-        "coveredZones": 2016
+        "fromZone": 6,
+        "toZone": 11,
+        "2hrDuration": 180
     },
     "70": {
         "name": "Zones 7-12",
-        "coveredZones": 4032
+        "fromZone": 7,
+        "toZone": 12,
+        "2hrDuration": 180
     },
     "71": {
         "name": "Zones 8-13",
-        "coveredZones": 8064
+        "fromZone": 8,
+        "toZone": 13,
+        "2hrDuration": 180
     },
     "72": {
         "name": "Zones 9-14",
-        "coveredZones": 16128
+        "fromZone": 9,
+        "toZone": 14,
+        "2hrDuration": 180
     },
     "73": {
         "name": "Zones 10-15",
-        "coveredZones": 32256
+        "fromZone": 10,
+        "toZone": 15,
+        "2hrDuration": 180
     },
     "74": {
         "name": "Zones 2-8",
-        "coveredZones": 254
+        "fromZone": 2,
+        "toZone": 8,
+        "2hrDuration": 180
     },
     "75": {
         "name": "Zones 3-9",
-        "coveredZones": 508
+        "fromZone": 3,
+        "toZone": 9,
+        "2hrDuration": 180
     },
     "76": {
         "name": "Zones 4-10",
-        "coveredZones": 1016
+        "fromZone": 4,
+        "toZone": 10,
+        "2hrDuration": 180
     },
     "77": {
         "name": "Zones 5-11",
-        "coveredZones": 2032
+        "fromZone": 5,
+        "toZone": 11,
+        "2hrDuration": 180
     },
     "78": {
         "name": "Zones 6-12",
-        "coveredZones": 4064
+        "fromZone": 6,
+        "toZone": 12,
+        "2hrDuration": 180
     },
     "79": {
         "name": "Zones 7-13",
-        "coveredZones": 8128
+        "fromZone": 7,
+        "toZone": 13,
+        "2hrDuration": 180
     },
     "80": {
         "name": "Zones 8-14",
-        "coveredZones": 16256
+        "fromZone": 8,
+        "toZone": 14,
+        "2hrDuration": 180
     },
     "81": {
         "name": "Zones 9-15",
-        "coveredZones": 32512
+        "fromZone": 9,
+        "toZone": 15,
+        "2hrDuration": 180
     },
     "82": {
         "name": "Zones 2-9",
-        "coveredZones": 510
+        "fromZone": 2,
+        "toZone": 9,
+        "2hrDuration": 180
     },
     "83": {
         "name": "Zones 3-10",
-        "coveredZones": 1020
+        "fromZone": 3,
+        "toZone": 10,
+        "2hrDuration": 180
     },
     "84": {
         "name": "Zones 4-11",
-        "coveredZones": 2040
+        "fromZone": 4,
+        "toZone": 11,
+        "2hrDuration": 180
     },
     "85": {
         "name": "Zones 5-12",
-        "coveredZones": 4080
+        "fromZone": 5,
+        "toZone": 12,
+        "2hrDuration": 180
     },
     "86": {
         "name": "Zones 6-13",
-        "coveredZones": 8160
+        "fromZone": 6,
+        "toZone": 13,
+        "2hrDuration": 180
     },
     "87": {
         "name": "Zones 7-14",
-        "coveredZones": 16320
+        "fromZone": 7,
+        "toZone": 14,
+        "2hrDuration": 180
     },
     "88": {
         "name": "Zones 8-15",
-        "coveredZones": 32640
+        "fromZone": 8,
+        "toZone": 15,
+        "2hrDuration": 180
     },
     "89": {
         "name": "Zones 2-10",
-        "coveredZones": 1022
+        "fromZone": 2,
+        "toZone": 10,
+        "2hrDuration": 210
     },
     "90": {
         "name": "Zones 3-11",
-        "coveredZones": 2044
+        "fromZone": 3,
+        "toZone": 11,
+        "2hrDuration": 210
     },
     "91": {
         "name": "Zones 4-12",
-        "coveredZones": 4088
+        "fromZone": 4,
+        "toZone": 12,
+        "2hrDuration": 210
     },
     "92": {
         "name": "Zones 5-13",
-        "coveredZones": 8176
+        "fromZone": 5,
+        "toZone": 13,
+        "2hrDuration": 210
     },
     "93": {
         "name": "Zones 6-14",
-        "coveredZones": 16352
+        "fromZone": 6,
+        "toZone": 14,
+        "2hrDuration": 210
     },
     "94": {
         "name": "Zones 7-15",
-        "coveredZones": 32704
+        "fromZone": 7,
+        "toZone": 15,
+        "2hrDuration": 210
     },
     "95": {
         "name": "Zones 2-11",
-        "coveredZones": 2046
+        "fromZone": 2,
+        "toZone": 11,
+        "2hrDuration": 210
     },
     "96": {
         "name": "Zones 3-12",
-        "coveredZones": 4092
+        "fromZone": 3,
+        "toZone": 12,
+        "2hrDuration": 210
     },
     "97": {
         "name": "Zones 4-13",
-        "coveredZones": 8184
+        "fromZone": 4,
+        "toZone": 13,
+        "2hrDuration": 210
     },
     "98": {
         "name": "Zones 5-14",
-        "coveredZones": 16368
+        "fromZone": 5,
+        "toZone": 14,
+        "2hrDuration": 210
     },
     "99": {
         "name": "Zones 6-15",
-        "coveredZones": 32736
+        "fromZone": 6,
+        "toZone": 15,
+        "2hrDuration": 210
     },
     "100": {
         "name": "Zones 2-12",
-        "coveredZones": 4094
+        "fromZone": 2,
+        "toZone": 12,
+        "2hrDuration": 210
     },
     "101": {
         "name": "Zones 3-13",
-        "coveredZones": 8188
+        "fromZone": 3,
+        "toZone": 13,
+        "2hrDuration": 210
     },
     "102": {
         "name": "Zones 4-14",
-        "coveredZones": 16376
+        "fromZone": 4,
+        "toZone": 14,
+        "2hrDuration": 210
     },
     "103": {
         "name": "Zones 5-15",
-        "coveredZones": 32752
+        "fromZone": 5,
+        "toZone": 15,
+        "2hrDuration": 210
     },
     "104": {
         "name": "Zones 2-13",
-        "coveredZones": 8190
+        "fromZone": 2,
+        "toZone": 13,
+        "2hrDuration": 240
     },
     "105": {
         "name": "Zones 3-14",
-        "coveredZones": 16380
+        "fromZone": 3,
+        "toZone": 14,
+        "2hrDuration": 240
     },
     "106": {
         "name": "Zones 4-15",
-        "coveredZones": 32760
+        "fromZone": 4,
+        "toZone": 15,
+        "2hrDuration": 240
     },
     "107": {
         "name": "Zones 2-14",
-        "coveredZones": 16382
+        "fromZone": 2,
+        "toZone": 14,
+        "2hrDuration": 240
     },
     "108": {
         "name": "Zones 3-15",
-        "coveredZones": 32764
+        "fromZone": 3,
+        "toZone": 15,
+        "2hrDuration": 240
     },
     "109": {
         "name": "Zones 2-15",
-        "coveredZones": 32766
+        "fromZone": 2,
+        "toZone": 15,
+        "2hrDuration": 240
     }
 }
