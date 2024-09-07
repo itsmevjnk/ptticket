@@ -99,14 +99,11 @@
         "topic": "",
         "payload": "object",
         "payloadType": "date",
-        "x": 240,
-        "y": 560,
+        "x": 200,
+        "y": 520,
         "wires": [
             [
-                "0f7012e50c5181f0",
-                "76712dbf4477aaac",
-                "04992652fc426024",
-                "0d7e9812870ead24"
+                "285db8d436534587"
             ]
         ]
     },
@@ -132,15 +129,15 @@
         "id": "0f7012e50c5181f0",
         "type": "function",
         "z": "216f0e6810bad0c9",
-        "name": "Extract date from Date object",
-        "func": "let dateObj = msg.payload;\nmsg.queryParameters = {};\nmsg.queryParameters.date = `${dateObj.getFullYear()}-${dateObj.getMonth()}-${dateObj.getDate()}`;\nreturn msg;",
+        "name": "Get current date",
+        "func": "let dateObj = new Date();\nmsg.queryParameters = {};\nmsg.queryParameters.date = `${dateObj.getFullYear()}-${dateObj.getMonth()}-${dateObj.getDate()}`;\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 540,
+        "x": 500,
         "y": 620,
         "wires": [
             [
@@ -3787,5 +3784,26 @@
         "x": 2240,
         "y": 2140,
         "wires": []
+    },
+    {
+        "id": "285db8d436534587",
+        "type": "postgresql",
+        "z": "216f0e6810bad0c9",
+        "name": "Set session timezone",
+        "query": "SET TIME ZONE 'Australia/Melbourne';",
+        "postgreSQLConfig": "c8ab439c6aeb96e1",
+        "split": false,
+        "rowsPerMsg": 1,
+        "outputs": 1,
+        "x": 220,
+        "y": 560,
+        "wires": [
+            [
+                "0f7012e50c5181f0",
+                "76712dbf4477aaac",
+                "04992652fc426024",
+                "0d7e9812870ead24"
+            ]
+        ]
     }
 ]

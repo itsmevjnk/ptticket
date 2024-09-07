@@ -2106,5 +2106,48 @@
         "x": 670,
         "y": 40,
         "wires": []
+    },
+    {
+        "id": "6f535b50cd98bd73",
+        "type": "inject",
+        "z": "fab23692fcecca97",
+        "name": "Initialisation",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 190,
+        "y": 1280,
+        "wires": [
+            [
+                "2310a17dd89df8be"
+            ]
+        ]
+    },
+    {
+        "id": "2310a17dd89df8be",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Set timezone",
+        "func": "process.env.TZ = 'Australia/Melbourne';\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 1280,
+        "wires": [
+            []
+        ]
     }
 ]

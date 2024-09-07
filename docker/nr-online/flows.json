@@ -16,8 +16,8 @@
         "method": "get",
         "upload": false,
         "swaggerDoc": "",
-        "x": 280,
-        "y": 100,
+        "x": 140,
+        "y": 200,
         "wires": [
             [
                 "1a5744008db16476"
@@ -36,8 +36,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 530,
-        "y": 100,
+        "x": 390,
+        "y": 200,
         "wires": [
             [
                 "d90bba12944ed8f9"
@@ -51,8 +51,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 730,
-        "y": 100,
+        "x": 590,
+        "y": 200,
         "wires": []
     },
     {
@@ -259,8 +259,7 @@
         "y": 520,
         "wires": [
             [
-                "01de6b48752a3262",
-                "f3ef321e200264fe"
+                "01de6b48752a3262"
             ],
             [
                 "dd4b426bcbad5ae4"
@@ -3455,23 +3454,6 @@
         ]
     },
     {
-        "id": "f3ef321e200264fe",
-        "type": "debug",
-        "z": "743b84be8cadd541",
-        "name": "debug 1",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 920,
-        "y": 460,
-        "wires": []
-    },
-    {
         "id": "e356177a66e65159",
         "type": "change",
         "z": "743b84be8cadd541",
@@ -3556,6 +3538,49 @@
             [
                 "5f03720703ea9eb7"
             ]
+        ]
+    },
+    {
+        "id": "6f535b50cd98bd73",
+        "type": "inject",
+        "z": "743b84be8cadd541",
+        "name": "Initialisation",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 110,
+        "y": 160,
+        "wires": [
+            [
+                "2310a17dd89df8be"
+            ]
+        ]
+    },
+    {
+        "id": "2310a17dd89df8be",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Set timezone",
+        "func": "process.env.TZ = 'Australia/Melbourne';\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 270,
+        "y": 160,
+        "wires": [
+            []
         ]
     }
 ]
