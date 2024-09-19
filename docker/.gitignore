@@ -2,3 +2,6 @@ postgres
 node_modules/
 .npm/
 *.backup
+.config*
+flows_cred.json
+lib/
