@@ -3539,48 +3539,5 @@
                 "5f03720703ea9eb7"
             ]
         ]
-    },
-    {
-        "id": "6f535b50cd98bd73",
-        "type": "inject",
-        "z": "743b84be8cadd541",
-        "name": "Initialisation",
-        "props": [
-            {
-                "p": "payload"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": true,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "x": 110,
-        "y": 160,
-        "wires": [
-            [
-                "2310a17dd89df8be"
-            ]
-        ]
-    },
-    {
-        "id": "2310a17dd89df8be",
-        "type": "function",
-        "z": "743b84be8cadd541",
-        "name": "Set timezone",
-        "func": "process.env.TZ = 'Australia/Melbourne';\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 270,
-        "y": 160,
-        "wires": [
-            []
-        ]
     }
 ]
