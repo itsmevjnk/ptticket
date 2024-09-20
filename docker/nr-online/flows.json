@@ -329,7 +329,7 @@
         "type": "function",
         "z": "743b84be8cadd541",
         "name": "Check card details against provided",
-        "func": "msg.cardOK = (\n    msg.details.fareType == msg.verifyDetails.fareType\n    && msg.details.balance == msg.verifyDetails.balance\n    && msg.details.dailyExpenditure == msg.verifyDetails.dailyExpenditure\n    && msg.details.touchedOn == msg.verifyDetails.touchedOn\n    && msg.details.currentProduct == msg.verifyDetails.currentProduct\n    && msg.details.prodValidated.slice(0, -5) == msg.verifyDetails.prodValidated.slice(0, -5) // ignore millisecond part\n    && msg.details.prodDuration == msg.verifyDetails.prodDuration\n    && (\n        (msg.details.prodBits[0] == 'AAAAAAAAAAAAAAAAAAAAAA==' && msg.details.prodBits[1] == 'AAAAAAAAAAAAAAAAAAAAAA==') // TODO: this can lead to exploitable scenarios!\n        || (msg.details.prodBits[0] == msg.verifyDetails.prodBits[0] && msg.details.prodBits[1] == msg.verifyDetails.prodBits[1])\n    )\n);\n\n// if (msg.cardOK) {\n//     /* check last transaction */\n//     if (\n//         (msg.verifyDetails.lastTransaction !== null && msg.details.lastTransaction === null)\n//         || (msg.verifyDetails.lastTransaction === null && msg.details.lastTransaction !== null)\n//     ) msg.cardOK = false;\n//     else if (msg.verifyDetails.lastTransaction !== null) {\n//         msg.cardOK = (\n//             msg.verifyDetails.lastTransaction.id == msg.details.lastTransaction.id\n//             && msg.verifyDetails.lastTransaction.timestamp == msg.details.lastTransaction.timestamp\n//             && msg.verifyDetails.lastTransaction.type == msg.details.lastTransaction.type\n//             && msg.verifyDetails.lastTransaction.location == msg.details.lastTransaction.location\n//             && msg.verifyDetails.lastTransaction.balance == msg.details.lastTransaction.balance\n//         );\n//     }\n// }\n\nif (msg.cardOK) {\n    /* check passes */\n    if (msg.details.passes.length != msg.verifyDetails.passes) msg.cardOK = false;\n    else {\n        let a = msg.verifyDetails.passes;\n        let b = msg.details.passes;\n        for (let i = 0; i < a.length && msg.cardOK; i++) {\n            let foundB = false;\n            for (let j = 0; j < b.length; j++) {\n                if (b[j].transactionID === a[i].transactionID) {\n                    foundB = true;\n                    \n                    msg.cardOK = ((a[i].activationDate !== null) == b[j].hasOwnProperty('expiryDate'))\n                        && (a[i].hasOwnProperty('duration') == b[j].hasOwnProperty('duration'))\n                        && (a[i].product !== b[j].product);\n                    if (msg.cardOK) {\n                        if (a[i].hasOwnProperty('duration') == b[j].hasOwnProperty('duration')) {\n                            msg.cardOK = a[i].duration === b[j].duration;\n                        } else {\n                            let expiryDateA = new Date(a[i].activationDate);\n                            if (a[i].duration >= 0) {\n                                expiryDateA.setDate(expiryDateA.getDate() - a[i].duration);\n                            } else {\n                                if (expiryDateA.getHours() >= 3) expiryDateA.setDate(expiryDateA.getDate() + 1);\n                                expiryDateA.setHours(3, 0, 0, 0);\n                            }\n                            let expiryDateB = new Date(b[j].expiryDate);\n                            msg.cardOK = expiryDateA.getTime() == expiryDateB.getTime();\n                        }\n                    }\n                    break;\n                }\n            }\n            if (!foundB) {\n                msg.cardOK = false;\n                break;\n            }\n        }\n    }\n}\n\nreturn msg;",
+        "func": "msg.cardOK = (\n    msg.details.fareType == msg.verifyDetails.fareType\n    && msg.details.balance == msg.verifyDetails.balance\n    && msg.details.dailyExpenditure == msg.verifyDetails.dailyExpenditure\n    && msg.details.touchedOn == msg.verifyDetails.touchedOn\n    && msg.details.currentProduct == msg.verifyDetails.currentProduct\n    && msg.details.prodValidated.slice(0, -5) == msg.verifyDetails.prodValidated.slice(0, -5) // ignore millisecond part\n    && msg.details.prodDuration == msg.verifyDetails.prodDuration\n    && (\n        (msg.details.prodBits[0] == 'AAAAAAAAAAAAAAAAAAAAAA==' && msg.details.prodBits[1] == 'AAAAAAAAAAAAAAAAAAAAAA==') // TODO: this can lead to exploitable scenarios!\n        || (msg.details.prodBits[0] == msg.verifyDetails.prodBits[0] && msg.details.prodBits[1] == msg.verifyDetails.prodBits[1])\n    )\n);\n\n// if (msg.cardOK) {\n//     /* check last transaction */\n//     if (\n//         (msg.verifyDetails.lastTransaction !== null && msg.details.lastTransaction === null)\n//         || (msg.verifyDetails.lastTransaction === null && msg.details.lastTransaction !== null)\n//     ) msg.cardOK = false;\n//     else if (msg.verifyDetails.lastTransaction !== null) {\n//         msg.cardOK = (\n//             msg.verifyDetails.lastTransaction.id == msg.details.lastTransaction.id\n//             && msg.verifyDetails.lastTransaction.timestamp == msg.details.lastTransaction.timestamp\n//             && msg.verifyDetails.lastTransaction.type == msg.details.lastTransaction.type\n//             && msg.verifyDetails.lastTransaction.location == msg.details.lastTransaction.location\n//             && msg.verifyDetails.lastTransaction.balance == msg.details.lastTransaction.balance\n//         );\n//     }\n// }\n\nif (msg.cardOK) {\n    /* check passes */\n    if (msg.details.passes.length != msg.verifyDetails.passes.length) msg.cardOK = false;\n    else {\n        let a = msg.verifyDetails.passes;\n        let b = msg.details.passes;\n        for (let i = 0; i < a.length && msg.cardOK; i++) {\n            let foundB = false;\n            for (let j = 0; j < b.length; j++) {\n                if (b[j].transactionID === a[i].transactionID) {\n                    foundB = true;\n                    \n                    msg.cardOK = ((a[i].activationDate !== null) == b[j].hasOwnProperty('expiryDate'))\n                        && (a[i].hasOwnProperty('duration') == b[j].hasOwnProperty('duration'))\n                        && (a[i].product !== b[j].product);\n                    if (msg.cardOK) {\n                        if (a[i].hasOwnProperty('duration') == b[j].hasOwnProperty('duration')) {\n                            msg.cardOK = a[i].duration === b[j].duration;\n                        } else {\n                            let expiryDateA = new Date(a[i].activationDate);\n                            expiryDateA.setDate(expiryDateA.getDate() + a[i].duration);\n                            let expiryDateB = new Date(b[j].expiryDate);\n                            msg.cardOK = expiryDateA.getTime() == expiryDateB.getTime();\n                        }\n                    }\n                    break;\n                }\n            }\n            if (!foundB) {\n                msg.cardOK = false;\n                break;\n            }\n        }\n    }\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -378,7 +378,7 @@
         "type": "function",
         "z": "743b84be8cadd541",
         "name": "Return 403 (block card)",
-        "func": "msg.statusCode = 403;\nmsg.payload = {\n    status: msg.statusCode,\n    message: {\n        state: 'blocked',\n        text: 'Card blocked - please contact support'\n    },\n    transaction: null,\n    details: msg.details,\n    time: Date.now()\n};\nreturn msg;",
+        "func": "msg.statusCode = 403;\nmsg.payload = {\n    status: msg.statusCode,\n    message: {\n        state: 'blocked',\n        text: 'Card blocked - please contact support',\n        transaction: null,\n        details: msg.details\n    },\n    time: Date.now()\n};\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -553,7 +553,7 @@
         "type": "function",
         "z": "743b84be8cadd541",
         "name": "Perform touch on",
-        "func": "msg.details.touchedOn = msg.locDetails.minProduct;\n\nlet setValidationTimestamp = (msg.details.prodDuration == 0);\nif (!setValidationTimestamp) {\n    /* check if expired */\n    if (msg.details.prodExpiry != 0) {\n        let prodExpiry = new Date(msg.details.prodValidated);\n        if (msg.details.prodExpiry < 0) {\n            /* daily fare */\n            if (prodExpiry.getHours() >= 3) prodExpiry.setDate(prodExpiry.getDate() + 1);\n            prodExpiry.setHours(3, 0, 0, 0);\n        } else prodExpiry.setMinutes(prodExpiry.getMinutes() + msg.details.prodExpiry);\n    }\n}\nif (setValidationTimestamp) msg.details.prodValidated = msg.timestamp.toISOString();\n\nreturn msg;",
+        "func": "msg.details.touchedOn = msg.locDetails.minProduct;\n\nlet setValidationTimestamp = (msg.details.prodDuration == 0);\nif (!setValidationTimestamp) {\n    /* check if expired */\n    let prodExpiry = new Date(msg.details.prodValidated);\n    if (msg.details.prodDuration < 0) {\n        /* daily fare */\n        if (prodExpiry.getHours() >= 3) prodExpiry.setDate(prodExpiry.getDate() + 1);\n        prodExpiry.setHours(3, 0, 0, 0);\n    } else prodExpiry.setMinutes(prodExpiry.getMinutes() + msg.details.prodDuration);\n\n    setValidationTimestamp = prodExpiry.getTime() < Date.now();\n}\nif (setValidationTimestamp) msg.details.prodValidated = msg.timestamp.toISOString();\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -660,26 +660,6 @@
         "x": 450,
         "y": 520,
         "wires": []
-    },
-    {
-        "id": "6ba6de2570e28515",
-        "type": "function",
-        "z": "743b84be8cadd541",
-        "name": "Compare product expiry",
-        "func": "msg.prodExpired = new Date(msg.details.prodExpiry) < msg.timestamp;\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 870,
-        "y": 800,
-        "wires": [
-            [
-                "b4ef72cc090c5f05"
-            ]
-        ]
     },
     {
         "id": "b73fcc803ef57249",
@@ -1344,31 +1324,6 @@
         ]
     },
     {
-        "id": "b4ef72cc090c5f05",
-        "type": "switch",
-        "z": "743b84be8cadd541",
-        "name": "Check if current product had expired",
-        "property": "prodExpired",
-        "propertyType": "msg",
-        "rules": [
-            {
-                "t": "false"
-            },
-            {
-                "t": "else"
-            }
-        ],
-        "checkall": "true",
-        "repair": false,
-        "outputs": 2,
-        "x": 1150,
-        "y": 800,
-        "wires": [
-            [],
-            []
-        ]
-    },
-    {
         "id": "059c70d511bf2d42",
         "type": "http request",
         "z": "743b84be8cadd541",
@@ -1550,7 +1505,6 @@
         "y": 740,
         "wires": [
             [
-                "6ba6de2570e28515",
                 "3a349ea16f23c655"
             ]
         ]
@@ -1952,7 +1906,7 @@
         "method": "GET",
         "ret": "obj",
         "paytoqs": "ignore",
-        "url": "{{{dbHost}}}/api/products/{{{details.passes[1].product}}}",
+        "url": "{{{dbHost}}}/api/products/{{{details.passes[0].product}}}",
         "tls": "",
         "persist": false,
         "proxy": "",
@@ -2124,7 +2078,7 @@
         "type": "function",
         "z": "743b84be8cadd541",
         "name": "Find suitable pass to cover product",
-        "func": "let passIdx = -1;\n\nfor (let i = msg.details.passes.length - 1; i >= 0; i++) {\n    let prodDetails = msg.details.passes[i].prodDetails;\n    if (prodDetails.fromZone <= msg.minProd.details.fromZone && prodDetails.toZone >= msg.minProd.details.toZone) {\n        /* suitable product found */\n        passIdx = i;\n        if (msg.details.passes[i].activationDate !== null) break; // we've found a pre-activated pass\n    }\n}\n\nif (passIdx >= 0) {\n    msg.passIdx = passIdx;\n    msg.ticketValue = 2 * msg.fareDetails.productFares[msg.details.passes[passIdx].id];\n}\n\nreturn msg;",
+        "func": "let passIdx = -1;\n\nfor (let i = msg.details.passes.length - 1; i >= 0; i++) {\n    let prodDetails = msg.details.passes[i].prodDetails;\n    if (prodDetails.fromZone <= msg.minProd.details.fromZone && prodDetails.toZone >= msg.minProd.details.toZone) {\n        /* suitable product found */\n        passIdx = i;\n        if (msg.details.passes[i].activationDate !== null) break; // we've found a pre-activated pass\n    }\n}\n\nif (passIdx >= 0) {\n    msg.passIdx = passIdx;\n    msg.ticketValue = 2 * msg.fareDetails.productFares[msg.details.passes[passIdx].product];\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -2637,7 +2591,7 @@
         "type": "function",
         "z": "743b84be8cadd541",
         "name": "Set ticket value",
-        "func": "msg.ticketValue = msg.fareDetails.productFares[\n    msg.details.currentProduct\n];\n\nlet prodBits2 = Buffer.from(msg.details.prodBits[1], 'base64');\nlet byte = Math.floor(msg.details.currentProduct / 8), bit = msg.details.currentProduct % 8;\nif (prodBits2[byte] & (1 << bit)) msg.ticketValue *= 2; // daily\n\nreturn msg;",
+        "func": "msg.ticketValue = msg.fareDetails.productFares[\n    msg.details.currentProduct\n];\n\nlet prodBits1 = Buffer.from(msg.details.prodBits[0], 'base64');\nlet byte = Math.floor(msg.details.currentProduct / 8), bit = msg.details.currentProduct % 8;\nif (prodBits1[byte] & (1 << bit)) msg.ticketValue *= 2; // daily (as it has already been set)\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
@@ -3038,7 +2992,7 @@
             },
             {
                 "t": "set",
-                "p": "currentProduct",
+                "p": "details.currentProduct",
                 "pt": "msg",
                 "to": "0",
                 "tot": "num"
@@ -3053,7 +3007,7 @@
         "y": 580,
         "wires": [
             [
-                "88bb837d83dd7346"
+                "a7bbc5aa6ed09ad4"
             ]
         ]
     },
@@ -3375,7 +3329,7 @@
         "propertyType": "msg",
         "rules": [
             {
-                "t": "false"
+                "t": "true"
             },
             {
                 "t": "else"
@@ -3539,5 +3493,15 @@
                 "5f03720703ea9eb7"
             ]
         ]
+    },
+    {
+        "id": "f3f7241adfe578c1",
+        "type": "comment",
+        "z": "743b84be8cadd541",
+        "name": "Expired and already handled",
+        "info": "",
+        "x": 2240,
+        "y": 1460,
+        "wires": []
     }
 ]
