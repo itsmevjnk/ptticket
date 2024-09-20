@@ -11,14 +11,18 @@ let dbConfig = {
 console.log('Connecting to database with config:', dbConfig);
 const pool = new Pool(dbConfig);
 
-process.env.TZ = 'Australia/Melbourne';
+// TZ should be UTC because turns out node-postgress doesn't exactly like having it set to anything else to then feed it with ISO timestamps
+// process.env.TZ = 'Australia/Melbourne';
 
 /* static data fetching */
 let staticData = null;
 const fetchStaticData = () => {
     const newData = {};
     
-    let timestamp = new Date();
+    let timestampUTC = new Date(); // timestamp in UTC
+    let timestamp = new Date(timestampUTC.toLocaleString('en-US', { timeZone: 'Australia/Melbourne' })); // timestamp in AEST/AEDT
+    let tzOffset = (Math.floor(timestamp.getTime() / 1000) - Math.floor(timestampUTC.getTime() / 1000)) / 3600; // get timezone offset in hours
+    console.log(`Time zone offset: ${(tzOffset >= 0) ? '+' : ''}${tzOffset} hr`);
     let date = timestamp.getFullYear() + '-' + (timestamp.getMonth() + 1) + '-' + timestamp.getDate(); // get date string
     console.log(`Querying applicable special dates for ${date}.`);
     let pDate = pool.query(
@@ -97,7 +101,8 @@ const fetchStaticData = () => {
     // 1+2+3
     Promise.all([pFareTypes, pTypes, pLocations]).then(() => {
         if (timestamp.getHours() >= 3) timestamp.setDate(timestamp.getDate() + 1);
-        timestamp.setHours(3, 0, 0, 0); // 3am
+        timestamp.setHours(3 - tzOffset, 0, 0, 0); // 3am AEST/AEDT
+        timestamp = new Date(timestamp.toLocaleString('en-US', { timeZone: 'UTC' }));
         newData.expiry = timestamp;
         staticData = newData;
 
