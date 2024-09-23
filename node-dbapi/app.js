@@ -16,6 +16,8 @@ const pool = new Pool(dbConfig);
 
 /* static data fetching */
 let staticData = null;
+const cron = require('node-cron');
+let cronSet = false;
 const fetchStaticData = () => {
     const newData = {};
     
@@ -108,13 +110,16 @@ const fetchStaticData = () => {
 
         // console.log(`New static data (expires on ${staticData.expiry}):`, staticData);
         console.log('New static data fetched successfully, expiry timestamp:', staticData.expiry.toString());
+
+        if (!cronSet) {
+            let cronStr = `0 0 ${timestamp.getHours()} * * *`;
+            cron.schedule(cronStr, fetchStaticData); // schedule static data fetching at 3AM every day
+            console.log(`Static data refresh scheduled with cron string ${cronStr}`);
+            cronSet = true;
+        }
     });
-    
 };
 fetchStaticData();
-
-const cron = require('node-cron');
-cron.schedule('0 0 3 * * *', fetchStaticData); // schedule static data fetching at 3AM every day
 
 const staticExpired = () => {
     return (staticData === null) || (staticData.expiry < new Date());
