@@ -1,3 +1,5 @@
+CREATE EXTENSION pgcrypto;
+
 CREATE SCHEMA "static" AUTHORIZATION "static";
 CREATE SCHEMA "dynamic" AUTHORIZATION "dynamic";
 
