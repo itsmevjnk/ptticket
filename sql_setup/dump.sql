@@ -1,11 +1,77 @@
 --
+-- PostgreSQL database cluster dump
+--
+
+-- Started on 2024-09-23 07:09:59 UTC
+
+SET default_transaction_read_only = off;
+
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+
+--
+-- Drop databases (except postgres and template1)
+--
+
+DROP DATABASE IF EXISTS ptticket;
+
+
+
+
+--
+-- Drop roles
+--
+
+DROP ROLE IF EXISTS auth;
+DROP ROLE IF EXISTS dynamic;
+DROP ROLE IF EXISTS postgres;
+DROP ROLE IF EXISTS ptticket;
+DROP ROLE IF EXISTS static;
+
+
+--
+-- Roles
+--
+
+CREATE ROLE auth;
+ALTER ROLE auth WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN NOREPLICATION NOBYPASSRLS PASSWORD 'md5c89f4d7443cc7cfeb625f5a150f2fe22';
+CREATE ROLE dynamic;
+ALTER ROLE dynamic WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN NOREPLICATION NOBYPASSRLS PASSWORD 'md56ad553189a4bc2efeeda27bfe4e12f1b';
+CREATE ROLE postgres;
+ALTER ROLE postgres WITH SUPERUSER INHERIT CREATEROLE CREATEDB LOGIN REPLICATION BYPASSRLS PASSWORD 'md53175bce1d3201d16594cebf9d7eb3f9d';
+CREATE ROLE ptticket;
+ALTER ROLE ptticket WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB NOLOGIN NOREPLICATION NOBYPASSRLS;
+CREATE ROLE static;
+ALTER ROLE static WITH NOSUPERUSER INHERIT NOCREATEROLE NOCREATEDB LOGIN NOREPLICATION NOBYPASSRLS PASSWORD 'md5552de09713c5913e9c1bb664ea828820';
+
+
+--
+-- Role memberships
+--
+
+GRANT ptticket TO auth GRANTED BY postgres;
+GRANT ptticket TO dynamic GRANTED BY postgres;
+GRANT ptticket TO static GRANTED BY postgres;
+
+
+
+
+--
+-- Databases
+--
+
+--
+-- Database "ptticket" dump
+--
+
+--
 -- PostgreSQL database dump
 --
 
 -- Dumped from database version 12.20
 -- Dumped by pg_dump version 12.20
 
--- Started on 2024-09-19 13:26:17 UTC
+-- Started on 2024-09-23 07:10:00 UTC
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -19,7 +85,7 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 3173 (class 1262 OID 16384)
+-- TOC entry 3183 (class 1262 OID 16384)
 -- Name: ptticket; Type: DATABASE; Schema: -; Owner: postgres
 --
 
@@ -42,7 +108,17 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- TOC entry 8 (class 2615 OID 16504)
+-- TOC entry 11 (class 2615 OID 16793)
+-- Name: auth; Type: SCHEMA; Schema: -; Owner: auth
+--
+
+CREATE SCHEMA auth;
+
+
+ALTER SCHEMA auth OWNER TO auth;
+
+--
+-- TOC entry 5 (class 2615 OID 16633)
 -- Name: dynamic; Type: SCHEMA; Schema: -; Owner: dynamic
 --
 
@@ -52,7 +128,7 @@ CREATE SCHEMA dynamic;
 ALTER SCHEMA dynamic OWNER TO dynamic;
 
 --
--- TOC entry 10 (class 2615 OID 16503)
+-- TOC entry 9 (class 2615 OID 16632)
 -- Name: static; Type: SCHEMA; Schema: -; Owner: static
 --
 
@@ -61,12 +137,42 @@ CREATE SCHEMA static;
 
 ALTER SCHEMA static OWNER TO static;
 
+--
+-- TOC entry 2 (class 3079 OID 16595)
+-- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+
+
+--
+-- TOC entry 3186 (class 0 OID 0)
+-- Dependencies: 2
+-- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
 
 --
--- TOC entry 217 (class 1259 OID 16644)
+-- TOC entry 219 (class 1259 OID 16794)
+-- Name: Keys; Type: TABLE; Schema: auth; Owner: postgres
+--
+
+CREATE TABLE auth."Keys" (
+    key uuid DEFAULT public.gen_random_uuid() NOT NULL,
+    "timestamp" timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+);
+
+
+ALTER TABLE auth."Keys" OWNER TO postgres;
+
+--
+-- TOC entry 218 (class 1259 OID 16773)
 -- Name: Passes; Type: TABLE; Schema: dynamic; Owner: postgres
 --
 
@@ -82,7 +188,7 @@ CREATE TABLE dynamic."Passes" (
 ALTER TABLE dynamic."Passes" OWNER TO postgres;
 
 --
--- TOC entry 216 (class 1259 OID 16632)
+-- TOC entry 217 (class 1259 OID 16761)
 -- Name: PhysicalTickets; Type: TABLE; Schema: dynamic; Owner: postgres
 --
 
@@ -98,7 +204,7 @@ CREATE TABLE dynamic."PhysicalTickets" (
 ALTER TABLE dynamic."PhysicalTickets" OWNER TO postgres;
 
 --
--- TOC entry 214 (class 1259 OID 16578)
+-- TOC entry 215 (class 1259 OID 16707)
 -- Name: Tickets; Type: TABLE; Schema: dynamic; Owner: postgres
 --
 
@@ -117,7 +223,7 @@ CREATE TABLE dynamic."Tickets" (
 ALTER TABLE dynamic."Tickets" OWNER TO postgres;
 
 --
--- TOC entry 215 (class 1259 OID 16605)
+-- TOC entry 216 (class 1259 OID 16734)
 -- Name: Transactions; Type: TABLE; Schema: dynamic; Owner: postgres
 --
 
@@ -135,7 +241,7 @@ CREATE TABLE dynamic."Transactions" (
 ALTER TABLE dynamic."Transactions" OWNER TO postgres;
 
 --
--- TOC entry 213 (class 1259 OID 16568)
+-- TOC entry 214 (class 1259 OID 16697)
 -- Name: DailyFareCaps; Type: TABLE; Schema: static; Owner: postgres
 --
 
@@ -149,7 +255,7 @@ CREATE TABLE static."DailyFareCaps" (
 ALTER TABLE static."DailyFareCaps" OWNER TO postgres;
 
 --
--- TOC entry 205 (class 1259 OID 16505)
+-- TOC entry 206 (class 1259 OID 16634)
 -- Name: FareTypes; Type: TABLE; Schema: static; Owner: postgres
 --
 
@@ -162,7 +268,7 @@ CREATE TABLE static."FareTypes" (
 ALTER TABLE static."FareTypes" OWNER TO postgres;
 
 --
--- TOC entry 211 (class 1259 OID 16532)
+-- TOC entry 212 (class 1259 OID 16661)
 -- Name: Locations; Type: TABLE; Schema: static; Owner: postgres
 --
 
@@ -178,7 +284,7 @@ CREATE TABLE static."Locations" (
 ALTER TABLE static."Locations" OWNER TO postgres;
 
 --
--- TOC entry 210 (class 1259 OID 16530)
+-- TOC entry 211 (class 1259 OID 16659)
 -- Name: Locations_id_seq; Type: SEQUENCE; Schema: static; Owner: postgres
 --
 
@@ -194,8 +300,8 @@ CREATE SEQUENCE static."Locations_id_seq"
 ALTER TABLE static."Locations_id_seq" OWNER TO postgres;
 
 --
--- TOC entry 3183 (class 0 OID 0)
--- Dependencies: 210
+-- TOC entry 3195 (class 0 OID 0)
+-- Dependencies: 211
 -- Name: Locations_id_seq; Type: SEQUENCE OWNED BY; Schema: static; Owner: postgres
 --
 
@@ -203,7 +309,7 @@ ALTER SEQUENCE static."Locations_id_seq" OWNED BY static."Locations".id;
 
 
 --
--- TOC entry 212 (class 1259 OID 16553)
+-- TOC entry 213 (class 1259 OID 16682)
 -- Name: ProductFares; Type: TABLE; Schema: static; Owner: postgres
 --
 
@@ -218,7 +324,7 @@ CREATE TABLE static."ProductFares" (
 ALTER TABLE static."ProductFares" OWNER TO postgres;
 
 --
--- TOC entry 206 (class 1259 OID 16510)
+-- TOC entry 207 (class 1259 OID 16639)
 -- Name: Products; Type: TABLE; Schema: static; Owner: postgres
 --
 
@@ -234,7 +340,7 @@ CREATE TABLE static."Products" (
 ALTER TABLE static."Products" OWNER TO postgres;
 
 --
--- TOC entry 208 (class 1259 OID 16520)
+-- TOC entry 209 (class 1259 OID 16649)
 -- Name: SpecialDates; Type: TABLE; Schema: static; Owner: postgres
 --
 
@@ -249,7 +355,7 @@ CREATE TABLE static."SpecialDates" (
 ALTER TABLE static."SpecialDates" OWNER TO postgres;
 
 --
--- TOC entry 207 (class 1259 OID 16515)
+-- TOC entry 208 (class 1259 OID 16644)
 -- Name: TransactionTypes; Type: TABLE; Schema: static; Owner: postgres
 --
 
@@ -262,7 +368,7 @@ CREATE TABLE static."TransactionTypes" (
 ALTER TABLE static."TransactionTypes" OWNER TO postgres;
 
 --
--- TOC entry 209 (class 1259 OID 16525)
+-- TOC entry 210 (class 1259 OID 16654)
 -- Name: TransportModes; Type: TABLE; Schema: static; Owner: postgres
 --
 
@@ -275,7 +381,7 @@ CREATE TABLE static."TransportModes" (
 ALTER TABLE static."TransportModes" OWNER TO postgres;
 
 --
--- TOC entry 2976 (class 2604 OID 16535)
+-- TOC entry 2981 (class 2604 OID 16664)
 -- Name: Locations id; Type: DEFAULT; Schema: static; Owner: postgres
 --
 
@@ -283,40 +389,48 @@ ALTER TABLE ONLY static."Locations" ALTER COLUMN id SET DEFAULT nextval('static.
 
 
 --
--- TOC entry 3167 (class 0 OID 16644)
--- Dependencies: 217
+-- TOC entry 3177 (class 0 OID 16794)
+-- Dependencies: 219
+-- Data for Name: Keys; Type: TABLE DATA; Schema: auth; Owner: postgres
+--
+
+
+
+--
+-- TOC entry 3176 (class 0 OID 16773)
+-- Dependencies: 218
 -- Data for Name: Passes; Type: TABLE DATA; Schema: dynamic; Owner: postgres
 --
 
 
 
 --
--- TOC entry 3166 (class 0 OID 16632)
--- Dependencies: 216
+-- TOC entry 3175 (class 0 OID 16761)
+-- Dependencies: 217
 -- Data for Name: PhysicalTickets; Type: TABLE DATA; Schema: dynamic; Owner: postgres
 --
 
 
 
 --
--- TOC entry 3164 (class 0 OID 16578)
--- Dependencies: 214
+-- TOC entry 3173 (class 0 OID 16707)
+-- Dependencies: 215
 -- Data for Name: Tickets; Type: TABLE DATA; Schema: dynamic; Owner: postgres
 --
 
 
 
 --
--- TOC entry 3165 (class 0 OID 16605)
--- Dependencies: 215
+-- TOC entry 3174 (class 0 OID 16734)
+-- Dependencies: 216
 -- Data for Name: Transactions; Type: TABLE DATA; Schema: dynamic; Owner: postgres
 --
 
 
 
 --
--- TOC entry 3163 (class 0 OID 16568)
--- Dependencies: 213
+-- TOC entry 3172 (class 0 OID 16697)
+-- Dependencies: 214
 -- Data for Name: DailyFareCaps; Type: TABLE DATA; Schema: static; Owner: postgres
 --
 
@@ -340,8 +454,8 @@ INSERT INTO static."DailyFareCaps" VALUES (8, 6, 0);
 
 
 --
--- TOC entry 3155 (class 0 OID 16505)
--- Dependencies: 205
+-- TOC entry 3164 (class 0 OID 16634)
+-- Dependencies: 206
 -- Data for Name: FareTypes; Type: TABLE DATA; Schema: static; Owner: postgres
 --
 
@@ -355,8 +469,8 @@ INSERT INTO static."FareTypes" VALUES (6, 'War Veterans/Widow(er)s');
 
 
 --
--- TOC entry 3161 (class 0 OID 16532)
--- Dependencies: 211
+-- TOC entry 3170 (class 0 OID 16661)
+-- Dependencies: 212
 -- Data for Name: Locations; Type: TABLE DATA; Schema: static; Owner: postgres
 --
 
@@ -586,8 +700,8 @@ INSERT INTO static."Locations" VALUES (222, 'Werribee Station', 3, 5, 1);
 
 
 --
--- TOC entry 3162 (class 0 OID 16553)
--- Dependencies: 212
+-- TOC entry 3171 (class 0 OID 16682)
+-- Dependencies: 213
 -- Data for Name: ProductFares; Type: TABLE DATA; Schema: static; Owner: postgres
 --
 
@@ -1434,8 +1548,8 @@ INSERT INTO static."ProductFares" VALUES (31, 5, 1, 0);
 
 
 --
--- TOC entry 3156 (class 0 OID 16510)
--- Dependencies: 206
+-- TOC entry 3165 (class 0 OID 16639)
+-- Dependencies: 207
 -- Data for Name: Products; Type: TABLE DATA; Schema: static; Owner: postgres
 --
 
@@ -1552,8 +1666,8 @@ INSERT INTO static."Products" VALUES (109, 'Zones 2-15', 2, 15, 240);
 
 
 --
--- TOC entry 3158 (class 0 OID 16520)
--- Dependencies: 208
+-- TOC entry 3167 (class 0 OID 16649)
+-- Dependencies: 209
 -- Data for Name: SpecialDates; Type: TABLE DATA; Schema: static; Owner: postgres
 --
 
@@ -1586,8 +1700,8 @@ INSERT INTO static."SpecialDates" VALUES ('2024-10-01', '2024-10-31', 4, 'Victor
 
 
 --
--- TOC entry 3157 (class 0 OID 16515)
--- Dependencies: 207
+-- TOC entry 3166 (class 0 OID 16644)
+-- Dependencies: 208
 -- Data for Name: TransactionTypes; Type: TABLE DATA; Schema: static; Owner: postgres
 --
 
@@ -1600,8 +1714,8 @@ INSERT INTO static."TransactionTypes" VALUES (5, 'Pass purchase');
 
 
 --
--- TOC entry 3159 (class 0 OID 16525)
--- Dependencies: 209
+-- TOC entry 3168 (class 0 OID 16654)
+-- Dependencies: 210
 -- Data for Name: TransportModes; Type: TABLE DATA; Schema: static; Owner: postgres
 --
 
@@ -1612,8 +1726,8 @@ INSERT INTO static."TransportModes" VALUES (3, 'Train');
 
 
 --
--- TOC entry 3190 (class 0 OID 0)
--- Dependencies: 210
+-- TOC entry 3202 (class 0 OID 0)
+-- Dependencies: 211
 -- Name: Locations_id_seq; Type: SEQUENCE SET; Schema: static; Owner: postgres
 --
 
@@ -1621,7 +1735,16 @@ SELECT pg_catalog.setval('static."Locations_id_seq"', 222, true);
 
 
 --
--- TOC entry 3011 (class 2606 OID 16648)
+-- TOC entry 3020 (class 2606 OID 16800)
+-- Name: Keys Keys_pkey; Type: CONSTRAINT; Schema: auth; Owner: postgres
+--
+
+ALTER TABLE ONLY auth."Keys"
+    ADD CONSTRAINT "Keys_pkey" PRIMARY KEY (key);
+
+
+--
+-- TOC entry 3018 (class 2606 OID 16777)
 -- Name: Passes Passes_pkey; Type: CONSTRAINT; Schema: dynamic; Owner: postgres
 --
 
@@ -1630,7 +1753,7 @@ ALTER TABLE ONLY dynamic."Passes"
 
 
 --
--- TOC entry 3009 (class 2606 OID 16638)
+-- TOC entry 3016 (class 2606 OID 16767)
 -- Name: PhysicalTickets PhysicalTickets_pkey; Type: CONSTRAINT; Schema: dynamic; Owner: postgres
 --
 
@@ -1639,7 +1762,7 @@ ALTER TABLE ONLY dynamic."PhysicalTickets"
 
 
 --
--- TOC entry 3005 (class 2606 OID 16589)
+-- TOC entry 3012 (class 2606 OID 16718)
 -- Name: Tickets Tickets_pkey; Type: CONSTRAINT; Schema: dynamic; Owner: postgres
 --
 
@@ -1648,7 +1771,7 @@ ALTER TABLE ONLY dynamic."Tickets"
 
 
 --
--- TOC entry 3007 (class 2606 OID 16611)
+-- TOC entry 3014 (class 2606 OID 16740)
 -- Name: Transactions Transactions_pkey; Type: CONSTRAINT; Schema: dynamic; Owner: postgres
 --
 
@@ -1657,7 +1780,7 @@ ALTER TABLE ONLY dynamic."Transactions"
 
 
 --
--- TOC entry 3003 (class 2606 OID 16572)
+-- TOC entry 3010 (class 2606 OID 16701)
 -- Name: DailyFareCaps DailyFareCaps_pkey; Type: CONSTRAINT; Schema: static; Owner: postgres
 --
 
@@ -1666,7 +1789,7 @@ ALTER TABLE ONLY static."DailyFareCaps"
 
 
 --
--- TOC entry 2989 (class 2606 OID 16509)
+-- TOC entry 2996 (class 2606 OID 16638)
 -- Name: FareTypes FareTypes_pkey; Type: CONSTRAINT; Schema: static; Owner: postgres
 --
 
@@ -1675,7 +1798,7 @@ ALTER TABLE ONLY static."FareTypes"
 
 
 --
--- TOC entry 2999 (class 2606 OID 16537)
+-- TOC entry 3006 (class 2606 OID 16666)
 -- Name: Locations Locations_pkey; Type: CONSTRAINT; Schema: static; Owner: postgres
 --
 
@@ -1684,7 +1807,7 @@ ALTER TABLE ONLY static."Locations"
 
 
 --
--- TOC entry 3001 (class 2606 OID 16557)
+-- TOC entry 3008 (class 2606 OID 16686)
 -- Name: ProductFares ProductFares_pkey; Type: CONSTRAINT; Schema: static; Owner: postgres
 --
 
@@ -1693,7 +1816,7 @@ ALTER TABLE ONLY static."ProductFares"
 
 
 --
--- TOC entry 2991 (class 2606 OID 16514)
+-- TOC entry 2998 (class 2606 OID 16643)
 -- Name: Products Products_pkey; Type: CONSTRAINT; Schema: static; Owner: postgres
 --
 
@@ -1702,7 +1825,7 @@ ALTER TABLE ONLY static."Products"
 
 
 --
--- TOC entry 2995 (class 2606 OID 16524)
+-- TOC entry 3002 (class 2606 OID 16653)
 -- Name: SpecialDates SpecialDates_pkey; Type: CONSTRAINT; Schema: static; Owner: postgres
 --
 
@@ -1711,7 +1834,7 @@ ALTER TABLE ONLY static."SpecialDates"
 
 
 --
--- TOC entry 2993 (class 2606 OID 16519)
+-- TOC entry 3000 (class 2606 OID 16648)
 -- Name: TransactionTypes TransactionTypes_pkey; Type: CONSTRAINT; Schema: static; Owner: postgres
 --
 
@@ -1720,7 +1843,7 @@ ALTER TABLE ONLY static."TransactionTypes"
 
 
 --
--- TOC entry 2997 (class 2606 OID 16529)
+-- TOC entry 3004 (class 2606 OID 16658)
 -- Name: TransportModes TransportModes_pkey; Type: CONSTRAINT; Schema: static; Owner: postgres
 --
 
@@ -1729,7 +1852,7 @@ ALTER TABLE ONLY static."TransportModes"
 
 
 --
--- TOC entry 3028 (class 2606 OID 16659)
+-- TOC entry 3037 (class 2606 OID 16788)
 -- Name: Passes Passes_product_fkey; Type: FK CONSTRAINT; Schema: dynamic; Owner: postgres
 --
 
@@ -1738,7 +1861,7 @@ ALTER TABLE ONLY dynamic."Passes"
 
 
 --
--- TOC entry 3027 (class 2606 OID 16654)
+-- TOC entry 3036 (class 2606 OID 16783)
 -- Name: Passes Passes_ticketID_fkey; Type: FK CONSTRAINT; Schema: dynamic; Owner: postgres
 --
 
@@ -1747,7 +1870,7 @@ ALTER TABLE ONLY dynamic."Passes"
 
 
 --
--- TOC entry 3026 (class 2606 OID 16649)
+-- TOC entry 3035 (class 2606 OID 16778)
 -- Name: Passes Passes_transactionID_fkey; Type: FK CONSTRAINT; Schema: dynamic; Owner: postgres
 --
 
@@ -1756,7 +1879,7 @@ ALTER TABLE ONLY dynamic."Passes"
 
 
 --
--- TOC entry 3025 (class 2606 OID 16639)
+-- TOC entry 3034 (class 2606 OID 16768)
 -- Name: PhysicalTickets PhysicalTickets_ticketID_fkey; Type: FK CONSTRAINT; Schema: dynamic; Owner: postgres
 --
 
@@ -1765,7 +1888,7 @@ ALTER TABLE ONLY dynamic."PhysicalTickets"
 
 
 --
--- TOC entry 3019 (class 2606 OID 16595)
+-- TOC entry 3028 (class 2606 OID 16724)
 -- Name: Tickets Tickets_currentProduct_fkey; Type: FK CONSTRAINT; Schema: dynamic; Owner: postgres
 --
 
@@ -1774,7 +1897,7 @@ ALTER TABLE ONLY dynamic."Tickets"
 
 
 --
--- TOC entry 3018 (class 2606 OID 16590)
+-- TOC entry 3027 (class 2606 OID 16719)
 -- Name: Tickets Tickets_fareType_fkey; Type: FK CONSTRAINT; Schema: dynamic; Owner: postgres
 --
 
@@ -1783,7 +1906,7 @@ ALTER TABLE ONLY dynamic."Tickets"
 
 
 --
--- TOC entry 3020 (class 2606 OID 16600)
+-- TOC entry 3029 (class 2606 OID 16729)
 -- Name: Tickets Tickets_touchedOn_fkey; Type: FK CONSTRAINT; Schema: dynamic; Owner: postgres
 --
 
@@ -1792,7 +1915,7 @@ ALTER TABLE ONLY dynamic."Tickets"
 
 
 --
--- TOC entry 3023 (class 2606 OID 16622)
+-- TOC entry 3032 (class 2606 OID 16751)
 -- Name: Transactions Transactions_location_fkey; Type: FK CONSTRAINT; Schema: dynamic; Owner: postgres
 --
 
@@ -1801,7 +1924,7 @@ ALTER TABLE ONLY dynamic."Transactions"
 
 
 --
--- TOC entry 3024 (class 2606 OID 16627)
+-- TOC entry 3033 (class 2606 OID 16756)
 -- Name: Transactions Transactions_product_fkey; Type: FK CONSTRAINT; Schema: dynamic; Owner: postgres
 --
 
@@ -1810,7 +1933,7 @@ ALTER TABLE ONLY dynamic."Transactions"
 
 
 --
--- TOC entry 3021 (class 2606 OID 16612)
+-- TOC entry 3030 (class 2606 OID 16741)
 -- Name: Transactions Transactions_ticketID_fkey; Type: FK CONSTRAINT; Schema: dynamic; Owner: postgres
 --
 
@@ -1819,7 +1942,7 @@ ALTER TABLE ONLY dynamic."Transactions"
 
 
 --
--- TOC entry 3022 (class 2606 OID 16617)
+-- TOC entry 3031 (class 2606 OID 16746)
 -- Name: Transactions Transactions_type_fkey; Type: FK CONSTRAINT; Schema: dynamic; Owner: postgres
 --
 
@@ -1828,7 +1951,7 @@ ALTER TABLE ONLY dynamic."Transactions"
 
 
 --
--- TOC entry 3017 (class 2606 OID 16573)
+-- TOC entry 3026 (class 2606 OID 16702)
 -- Name: DailyFareCaps DailyFareCaps_fareType_fkey; Type: FK CONSTRAINT; Schema: static; Owner: postgres
 --
 
@@ -1837,7 +1960,7 @@ ALTER TABLE ONLY static."DailyFareCaps"
 
 
 --
--- TOC entry 3014 (class 2606 OID 16548)
+-- TOC entry 3023 (class 2606 OID 16677)
 -- Name: Locations Locations_defaultProduct_fkey; Type: FK CONSTRAINT; Schema: static; Owner: postgres
 --
 
@@ -1846,7 +1969,7 @@ ALTER TABLE ONLY static."Locations"
 
 
 --
--- TOC entry 3013 (class 2606 OID 16543)
+-- TOC entry 3022 (class 2606 OID 16672)
 -- Name: Locations Locations_minProduct_fkey; Type: FK CONSTRAINT; Schema: static; Owner: postgres
 --
 
@@ -1855,7 +1978,7 @@ ALTER TABLE ONLY static."Locations"
 
 
 --
--- TOC entry 3012 (class 2606 OID 16538)
+-- TOC entry 3021 (class 2606 OID 16667)
 -- Name: Locations Locations_mode_fkey; Type: FK CONSTRAINT; Schema: static; Owner: postgres
 --
 
@@ -1864,7 +1987,7 @@ ALTER TABLE ONLY static."Locations"
 
 
 --
--- TOC entry 3016 (class 2606 OID 16563)
+-- TOC entry 3025 (class 2606 OID 16692)
 -- Name: ProductFares ProductFares_fareType_fkey; Type: FK CONSTRAINT; Schema: static; Owner: postgres
 --
 
@@ -1873,7 +1996,7 @@ ALTER TABLE ONLY static."ProductFares"
 
 
 --
--- TOC entry 3015 (class 2606 OID 16558)
+-- TOC entry 3024 (class 2606 OID 16687)
 -- Name: ProductFares ProductFares_productID_fkey; Type: FK CONSTRAINT; Schema: static; Owner: postgres
 --
 
@@ -1882,8 +2005,8 @@ ALTER TABLE ONLY static."ProductFares"
 
 
 --
--- TOC entry 3174 (class 0 OID 0)
--- Dependencies: 8
+-- TOC entry 3184 (class 0 OID 0)
+-- Dependencies: 5
 -- Name: SCHEMA dynamic; Type: ACL; Schema: -; Owner: dynamic
 --
 
@@ -1891,8 +2014,8 @@ GRANT USAGE ON SCHEMA dynamic TO static;
 
 
 --
--- TOC entry 3175 (class 0 OID 0)
--- Dependencies: 10
+-- TOC entry 3185 (class 0 OID 0)
+-- Dependencies: 9
 -- Name: SCHEMA static; Type: ACL; Schema: -; Owner: static
 --
 
@@ -1900,8 +2023,17 @@ GRANT USAGE ON SCHEMA static TO dynamic;
 
 
 --
--- TOC entry 3176 (class 0 OID 0)
--- Dependencies: 217
+-- TOC entry 3187 (class 0 OID 0)
+-- Dependencies: 219
+-- Name: TABLE "Keys"; Type: ACL; Schema: auth; Owner: postgres
+--
+
+GRANT SELECT,INSERT,REFERENCES,DELETE,TRUNCATE,UPDATE ON TABLE auth."Keys" TO auth;
+
+
+--
+-- TOC entry 3188 (class 0 OID 0)
+-- Dependencies: 218
 -- Name: TABLE "Passes"; Type: ACL; Schema: dynamic; Owner: postgres
 --
 
@@ -1910,8 +2042,8 @@ GRANT SELECT ON TABLE dynamic."Passes" TO static;
 
 
 --
--- TOC entry 3177 (class 0 OID 0)
--- Dependencies: 216
+-- TOC entry 3189 (class 0 OID 0)
+-- Dependencies: 217
 -- Name: TABLE "PhysicalTickets"; Type: ACL; Schema: dynamic; Owner: postgres
 --
 
@@ -1920,8 +2052,8 @@ GRANT SELECT ON TABLE dynamic."PhysicalTickets" TO static;
 
 
 --
--- TOC entry 3178 (class 0 OID 0)
--- Dependencies: 214
+-- TOC entry 3190 (class 0 OID 0)
+-- Dependencies: 215
 -- Name: TABLE "Tickets"; Type: ACL; Schema: dynamic; Owner: postgres
 --
 
@@ -1930,8 +2062,8 @@ GRANT SELECT ON TABLE dynamic."Tickets" TO static;
 
 
 --
--- TOC entry 3179 (class 0 OID 0)
--- Dependencies: 215
+-- TOC entry 3191 (class 0 OID 0)
+-- Dependencies: 216
 -- Name: TABLE "Transactions"; Type: ACL; Schema: dynamic; Owner: postgres
 --
 
@@ -1940,8 +2072,8 @@ GRANT SELECT ON TABLE dynamic."Transactions" TO static;
 
 
 --
--- TOC entry 3180 (class 0 OID 0)
--- Dependencies: 213
+-- TOC entry 3192 (class 0 OID 0)
+-- Dependencies: 214
 -- Name: TABLE "DailyFareCaps"; Type: ACL; Schema: static; Owner: postgres
 --
 
@@ -1950,8 +2082,8 @@ GRANT SELECT ON TABLE static."DailyFareCaps" TO dynamic;
 
 
 --
--- TOC entry 3181 (class 0 OID 0)
--- Dependencies: 205
+-- TOC entry 3193 (class 0 OID 0)
+-- Dependencies: 206
 -- Name: TABLE "FareTypes"; Type: ACL; Schema: static; Owner: postgres
 --
 
@@ -1960,8 +2092,8 @@ GRANT SELECT ON TABLE static."FareTypes" TO dynamic;
 
 
 --
--- TOC entry 3182 (class 0 OID 0)
--- Dependencies: 211
+-- TOC entry 3194 (class 0 OID 0)
+-- Dependencies: 212
 -- Name: TABLE "Locations"; Type: ACL; Schema: static; Owner: postgres
 --
 
@@ -1970,8 +2102,8 @@ GRANT SELECT ON TABLE static."Locations" TO dynamic;
 
 
 --
--- TOC entry 3184 (class 0 OID 0)
--- Dependencies: 210
+-- TOC entry 3196 (class 0 OID 0)
+-- Dependencies: 211
 -- Name: SEQUENCE "Locations_id_seq"; Type: ACL; Schema: static; Owner: postgres
 --
 
@@ -1979,8 +2111,8 @@ GRANT USAGE ON SEQUENCE static."Locations_id_seq" TO static;
 
 
 --
--- TOC entry 3185 (class 0 OID 0)
--- Dependencies: 212
+-- TOC entry 3197 (class 0 OID 0)
+-- Dependencies: 213
 -- Name: TABLE "ProductFares"; Type: ACL; Schema: static; Owner: postgres
 --
 
@@ -1989,8 +2121,8 @@ GRANT SELECT ON TABLE static."ProductFares" TO dynamic;
 
 
 --
--- TOC entry 3186 (class 0 OID 0)
--- Dependencies: 206
+-- TOC entry 3198 (class 0 OID 0)
+-- Dependencies: 207
 -- Name: TABLE "Products"; Type: ACL; Schema: static; Owner: postgres
 --
 
@@ -1999,8 +2131,8 @@ GRANT SELECT ON TABLE static."Products" TO dynamic;
 
 
 --
--- TOC entry 3187 (class 0 OID 0)
--- Dependencies: 208
+-- TOC entry 3199 (class 0 OID 0)
+-- Dependencies: 209
 -- Name: TABLE "SpecialDates"; Type: ACL; Schema: static; Owner: postgres
 --
 
@@ -2009,8 +2141,8 @@ GRANT SELECT ON TABLE static."SpecialDates" TO dynamic;
 
 
 --
--- TOC entry 3188 (class 0 OID 0)
--- Dependencies: 207
+-- TOC entry 3200 (class 0 OID 0)
+-- Dependencies: 208
 -- Name: TABLE "TransactionTypes"; Type: ACL; Schema: static; Owner: postgres
 --
 
@@ -2019,8 +2151,8 @@ GRANT SELECT ON TABLE static."TransactionTypes" TO dynamic;
 
 
 --
--- TOC entry 3189 (class 0 OID 0)
--- Dependencies: 209
+-- TOC entry 3201 (class 0 OID 0)
+-- Dependencies: 210
 -- Name: TABLE "TransportModes"; Type: ACL; Schema: static; Owner: postgres
 --
 
@@ -2028,9 +2160,15 @@ GRANT SELECT,INSERT,REFERENCES,DELETE,TRUNCATE,UPDATE ON TABLE static."Transport
 GRANT SELECT ON TABLE static."TransportModes" TO dynamic;
 
 
--- Completed on 2024-09-19 13:26:17 UTC
+-- Completed on 2024-09-23 07:10:00 UTC
 
 --
 -- PostgreSQL database dump complete
+--
+
+-- Completed on 2024-09-23 07:10:00 UTC
+
+--
+-- PostgreSQL database cluster dump complete
 --
 
