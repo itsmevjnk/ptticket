@@ -2099,7 +2099,7 @@
         "y": 40,
         "wires": [
             [
-                "1a5744008db16476"
+                "093ef1517464a64c"
             ]
         ]
     },
@@ -2108,14 +2108,14 @@
         "type": "function",
         "z": "fab23692fcecca97",
         "name": "Return health check response",
-        "func": "msg.statusCode = 200;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Ticket vending API is operational',\n    time: Date.now()\n};\nreturn msg;",
+        "func": "if (msg.statusCode == 200) {\n    msg.payload = {\n        status: msg.statusCode,\n        message: 'Ticket vending API is operational',\n        time: Date.now()\n    };\n} else {\n    msg.payload = {\n        status: 500,\n        message: `Upstream database API health check failed (status code ${msg.statusCode})`,\n        time: Date.now()\n    };\n    msg.statusCode = 500;\n}\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 470,
+        "x": 850,
         "y": 40,
         "wires": [
             [
@@ -2130,8 +2130,52 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 670,
+        "x": 1050,
         "y": 40,
         "wires": []
+    },
+    {
+        "id": "a5011be4e0ecacfd",
+        "type": "http request",
+        "z": "fab23692fcecca97",
+        "name": "Upstream health check",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "body",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 600,
+        "y": 40,
+        "wires": [
+            [
+                "1a5744008db16476"
+            ]
+        ]
+    },
+    {
+        "id": "093ef1517464a64c",
+        "type": "function",
+        "z": "fab23692fcecca97",
+        "name": "Prepare URL",
+        "func": "msg.url = env.get('DBAPI_HOST') + '/api/healthcheck';\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 40,
+        "wires": [
+            [
+                "a5011be4e0ecacfd"
+            ]
+        ]
     }
 ]

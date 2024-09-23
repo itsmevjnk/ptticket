@@ -8,54 +8,6 @@
         "env": []
     },
     {
-        "id": "3d027c4ed2f27897",
-        "type": "http in",
-        "z": "743b84be8cadd541",
-        "name": "",
-        "url": "/api/healthcheck",
-        "method": "get",
-        "upload": false,
-        "swaggerDoc": "",
-        "x": 140,
-        "y": 200,
-        "wires": [
-            [
-                "1a5744008db16476"
-            ]
-        ]
-    },
-    {
-        "id": "1a5744008db16476",
-        "type": "function",
-        "z": "743b84be8cadd541",
-        "name": "Return health check response",
-        "func": "msg.statusCode = 200;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Online ticket validation API is operational',\n    time: Date.now()\n};\nreturn msg;",
-        "outputs": 1,
-        "timeout": 0,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 390,
-        "y": 200,
-        "wires": [
-            [
-                "d90bba12944ed8f9"
-            ]
-        ]
-    },
-    {
-        "id": "d90bba12944ed8f9",
-        "type": "http response",
-        "z": "743b84be8cadd541",
-        "name": "",
-        "statusCode": "",
-        "headers": {},
-        "x": 590,
-        "y": 200,
-        "wires": []
-    },
-    {
         "id": "4617ea774ec280c3",
         "type": "http in",
         "z": "743b84be8cadd541",
@@ -3503,5 +3455,97 @@
         "x": 2240,
         "y": 1460,
         "wires": []
+    },
+    {
+        "id": "3d027c4ed2f27897",
+        "type": "http in",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "url": "/api/healthcheck",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 140,
+        "y": 180,
+        "wires": [
+            [
+                "093ef1517464a64c"
+            ]
+        ]
+    },
+    {
+        "id": "1a5744008db16476",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Return health check response",
+        "func": "if (msg.statusCode == 200) {\n    msg.payload = {\n        status: msg.statusCode,\n        message: 'Ticket vending API is operational',\n        time: Date.now()\n    };\n} else {\n    msg.payload = {\n        status: 500,\n        message: `Upstream database API health check failed (status code ${msg.statusCode})`,\n        time: Date.now()\n    };\n    msg.statusCode = 500;\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 770,
+        "y": 180,
+        "wires": [
+            [
+                "d90bba12944ed8f9"
+            ]
+        ]
+    },
+    {
+        "id": "d90bba12944ed8f9",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 970,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "a5011be4e0ecacfd",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Upstream health check",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "body",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 520,
+        "y": 180,
+        "wires": [
+            [
+                "1a5744008db16476"
+            ]
+        ]
+    },
+    {
+        "id": "093ef1517464a64c",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Prepare URL",
+        "func": "msg.url = env.get('DBAPI_HOST') + '/api/healthcheck';\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 180,
+        "wires": [
+            [
+                "a5011be4e0ecacfd"
+            ]
+        ]
     }
 ]

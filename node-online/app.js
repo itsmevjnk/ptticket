@@ -19,7 +19,11 @@ const respondHttp = (res, status, payload) => {
 
 /* health check */
 app.get('/api/healthcheck', (req, res) => {
-    respondHttp(res, 200, 'Database API is functional');
+    axios.get(`${DBAPI_HOST}/api/healthcheck`).then((resp) => {
+        if (resp.status != 200)
+            return respondHttp(res, 500, `Upstream database API health check failed (status code ${resp.status})`);
+        respondHttp(res, 200, 'Online transaction API is functional');
+    });
 });
 
 /* check if enough data is given for ticket validation and extract data from it */
