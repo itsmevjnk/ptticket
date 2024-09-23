@@ -1,9 +1,6 @@
 /* admin authorisation token */
-const ADMIN_KEY = process.env.ADMIN_KEY;
-if (ADMIN_KEY === undefined) {
-    console.error('Administration token is not provided in environment variables, exiting.');
-    process.exit(1);
-}
+const ADMIN_KEY = process.env.ADMIN_KEY || require('crypto').randomUUID();
+if (process.env.ADMIN_KEY === undefined) console.log('Auto-generated administration key for this instance:', ADMIN_KEY);
 
 /* database connection */
 const Pool = require('pg').Pool;
