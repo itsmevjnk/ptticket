@@ -1,0 +1,21 @@
+# Docker compose file for database server deployment
+services:
+  postgres:
+    container_name: postgres
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - /var/postgres:/var/lib/postgresql/data
+    restart: unless-stopped
+  pgadmin:
+    container_name: pgadmin
+    image: elestio/pgadmin
+    ports:
+      - "80:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ptticket-admin@ptticket.xyz
+      PGADMIN_DEFAULT_PASSWORD: hackme
+    restart: unless-stopped
