@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Purchase ticket - QR Ticket Vending</title>
+        <link rel="stylesheet" href="bs/css/bootstrap.min.css"/>
+        <link rel="stylesheet" href="style.css"/>
+        <script language="javascript" src="bs/js/bootstrap.min.js"></script>
+        <script language="javascript" src="jq/jquery.js"></script>
+        <script language="javascript" src="qr/html5-qrcode.min.js"></script>
+    </head>
+    <body>
+        <header></header>
+            <div class="navbar navbar-dark bg-dark text-white">
+                <div class="container my-2">
+                    <a href="index.html" class="text-white" style="text-decoration: none;"><h3>Public transport ticketing system</h3></a>
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            <section class="mt-3">
+                <a href="index.html">&lt; Back</a>
+            </section>
+            <section class="text-center">
+                <h1 class="mt-4">Result for ticket <span id="cardID"></span></h1>
+            </section>
+            <section>
+                <div id="loading" class="text-center text-muted">
+                    Processing...
+                </div>
+                <div id="error" class="alert alert-danger d-none" role="alert">
+                    <strong>Request failed:</strong>
+                    <span id="errorMsg"></span>
+                </div>
+                <div id="cardDisabled" class="alert alert-warning d-none" role="alert">
+                    <strong>This card has been disabled.</strong>
+                </div>
+                <div id="cardInfo" class="d-none">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Entry</th>
+                                <th scope="col">Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Balance</strong></td>
+                                <td><span id="balance">N/A</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Status</strong></td>
+                                <td id="status">N/A</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Product</strong></td>
+                                <td id="product">N/A</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Product expiry</strong></td>
+                                <td id="productExpiry">N/A</td>
+                            </tr>
+                            <tr id="r_passProduct_0" class="d-none">
+                                <td><strong>Pass #1 product</strong></td>
+                                <td id="passProduct_0">N/A</td>
+                            </tr>
+                            <tr id="r_passDuration_0" class="d-none">
+                                <td><strong>Pass #1 duration</strong></td>
+                                <td id="passDuration_0">N/A</td>
+                            </tr>
+                            <tr id="r_passActivation_0" class="d-none">
+                                <td><strong>Pass #1 activation</strong></td>
+                                <td id="passActivation_0">N/A</td>
+                            </tr>
+                            <tr id="r_passProduct_1" class="d-none">
+                                <td><strong>Pass #2 product</strong></td>
+                                <td id="passProduct_1">N/A</td>
+                            </tr>
+                            <tr id="r_passDuration_1" class="d-none">
+                                <td><strong>Pass #2 duration</strong></td>
+                                <td id="passDuration_1">N/A</td>
+                            </tr>
+                            <tr id="r_passActivation_1" class="d-none">
+                                <td><strong>Pass #2 activation</strong></td>
+                                <td id="passActivation_1">N/A</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer bg-dark text-white">
+            <div class="container py-3">
+                <span>Created for SIT314 by <a href="https://github.com/itsmevjnk" target="_blank" class="text-white">Thanh Vinh Nguyen (223145883)</a></span>
+            </div>
+        </footer>
+
+        <script>
+            $(document).ready(() => {
+                const params = new URLSearchParams(window.location.search);
+                let cardID = params.get('cardID');
+                $('#cardID').html(cardID);
+
+                $.getJSON(`card/${cardID}`, (data) => {
+                    $('#loading').addClass('d-none');
+
+                    let resp = data.message;
+                    if (resp.disabled) return $('#cardDisabled').removeClass('d-none');
+
+                    $('#balance').html('$' + resp.balance.toFixed(2));
+                    $('#status').html(resp.status);
+                    $('#product').html(resp.product);
+                    $('#productExpiry').html(new Date(resp.productExpiry).toString());
+
+                    for (let i = 0; i < resp.passes.length; i++) {
+                        $(`[id ^=r_][id $=${i}]`).removeClass('d-none');
+                        $(`#passProduct_${i}`).html(resp.passes[i].product);
+                        $(`#passDuration_${i}`).html(resp.passes[i].duration);
+                        $(`#passActivation_${i}`).html(
+                            (resp.passes[i].activeDate == null)
+                            ? 'Unactivated'
+                            : `Activated on ${new Date(resp.passes[i].activeDate).toDateString()}`
+                        );
+                    }
+
+                    $('#cardInfo').removeClass('d-none');
+                }).fail((jqxhr, textStatus, error) => {
+                    $('#errorMsg').html(error);
+                    $('#error').removeClass('d-none');
+                });
+            });
+        </script>
+    </body>
+</html>
