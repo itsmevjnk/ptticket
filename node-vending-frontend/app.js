@@ -1,5 +1,12 @@
 const VENDING_API = process.env.VENDING_API || 'http://127.0.0.1:3102/api';
-const API_KEY = 'Bearer ' + (process.env.API_KEY || '');
+const DB_API = process.env.DB_API || 'http://127.0.0.1:3101/api';
+
+const API_KEY = process.env.API_KEY || '';
+const options = {
+    headers: {
+        'Authorization': 'Bearer ' + API_KEY
+    }
+};
 
 const express = require('express');
 
@@ -11,9 +18,7 @@ app.use('/jq', express.static(__dirname + '/node_modules/jquery/dist')); // expo
 const cors = require('cors');
 app.use(cors());
 
-app.use(express.urlencoded({
-    extended: true
-})); // for parsing incoming POST requests
+app.use(express.json()); // for parsing incoming POST requests
 
 const axios = require('axios');
 axios.default.respondValidate = (status) => true; // disable error throwing on error response
@@ -26,30 +31,38 @@ const respondHttp = (res, status, payload) => {
     });
 };
 
+app.get('/fareTypes', (req, res) => {
+    axios.get(DB_API + '/fareTypes?hideFares=true&dict=true', options).then((resp) => {
+        respondHttp(res, resp.status, resp.data.message);
+    });
+});
+
+app.get('/products', (req, res) => {
+    axios.get(DB_API + '/products?hideZones=true&dict=true', options).then((resp) => {
+        respondHttp(res, resp.status, resp.data.message);
+    });
+});
+
 const qrcode = require('qrcode');
 
 app.post('/purchase', (req, res) => {
     axios.post(VENDING_API + '/tickets', {
         cardType: 'qr',
-        balance: req.body.balance,
         fareType: req.body.fareType,
-        pass: (req.body.passProduct) ? {
+        balance: (req.body.topUp) ? (req.body.balance * 100) : undefined,
+        pass: (req.body.pass) ? {
             product: req.body.passProduct,
             duration: req.body.passDuration
         } : undefined
-    }, {
-        headers: {
-            'Authorization': API_KEY
-        }
-    }).then((resp) => {
+    }, options).then((resp) => {
         if (resp.status != 200) return respondHttp(res, resp.status, 'Upstream request failed: ' + resp.data.message);
-        qrcode.toString(res.create.cardID, {
+        qrcode.toString(resp.data.message.create.cardID, {
             errorCorrectionLevel: 'H',
             type: 'svg'
         }, (err, data) => {
             if (err) return respondHttp(res, 500, 'Failed to create QR code: ' + err);
             respondHttp(res, 200, {
-                cardID: resp.data.message.cardID,
+                cardID: resp.data.message.create.cardID,
                 qr: data
             });
         });
