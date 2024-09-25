@@ -209,7 +209,7 @@ app.get('/api/fareTypes', (req, res) => {
 app.get('/api/fareTypes/:id', (req, res) => {
     let id = parseInt(req.params.id);
     if (!isNaN(id) && id >= 0 && id < staticData.fareTypes.length)
-        respondHttp(res, 200, staticData.fareTypes[id]);
+        respondHttp(res, 200, (req.query.hasOwnProperty('hideFares') && req.query.hideFares.toLowerCase() === 'true') ? staticData.fareTypes[id].name : staticData.fareTypes[id]);
     else
         respondHttp(res, 400, `Invalid fare type '${req.params.id}'`);
 });
