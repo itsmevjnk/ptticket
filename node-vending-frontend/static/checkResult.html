@@ -142,7 +142,7 @@
                     }
 
                     $('#cardInfo').removeClass('d-none');
-                }).fail((jqxhr, textStatus, error) => {
+                }).fail((jqxhr, textStatus, err) => {
                     $('#errorMsg').text(`${err.status} ${err.statusText}: ${err.responseText}`);
                     $('#error').removeClass('d-none');
                 });

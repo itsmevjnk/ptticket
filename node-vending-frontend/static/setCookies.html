@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Purchase ticket - QR Ticket Vending</title>
+        <link rel="stylesheet" href="bs/css/bootstrap.min.css"/>
+        <link rel="stylesheet" href="style.css"/>
+        <script language="javascript" src="bs/js/bootstrap.min.js"></script>
+        <script language="javascript" src="jq/jquery.js"></script>
+    </head>
+    <body>
+        <header></header>
+            <div class="navbar navbar-dark bg-dark text-white">
+                <div class="container my-2">
+                    <a href="index.html" class="text-white" style="text-decoration: none;"><h3>Public transport ticketing system</h3></a>
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            <section class="mt-3">
+                <a href="index.html">&lt; Back</a>
+            </section>
+            <section class="text-center">
+                <h1 class="mt-4">Cookies settings</h1>
+                During deployment it is REQUIRED that the authorisation token be set in the browser's cookies to authorise this ticket vending device.
+            </section>
+            <form class="d-flex flex-column align-items-center">
+                <label for="token" class="form-label">Authorisation token</label>
+                <input type="text" name="token" id="token" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" required="true" class="form-control" style="width:40ch;text-align:center;" aria-describedby="invalidToken"/>
+                <div id="invalidToken" class="invalid-feedback text-center">
+                    Please enter a valid token.
+                </div>
+                <button class="btn btn-success my-2" type="submit">Set token</button>
+            </form>
+        </main>
+
+        <footer class="footer bg-dark text-white">
+            <div class="container py-3">
+                <span>Created for SIT314 by <a href="https://github.com/itsmevjnk" target="_blank" class="text-white">Thanh Vinh Nguyen (223145883)</a></span>
+            </div>
+        </footer>
+
+        <script>
+            $(document).ready(() => {
+                $('form').submit((event) => {
+                    event.preventDefault();
+
+                    let token = $('#token').val();
+                    $('#token').removeClass('is-valid is-invalid');
+                    if (!/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(token)) {
+                        $('#token').addClass('is-invalid');
+                    }
+
+                    document.cookie = `auth=${token};expires=${new Date(2147483647 * 1000).toUTCString()};`;
+
+                    $.getJSON('testAuth', (data) => {
+                        $('#token').addClass('is-valid');
+                        window.location.href = 'index.html'; // done
+                    }).fail((jqxhr, textStatus, err) => {
+                        console.log(err);
+                        $('#token').addClass('is-invalid');                        
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>
