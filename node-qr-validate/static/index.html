@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>QR Ticket Validation</title>
+        <link rel="stylesheet" href="bs/css/bootstrap.min.css"/>
+        <link rel="stylesheet" href="style.css"/>
+        <script language="javascript" src="bs/js/bootstrap.min.js"></script>
+        <script language="javascript" src="jq/jquery.js"></script>
+        <script language="javascript" src="qr/html5-qrcode.min.js"></script>
+    </head>
+    <body>
+        <header></header>
+            <div class="navbar navbar-dark bg-dark text-white">
+                <div class="container my-2">
+                    <a href='index.html' class="text-white" style="text-decoration: none;"><h3>Public transport ticketing system</h3></a>
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            <section class="text-center">
+                <h1 class="mt-4">QR Code Ticket Validation</h1>
+                <div style="width: 100%;" id="scanWindow">
+                    <div id="reader" style="width:75%;margin: 0 auto;"></div>
+                </div>
+                <div class="d-none alert alert-danger text-center" role="alert" id="scanError">
+                    <h1 id="errorTitle"></h1>
+                </div>
+                <div class="d-none alert alert-success text-center" role="alert" id="scanOK">
+                    <h1 id="okTitle"></h1>
+                    <strong>Balance:</strong>&nbsp;$<span id="balance"></span>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer bg-dark text-white">
+            <div class="container py-3">
+                <span>Created for SIT314 by <a href="https://github.com/itsmevjnk" target="_blank" class="text-white">Thanh Vinh Nguyen (223145883)</a></span>
+            </div>
+        </footer>
+
+        <script>
+            $(document).ready(() => {
+                let qrScanner = new Html5QrcodeScanner("reader", {fps: 10}, false);
+                let scan = true;
+                qrScanner.render((id, decodedResult) => {
+                    if (!scan) return;
+                    if (!/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id)) return; // not UUID
+                    
+                    scan = false;
+                    $('#scanWindow').addClass('d-none');
+                    $.ajax({
+                        type: 'POST',
+                        url: `validate/${id}`,
+                        traditional: true
+                    }).done((data) => {
+                        $('#okTitle').text(data.message.text);
+                        $('#balance').text(data.message.balance.toFixed(2));
+                        $('#scanOK').removeClass('d-none');
+                    }).fail((err) => {
+                        let resp = JSON.parse(err.responseText);
+                        $('#errorTitle').text((typeof resp.message === 'object') ? resp.message.text : resp.message);
+                        $('#scanError').removeClass('d-none');
+                    }).always(() => {
+                        setTimeout(() => {
+                            $('#scanWindow').removeClass('d-none');
+                            $('#scanOK').addClass('d-none');
+                            $('#scanError').addClass('d-none');
+                            setTimeout(() => {
+                                scan = true;
+                            }, 500);
+                        }, 1000);
+                    });
+                }, (error) => {
+                    // console.warn(error);
+                });
+
+                
+            });
+        </script>
+    </body>
+</html>

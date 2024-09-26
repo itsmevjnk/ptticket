@@ -1,0 +1,15 @@
+/* sticky footer */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+}
+
+.qr {
+    width: min(50vw, 50vh);
+    height: auto;
+}
