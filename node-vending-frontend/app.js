@@ -2,11 +2,6 @@ const VENDING_API = process.env.VENDING_API || 'http://127.0.0.1:3102/api';
 const DB_API = process.env.DB_API || 'http://127.0.0.1:3101/api';
 
 const API_KEY = process.env.API_KEY || '';
-const options = {
-    headers: {
-        'Authorization': 'Bearer ' + API_KEY
-    }
-};
 
 const express = require('express');
 
@@ -21,8 +16,12 @@ app.use(cors());
 
 app.use(express.json()); // for parsing incoming POST requests
 
-const axios = require('axios');
-axios.default.respondValidate = (status) => true; // disable error throwing on error response
+const axios = require('axios').create({
+    headers: {
+        'Authorization': 'Bearer ' + API_KEY
+    },
+    validateStatus: () => true
+});
 
 const respondHttp = (res, status, payload) => {
     res.status(status).json({
@@ -33,19 +32,19 @@ const respondHttp = (res, status, payload) => {
 };
 
 app.get('/fareTypes', (req, res) => {
-    axios.get(DB_API + '/fareTypes?hideFares=true&dict=true', options).then((resp) => {
+    axios.get(DB_API + '/fareTypes?hideFares=true&dict=true').then((resp) => {
         respondHttp(res, resp.status, resp.data.message);
     });
 });
 
 app.get('/products', (req, res) => {
-    axios.get(DB_API + '/products?hideZones=true&dict=true', options).then((resp) => {
+    axios.get(DB_API + '/products?hideZones=true&dict=true').then((resp) => {
         respondHttp(res, resp.status, resp.data.message);
     });
 });
 
 app.get('/card/:id', (req, res) => {
-    axios.get(DB_API + `/cards/qr/${req.params.id}`, options).then((resp) => {
+    axios.get(DB_API + `/cards/qr/${req.params.id}`).then((resp) => {
         if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
         let payload = {
             disabled: resp.data.message.disabled
@@ -57,9 +56,9 @@ app.get('/card/:id', (req, res) => {
             payload.productExpiry = prodExpiry.toISOString();
 
             Promise.all([
-                axios.get(DB_API + `/tickets/${resp.data.message.ticketID}/passes`, options),
-                axios.get(DB_API + `/products/${resp.data.message.currentProduct}`, options),
-                axios.get(DB_API + `/fareTypes/${resp.data.message.fareType}?hideFares=true`, options)
+                axios.get(DB_API + `/tickets/${resp.data.message.ticketID}/passes`),
+                axios.get(DB_API + `/products/${resp.data.message.currentProduct}`),
+                axios.get(DB_API + `/fareTypes/${resp.data.message.fareType}?hideFares=true`)
             ]).then((respArray) => {
                 /* product name */
                 let resp = respArray[1];
@@ -84,7 +83,7 @@ app.get('/card/:id', (req, res) => {
                             duration: pass.duration,
                             activeDate: pass.activationDate
                         });
-                        promises.push(axios.get(DB_API + `/products/${pass.product}`, options));
+                        promises.push(axios.get(DB_API + `/products/${pass.product}`));
                     }
                     Promise.all(promises).then((respArray) => {
                         for (let i = 0; i < respArray.length; i++)
@@ -95,6 +94,23 @@ app.get('/card/:id', (req, res) => {
 
             });
         } else return respondHttp(res, 200, payload);
+    });
+});
+
+app.post('/card/:id/balance', (req, res) => {
+    axios.post(VENDING_API + `/cards/qr/${req.params.id}/balance`, {
+        amount: req.body.amount * 100
+    }).then((resp) => {
+        respondHttp(res, resp.status, resp.data.message);
+    });
+});
+
+app.post('/card/:id/pass', (req, res) => {
+    axios.post(VENDING_API + `/cards/qr/${req.params.id}/pass`, {
+        product: req.body.product,
+        duration: req.body.duration
+    }).then((resp) => {
+        respondHttp(res, resp.status, resp.data.message);
     });
 });
 
@@ -109,7 +125,7 @@ app.post('/purchase', (req, res) => {
             product: req.body.passProduct,
             duration: req.body.passDuration
         } : undefined
-    }, options).then((resp) => {
+    }).then((resp) => {
         if (resp.status != 200) return respondHttp(res, resp.status, 'Upstream request failed: ' + resp.data.message);
         qrcode.toString(resp.data.message.create.cardID, {
             errorCorrectionLevel: 'H',

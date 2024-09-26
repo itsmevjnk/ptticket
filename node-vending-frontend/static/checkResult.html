@@ -134,6 +134,13 @@
                         );
                     }
 
+                    if (resp.passes.length == 2) {
+                        /* disable pass top up button */
+                        let btn = $('#topupPass');
+                        btn.addClass('disabled');
+                        // btn.attr('href', '');
+                    }
+
                     $('#cardInfo').removeClass('d-none');
                 }).fail((jqxhr, textStatus, error) => {
                     $('#errorMsg').text(`${err.status} ${err.statusText}: ${err.responseText}`);
