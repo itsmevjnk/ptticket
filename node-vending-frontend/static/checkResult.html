@@ -89,6 +89,12 @@
                     </table>
                 </div>
             </section>
+            <section>
+                <div class="d-flex flex-row mx-auto">
+                    <a role="button" id="topupBalance" href="topupBalance.html" class="btn btn-primary my-1 flex-grow-1 mx-3">Top up balance</a>
+                    <a role="button" id="topupPass" href="topupPass.html" class="btn btn-primary my-1 flex-grow-1 mx-3">Top up pass</a>
+                </div>
+            </section>
         </main>
 
         <footer class="footer bg-dark text-white">
@@ -102,6 +108,9 @@
                 const params = new URLSearchParams(window.location.search);
                 let cardID = params.get('cardID');
                 $('#cardID').html(cardID);
+
+                $('#topupBalance').attr('href', `topupBalance.html?cardID=${cardID}`);
+                $('#topupPass').attr('href', `topupPass.html?cardID=${cardID}`);
 
                 $.getJSON(`card/${cardID}`, (data) => {
                     $('#loading').addClass('d-none');
@@ -127,7 +136,7 @@
 
                     $('#cardInfo').removeClass('d-none');
                 }).fail((jqxhr, textStatus, error) => {
-                    $('#errorMsg').text(error);
+                    $('#errorMsg').text(`${err.status} ${err.statusText}: ${err.responseText}`);
                     $('#error').removeClass('d-none');
                 });
             });

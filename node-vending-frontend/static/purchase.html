@@ -137,8 +137,8 @@
                         console.log(data);
                         $('#result').removeClass('d-none');
                     }).fail((err) => {
+                        $('#errorMsg').text(`${err.status} ${err.statusText}: ${err.responseText}`);
                         $('#error').removeClass('d-none');
-                        $('#errorMsg').text(err);
                     }).always(() => {
                         $('#loading').addClass('d-none');
                         $('#submit').removeAttr('disabled');
