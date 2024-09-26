@@ -108,12 +108,13 @@
                 });
 
                 $('form').submit((event) => {
+                    let balance = parseFloat($('#balance').val());
                     let formData = {
                         fareType: parseInt($('#fareType').val()),
-                        topUp: $('#topUp')[0].checked,
+                        topUp: $('#topUp')[0].checked && balance > 0,
                         pass: $('#pass')[0].checked
                     };
-                    if (formData.topUp) formData.balance = parseFloat($('#balance').val());
+                    if (formData.topUp) formData.balance = balance;
                     if (formData.pass) {
                         formData.passProduct = parseInt($('#passProduct').val());
                         formData.passDuration = parseInt($('#passDuration').val());
