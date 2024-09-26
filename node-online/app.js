@@ -3,8 +3,9 @@ console.log(`Database API URL set to ${DBAPI_HOST}`);
 process.env.TZ = 'Australia/Melbourne';
 
 const express = require('express');
-const axios = require('axios');
-axios.default.respondValidate = (status) => true;
+const axios = require('axios').create({
+    validateStatus: () => true
+});
 
 const app = express();
 app.use(express.json());

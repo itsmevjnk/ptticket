@@ -11,8 +11,9 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
-const axios = require('axios');
-axios.default.respondValidate = (status) => true;
+const axios = require('axios').create({
+    validateStatus: () => true
+});
 
 const respondHttp = (res, status, payload) => {
     res.status(status).json({
