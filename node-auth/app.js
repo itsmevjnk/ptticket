@@ -58,8 +58,8 @@ const isUUID = (str) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-
 app.get('/api/auth', (req, res) => {
     let key = req.headers.authorization;
     if (typeof key !== 'string') return respondHttp(res, 400, 'Invalid or missing Authorization header');
-    key = key.split(' '); if (key.length != 2 || key[0] !== 'Bearer' || !isUUID(key[1])) return respondHttp(res, 401, 'Invalid Authorization header');
-    key = key[1]; // key[1] has our key
+    if (!/^Bearer [0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(key)) return respondHttp(res, 401, 'Invalid Authorization header');
+    key = key.split(' ')[1]; // key[1] has our key
 
     /* query from either key cache or database */
     let auth = (key == ADMIN_KEY) ? true : keyCache.get(key);
@@ -140,6 +140,7 @@ app.get('/api/keys/:key', (req, res) => {
 
 /* invalidate key in cache (i.e. next authorisation will be sourced from database) */
 app.post('/api/keys/:key/invalidate', (req, res) => {
+    let key = req.params.key;
     if (!isUUID(key)) return respondHttp(res, 400, 'Invalid key format');
     respondHttp(res, 200, keyCache.delete(req.params.key) ? 'Key has been invalidated in cache' : 'Key is not cached');
 });
