@@ -2,8 +2,78 @@ const DBAPI_HOST = process.env.DBAPI_HOST || 'http://127.0.0.1:4000';
 console.log(`Database API URL set to ${DBAPI_HOST}`);
 process.env.TZ = 'Australia/Melbourne';
 
+const TOKEN = process.env.TOKEN || false; // set if this container is deployed outside the central server - set to API token
+if (TOKEN) console.log('This instance is deployed OUTSIDE of the central server - per instance caching will be performed!');
+
+/* database write queue - for outside deployments only */
+const dbTicketWriteQueue = {};
+const dbTransactionQueue = {};
+
+let _upstreamOK = { value: true };
+const upstreamOK = new Proxy(_upstreamOK, {
+    set(target, key, value) {
+        if (value != _upstreamOK.value) {
+            if (value) {
+                /* upstream server OK */
+                console.log('Upstream server is good again');
+
+                /* flush ticket write queue */
+                for (let [id, data] of Object.entries(dbTicketWriteQueue)) {
+                    console.log(`Writing ticket ${id}`);
+                    axios.patch(`${DBAPI_HOST}/api/tickets/${id}`, data)
+                        .then((resp) => {
+                            if (resp.status != 200)
+                                console.error(`Cannot write data for ticket ${id}: ${resp.status} ${resp.data.message}`);
+                            else delete dbTicketWriteQueue[id];
+                        })
+                        .catch((err) => value = _upstreamOK.value = false);
+                }
+
+                /* flush transaction write queue */
+                for (let [id, data] of Object.entries(dbTransactionQueue)) {
+                    let ticketID = data.ticketID;
+                    let details = {
+                        id: id,
+                        timestamp: data.timestamp,
+                        ...data.details
+                    };
+                    console.log(`Writing transaction ${id} for ${ticketID}`);
+                    axios.post(`${DBAPI_HOST}/api/tickets/${ticketID}/transactions`, details)
+                        .then((resp) => {
+                            if (resp.status != 200)
+                                console.error(`Cannot write transaction ${id} for ${ticketID}: ${resp.status} ${resp.data.message}`);
+                            else delete dbTransactionQueue[id];
+                        })
+                        .catch((err) => value = _upstreamOK.value = false);
+                }
+            } else {
+                /* upstream server down */
+                console.warn('Upstream server is down');
+            }
+        }
+        return Reflect.set(...arguments);
+    }
+});
+
+let upstreamCheck = null;
+const resetUpstreamCheck = () => {
+    if (!TOKEN) return; // no upstream checks if deployed inside central server
+    if (upstreamCheck) clearInterval(upstreamCheck);
+    upstreamCheck = setInterval(() => {
+        axios.get(`${DBAPI_HOST}/api/healthcheck`).then((resp) => {
+            upstreamOK.value = (resp.status == 200);
+        }).catch((err) => {
+            upstreamOK.value = false;
+        });
+    }, 15000); // health check every 15 sec
+};
+resetUpstreamCheck();
+
 const express = require('express');
 const axios = require('axios').create({
+    headers: {
+        'Authorization': (TOKEN) ? ('Bearer ' + TOKEN) : undefined
+    },
     validateStatus: () => true
 });
 
@@ -21,10 +91,17 @@ const respondHttp = (res, status, payload) => {
 /* health check */
 app.get('/api/healthcheck', (req, res) => {
     axios.get(`${DBAPI_HOST}/api/healthcheck`).then((resp) => {
-        if (resp.status != 200)
-            return respondHttp(res, 500, `Upstream database API health check failed (status code ${resp.status})`);
-        respondHttp(res, 200, 'Online transaction API is functional');
-    });
+        if (resp.status != 200) {
+            respondHttp(res, (TOKEN) ? 299 : 500, `Upstream database API health check failed (status code ${resp.status})`); // NOTE: 299 is our custom status code to indicate that we can't process anything other than smart cards
+            upstreamOK = false;
+        } else {
+            respondHttp(res, 200, 'Online transaction API is functional');
+            upstreamOK = true;
+        }
+    }).catch((err) => {
+        respondHttp(res, (TOKEN) ? 299 : 500, `Upstream database API health check failed (status code ${err.code})`); // NOTE: 299 is our custom status code to indicate that we can't process anything other than smart cards
+        upstreamOK = false;
+    })
 });
 
 /* check if enough data is given for ticket validation and extract data from it */
@@ -124,16 +201,134 @@ const getProdBits = (id) => axios.get(`${DBAPI_HOST}/api/tickets/${id}/prodbits`
 const blockCard = (type, id) => axios.delete(`${DBAPI_HOST}/api/cards/${type}/${id}`);
 
 /* get location details */
-const getLocDetails = (id) => axios.get(`${DBAPI_HOST}/api/locations/${id}`);
+let getLocDetails = (id) => axios.get(`${DBAPI_HOST}/api/locations/${id}`);
 
 /* get product details */
-const getProdDetails = (id) => axios.get(`${DBAPI_HOST}/api/products/${id}`);
+let getProdDetails = (id) => axios.get(`${DBAPI_HOST}/api/products/${id}`);
 
 /* get fare type details */
-const getFareTypeDetails = (id) => axios.get(`${DBAPI_HOST}/api/fareTypes/${id}`);
+let getFareTypeDetails = (id) => axios.get(`${DBAPI_HOST}/api/fareTypes/${id}`);
 
 /* search product covering zones */
-const searchProduct = (from, to) => axios.get(`${DBAPI_HOST}/api/products/search/${from}/${to}`);
+let searchProduct = (from, to) => axios.get(`${DBAPI_HOST}/api/products/search/${from}/${to}`);
+
+/* pre-fetch copy of the static database */
+if (TOKEN) {
+    let sLocations = [];
+    let sProducts = [];
+    let sFareTypes = [];
+
+    const updateStaticCache = () => {
+        Promise.all([
+            axios.get(`${DBAPI_HOST}/api/locations`),
+            axios.get(`${DBAPI_HOST}/api/products`),
+            axios.get(`${DBAPI_HOST}/api/fareTypes`)
+        ]).then((respArray) => {
+            for (let resp of respArray) {
+                if (resp.status != 200) {
+                    upstreamOK.value = false;
+                    return;
+                }
+            }
+
+            sLocations = respArray[0].data.message;
+            sProducts = respArray[1].data.message;
+            sFareTypes = respArray[2].data.message;
+            console.log(`Updated cache with ${sLocations.length} locations, ${sProducts.length} products and ${sFareTypes.length} fare types`);
+        }).catch((err) => {
+            upstreamOK.value = false;
+        });
+    };
+    updateStaticCache();
+    require('node-cron').schedule('0 2 3 * * *', updateStaticCache); // update every 03:02AM (2 min to allow upstream time to update its own cache)
+    
+    getLocDetails = (id) => new Promise((resolve, reject) => {
+        if (!isNaN(id) && id >= 0 && id < sLocations.length) {
+            resolve({
+                status: 200,
+                data: {
+                    message: sLocations[id]
+                }
+            });
+        } else {
+            resolve({
+                status: 400,
+                data: {
+                    message: `Invalid location ID '${id}'`
+                }
+            });
+        }
+    });
+
+    getProdDetails = (id) => new Promise((resolve, reject) => {
+        if (!isNaN(id) && id >= 0 && id < sProducts.length) {
+            resolve({
+                status: 200,
+                data: {
+                    message: sProducts[id]
+                }
+            });
+        } else {
+            resolve({
+                status: 400,
+                data: {
+                    message: `Invalid product ID '${id}'`
+                }
+            });
+        }
+    });
+
+    getFareTypeDetails = (id) => new Promise((resolve, reject) => {
+        if (!isNaN(id) && id >= 0 && id < sFareTypes.length) {
+            resolve({
+                status: 200,
+                data: {
+                    message: sFareTypes[id]
+                }
+            });
+        } else {
+            resolve({
+                status: 400,
+                data: {
+                    message: `Invalid fare type ID '${id}'`
+                }
+            });
+        }
+    });
+
+    searchProduct = (from, to) => {
+        let prodID = -1, prodDelta = Infinity;
+        for (let i = 0; i < sProducts.length; i++) {
+            if (sProducts[i].fromZone <= from && sProducts[i].toZone >= to) {
+                let delta = (from - sProducts[i].fromZone) + (sProducts[i].toZone - to);
+                if (delta < prodDelta) {
+                    prodID = i;
+                    prodDelta = delta;
+                }
+                if (delta == 0) break; // exit early
+            }
+        }
+
+        return new Promise((resolve, reject) => {
+            if (prodID < 0) resolve({
+                status: 404,
+                data: {
+                    message: `Cannot find any product for zones ${from} to ${to}`
+                }
+            });
+            else resolve({
+                status: 200,
+                data: {
+                    message: {
+                        id: prodID,
+                        delta: prodDelta,
+                        details: sProducts[prodID]
+                    }
+                }
+            });
+        });
+    };
+}
 
 /* set bit in base64 bitmap */
 const b64Set = (bitmap, bit) => {
@@ -183,10 +378,20 @@ const writeTicketData = (res, id, details) => {
     ).then((resp) => {
         if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
         return resp;
+    }).catch((err) => {
+        if (TOKEN) {
+            dbTicketWriteQueue[id] = Object.assign(dbTicketWriteQueue.hasOwnProperty(id) ? dbTicketWriteQueue[id] : {}, details);
+            console.log(`Added ticket data write for ${id} to queue`);
+            return {
+                status: 200,
+                message: dbTicketWriteQueue[id] // TODO: does this matter?
+            };
+        } else return respondHttp(res, 503, `Cannot connect to database server (${err.code})`);
     });
 };
 
 /* write transaction */
+const crypto = require('crypto');
 const writeTransaction = (res, id, trans) => {
     return axios.post(
         `${DBAPI_HOST}/api/tickets/${id}/transactions`,
@@ -194,11 +399,35 @@ const writeTransaction = (res, id, trans) => {
     ).then((resp) => {
         if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
         return resp;
+    }).catch((err) => {
+        if (TOKEN) {
+            let transID = crypto.randomUUID();
+            let transObj = {
+                ticketID: id,
+                timestamp: new Date().toISOString(),
+                details: trans
+            };
+            dbTransactionQueue[transID] = transObj;
+            console.log(`Added ticket data write for ${id} to queue`);
+            return {
+                status: 200,
+                message: {
+                    id: transID,
+                    timestamp: transObj.timestamp,
+                    type: trans.type,
+                    location: trans.location,
+                    product: trans.product,
+                    balance: trans.balance
+                }
+            }; // fake response so the other end is happy
+        } else respondHttp(res, 503, `Cannot connect to database server (${err.code})`);
     });
 };
 
 /* verify card details */
 const verifyCard = (local, remote) => {
+    if (!TOKEN && !_upstreamOK.value) return true; // cannot check due to outage
+
     if (
         local.fareType != remote.fareType
         || local.balance != remote.balance
@@ -552,35 +781,45 @@ app.post('/api/validate', (req, res) => {
                 return respondExpired(res, details);
         } else ticketID = validateReq.ticketID;
 
-        /* get product bits and passes */
-        return Promise.all([
-            // getLastTransaction(ticketID),
-            getProdBits(ticketID),
-            getPasses(ticketID)
-        ]);
+        if (upstreamOK.value) {
+            /* get product bits and passes */
+            return Promise.all([
+                // getLastTransaction(ticketID),
+                getProdBits(ticketID),
+                getPasses(ticketID)
+            ]);
+        } else if (!validateReq.hasOwnProperty('cardVerify')) {
+            /* can't handle */
+            return respondHttp(res, 503, 'Lost connection to database server');
+        } else {
+            details = validateReq.cardVerify;
+            return null; // nothing going on here
+        }
     }).then((respArray) => {
         if (respArray === undefined) return; // premature exit
 
-        /* check for failure */
-        for (let resp of respArray) {
-            if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
-        }
+        if (respArray !== null) {
+            /* check for failure */
+            for (let resp of respArray) {
+                if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
+            }
 
-        // details.lastTransaction = respArray[0].data.message;
-        details.prodBits = respArray[0].data.message;
-        details.passes = respArray[1].data.message;
+            // details.lastTransaction = respArray[0].data.message;
+            details.prodBits = respArray[0].data.message;
+            details.passes = respArray[1].data.message;
 
-        if (validateReq.hasOwnProperty('cardVerify')) {
-            /* verify card details */
-            if (!verifyCard(validateReq.cardVerify, details)) {
-                /* invalid card - block card now */
-                console.log(validateReq.card);
-                return blockCard(validateReq.card.type, validateReq.card.id).then((resp) => {
-                    console.log(resp.data);
-                    if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
-                    details.disabled = true;
-                    respondBlocked(res, details);
-                });
+            if (validateReq.hasOwnProperty('cardVerify')) {
+                /* verify card details */
+                if (!verifyCard(validateReq.cardVerify, details)) {
+                    /* invalid card - block card now */
+                    console.log(validateReq.card);
+                    return blockCard(validateReq.card.type, validateReq.card.id).then((resp) => {
+                        console.log(resp.data);
+                        if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
+                        details.disabled = true;
+                        respondBlocked(res, details);
+                    });
+                }
             }
         }
 
