@@ -64,7 +64,7 @@
             </div>
             <div id="error" class="alert alert-danger d-none" role="alert">
                 <strong>Request failed:</strong>
-                <span id="error-msg"></span>
+                <span id="errorMsg"></span>
             </div>
             <div id="result" class="alert alert-success d-flex flex-column d-none text-center" role="alert">
                 <h4>Your ticket has been created.</h4>
@@ -138,6 +138,7 @@
                         $('#result').removeClass('d-none');
                     }).fail((err) => {
                         $('#error').removeClass('d-none');
+                        $('#errorMsg').text(err);
                     }).always(() => {
                         $('#loading').addClass('d-none');
                         $('#submit').removeAttr('disabled');

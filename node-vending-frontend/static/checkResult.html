@@ -127,7 +127,7 @@
 
                     $('#cardInfo').removeClass('d-none');
                 }).fail((jqxhr, textStatus, error) => {
-                    $('#errorMsg').html(error);
+                    $('#errorMsg').text(error);
                     $('#error').removeClass('d-none');
                 });
             });
