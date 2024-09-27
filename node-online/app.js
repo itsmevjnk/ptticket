@@ -1,9 +1,10 @@
-const DBAPI_HOST = process.env.DBAPI_HOST || 'http://127.0.0.1:4000';
-console.log(`Database API URL set to ${DBAPI_HOST}`);
+const DATABASE_API = process.env.DATABASE_API || 'http://127.0.0.1:3101/api';
+console.log(`Database API URL set to ${DATABASE_API}`);
 process.env.TZ = 'Australia/Melbourne';
 
-const TOKEN = process.env.TOKEN || false; // set if this container is deployed outside the central server - set to API token
-if (TOKEN) console.log('This instance is deployed OUTSIDE of the central server - per instance caching will be performed!');
+const UPSTREAM_API = process.env.UPSTREAM_API || null;
+const TOKEN = process.env.TOKEN || null; // API token for contacting upstream transaction server
+if (UPSTREAM_API !== null) console.log('This instance is deployed OUTSIDE of the central server - per instance caching will be performed!');
 
 /* database write queue - for outside deployments only */
 const dbTicketWriteQueue = {};
@@ -20,7 +21,7 @@ const upstreamOK = new Proxy(_upstreamOK, {
                 /* flush ticket write queue */
                 for (let [id, data] of Object.entries(dbTicketWriteQueue)) {
                     console.log(`Writing ticket ${id}`);
-                    axios.patch(`${DBAPI_HOST}/api/tickets/${id}`, data)
+                    axios.patch(`${DATABASE_API}/tickets/${id}`, data)
                         .then((resp) => {
                             if (resp.status != 200)
                                 console.error(`Cannot write data for ticket ${id}: ${resp.status} ${resp.data.message}`);
@@ -38,7 +39,7 @@ const upstreamOK = new Proxy(_upstreamOK, {
                         ...data.details
                     };
                     console.log(`Writing transaction ${id} for ${ticketID}`);
-                    axios.post(`${DBAPI_HOST}/api/tickets/${ticketID}/transactions`, details)
+                    axios.post(`${DATABASE_API}/tickets/${ticketID}/transactions`, details)
                         .then((resp) => {
                             if (resp.status != 200)
                                 console.error(`Cannot write transaction ${id} for ${ticketID}: ${resp.status} ${resp.data.message}`);
@@ -57,10 +58,10 @@ const upstreamOK = new Proxy(_upstreamOK, {
 
 let upstreamCheck = null;
 const resetUpstreamCheck = () => {
-    if (!TOKEN) return; // no upstream checks if deployed inside central server
+    if (UPSTREAM_API === null) return; // no upstream checks if deployed inside central server
     if (upstreamCheck) clearInterval(upstreamCheck);
     upstreamCheck = setInterval(() => {
-        axios.get(`${DBAPI_HOST}/api/healthcheck`).then((resp) => {
+        axios.get(`${UPSTREAM_API}/healthcheck`).then((resp) => {
             upstreamOK.value = (resp.status == 200);
         }).catch((err) => {
             upstreamOK.value = false;
@@ -72,7 +73,7 @@ resetUpstreamCheck();
 const express = require('express');
 const axios = require('axios').create({
     headers: {
-        'Authorization': (TOKEN) ? ('Bearer ' + TOKEN) : undefined
+        'Authorization': (TOKEN !== null) ? ('Bearer ' + TOKEN) : undefined
     },
     validateStatus: () => true
 });
@@ -90,13 +91,13 @@ const respondHttp = (res, status, payload) => {
 
 /* health check */
 app.get('/api/healthcheck', (req, res) => {
-    axios.get(`${DBAPI_HOST}/api/healthcheck`).then((resp) => {
+    axios.get(`${DATABASE_API}/healthcheck`).then((resp) => {
         if (resp.status != 200) {
             respondHttp(res, (TOKEN) ? 299 : 500, `Upstream database API health check failed (status code ${resp.status})`); // NOTE: 299 is our custom status code to indicate that we can't process anything other than smart cards
-            upstreamOK = false;
+            upstreamOK.value = false;
         } else {
             respondHttp(res, 200, 'Online transaction API is functional');
-            upstreamOK = true;
+            upstreamOK.value = true;
         }
     }).catch((err) => {
         respondHttp(res, (TOKEN) ? 299 : 500, `Upstream database API health check failed (status code ${err.code})`); // NOTE: 299 is our custom status code to indicate that we can't process anything other than smart cards
@@ -180,49 +181,49 @@ const extractValidateRequest = (body) => {
 };
 
 /* request card information */
-const getCardInfo = (type, id) => axios.get(`${DBAPI_HOST}/api/cards/${type}/${id}`);
+const getCardInfo = (type, id) => axios.get(`${DATABASE_API}/cards/${type}/${id}`);
 
 /* request ticket information */
-const getTicketInfo = (id) => axios.get(`${DBAPI_HOST}/api/tickets/${id}`);
+const getTicketInfo = (id) => axios.get(`${DATABASE_API}/tickets/${id}`);
 
 /* request last transaction */
-const getLastTransaction = (id) => axios.get(`${DBAPI_HOST}/api/tickets/${id}/transactions?validateOnly=true&limit=1`);
+const getLastTransaction = (id) => axios.get(`${DATABASE_API}/tickets/${id}/transactions?validateOnly=true&limit=1`);
 
 /* request pass information */
-const getPasses = (id) => axios.get(`${DBAPI_HOST}/api/tickets/${id}/passes`);
+const getPasses = (id) => axios.get(`${DATABASE_API}/tickets/${id}/passes`);
 
 /* activate pass */
-const activatePass = (ticketID, passID, date) => axios.post(`${DBAPI_HOST}/api/tickets/${ticketID}/passes/${passID}`, { date: date });
+const activatePass = (ticketID, passID, date) => axios.post(`${DATABASE_API}/tickets/${ticketID}/passes/${passID}`, { date: date });
 
 /* request product bits */
-const getProdBits = (id) => axios.get(`${DBAPI_HOST}/api/tickets/${id}/prodbits`);
+const getProdBits = (id) => axios.get(`${DATABASE_API}/tickets/${id}/prodbits`);
 
 /* disable card */
-const blockCard = (type, id) => axios.delete(`${DBAPI_HOST}/api/cards/${type}/${id}`);
+const blockCard = (type, id) => axios.delete(`${DATABASE_API}/cards/${type}/${id}`);
 
 /* get location details */
-let getLocDetails = (id) => axios.get(`${DBAPI_HOST}/api/locations/${id}`);
+let getLocDetails = (id) => axios.get(`${DATABASE_API}/locations/${id}`);
 
 /* get product details */
-let getProdDetails = (id) => axios.get(`${DBAPI_HOST}/api/products/${id}`);
+let getProdDetails = (id) => axios.get(`${DATABASE_API}/products/${id}`);
 
 /* get fare type details */
-let getFareTypeDetails = (id) => axios.get(`${DBAPI_HOST}/api/fareTypes/${id}`);
+let getFareTypeDetails = (id) => axios.get(`${DATABASE_API}/fareTypes/${id}`);
 
 /* search product covering zones */
-let searchProduct = (from, to) => axios.get(`${DBAPI_HOST}/api/products/search/${from}/${to}`);
+let searchProduct = (from, to) => axios.get(`${DATABASE_API}/products/search/${from}/${to}`);
 
 /* pre-fetch copy of the static database */
-if (TOKEN) {
+if (UPSTREAM_API !== null) {
     let sLocations = [];
     let sProducts = [];
     let sFareTypes = [];
 
     const updateStaticCache = () => {
         Promise.all([
-            axios.get(`${DBAPI_HOST}/api/locations`),
-            axios.get(`${DBAPI_HOST}/api/products`),
-            axios.get(`${DBAPI_HOST}/api/fareTypes`)
+            axios.get(`${DATABASE_API}/locations`),
+            axios.get(`${DATABASE_API}/products`),
+            axios.get(`${DATABASE_API}/fareTypes`)
         ]).then((respArray) => {
             for (let resp of respArray) {
                 if (resp.status != 200) {
@@ -365,7 +366,7 @@ const respondNegBalance = (res, details) => respondValidate(res, 403, 'negBalanc
 /* write ticket data */
 const writeTicketData = (res, id, details) => {
     return axios.patch(
-        `${DBAPI_HOST}/api/tickets/${id}`,
+        `${DATABASE_API}/tickets/${id}`,
         {
             fareType: details.fareType,
             balance: details.balance,
@@ -379,7 +380,7 @@ const writeTicketData = (res, id, details) => {
         if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
         return resp;
     }).catch((err) => {
-        if (TOKEN) {
+        if (UPSTREAM_API !== null) {
             dbTicketWriteQueue[id] = Object.assign(dbTicketWriteQueue.hasOwnProperty(id) ? dbTicketWriteQueue[id] : {}, details);
             console.log(`Added ticket data write for ${id} to queue`);
             return {
@@ -394,13 +395,13 @@ const writeTicketData = (res, id, details) => {
 const crypto = require('crypto');
 const writeTransaction = (res, id, trans) => {
     return axios.post(
-        `${DBAPI_HOST}/api/tickets/${id}/transactions`,
+        `${DATABASE_API}/tickets/${id}/transactions`,
         trans
     ).then((resp) => {
         if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
         return resp;
     }).catch((err) => {
-        if (TOKEN) {
+        if (UPSTREAM_API !== null) {
             let transID = crypto.randomUUID();
             let transObj = {
                 ticketID: id,
@@ -426,7 +427,7 @@ const writeTransaction = (res, id, trans) => {
 
 /* verify card details */
 const verifyCard = (local, remote) => {
-    if (!TOKEN && !_upstreamOK.value) return true; // cannot check due to outage
+    if (UPSTREAM_API !== null && !_upstreamOK.value) return true; // cannot check due to outage
 
     if (
         local.fareType != remote.fareType
@@ -758,93 +759,108 @@ const touchOff = (res, location, entryOnly, ticketID, details) => {
 };
 
 /* main endpoint - ticket validation */
-app.post('/api/validate', (req, res) => {
-    let validateReq = extractValidateRequest(req.body);
-    if (validateReq === null) return respondHttp(res, 400, 'Invalid request body');
+const handleValidate = (req, res) => {
+    new Promise((resolve, reject) => { // passthrough to central server
+        if (UPSTREAM_API !== null && upstreamOK.value) {
+            axios.post(`${UPSTREAM_API}/validate`, req.body).then((resp) => {
+                respondHttp(res, resp.status, resp.data.message);
+                resolve(true); // passed through successfully
+            }).catch((err) => {
+                upstreamOK.value = false;
+                resolve(false);
+            });
+        } else resolve(false);
+    }).then((passed) => {
+        if (passed) return;
 
-    /* get card/ticket details */
-    let details = null;
-    let oldCurrentProduct = null;
-    let ticketID = ''; // ticket ID
-    let pDetails = validateReq.hasOwnProperty('card')
-        ? getCardInfo(validateReq.card.type, validateReq.card.id)
-        : getTicketInfo(validateReq.ticketID);
-    pDetails.then((resp) => {
-        if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message); // pass error from upstream
+        let validateReq = extractValidateRequest(req.body);
+        if (validateReq === null) return respondHttp(res, 400, 'Invalid request body');
 
-        details = resp.data.message;
-        if (details.disabled) return respondBlocked(res, details);
+        /* get card/ticket details */
+        let details = null;
+        let oldCurrentProduct = null;
+        let ticketID = ''; // ticket ID
+        let pDetails = validateReq.hasOwnProperty('card')
+            ? getCardInfo(validateReq.card.type, validateReq.card.id)
+            : getTicketInfo(validateReq.ticketID);
+        pDetails.then((resp) => {
+            if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message); // pass error from upstream
 
-        if (validateReq.hasOwnProperty('card')) {
-            ticketID = details.ticketID;
-            if (details.expiryDate !== null && new Date(details.expiryDate) < new Date())
-                return respondExpired(res, details);
-        } else ticketID = validateReq.ticketID;
+            details = resp.data.message;
+            if (details.disabled) return respondBlocked(res, details);
 
-        if (upstreamOK.value) {
-            /* get product bits and passes */
-            return Promise.all([
-                // getLastTransaction(ticketID),
-                getProdBits(ticketID),
-                getPasses(ticketID)
-            ]);
-        } else if (!validateReq.hasOwnProperty('cardVerify')) {
-            /* can't handle */
-            return respondHttp(res, 503, 'Lost connection to database server');
-        } else {
-            details = validateReq.cardVerify;
-            return null; // nothing going on here
-        }
-    }).then((respArray) => {
-        if (respArray === undefined) return; // premature exit
+            if (validateReq.hasOwnProperty('card')) {
+                ticketID = details.ticketID;
+                if (details.expiryDate !== null && new Date(details.expiryDate) < new Date())
+                    return respondExpired(res, details);
+            } else ticketID = validateReq.ticketID;
 
-        if (respArray !== null) {
-            /* check for failure */
-            for (let resp of respArray) {
-                if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
+            if (upstreamOK.value) {
+                /* get product bits and passes */
+                return Promise.all([
+                    // getLastTransaction(ticketID),
+                    getProdBits(ticketID),
+                    getPasses(ticketID)
+                ]);
+            } else if (!validateReq.hasOwnProperty('cardVerify')) {
+                /* can't handle */
+                return respondHttp(res, 503, 'Lost connection to database server');
+            } else {
+                details = validateReq.cardVerify;
+                return null; // nothing going on here
             }
+        }).then((respArray) => {
+            if (respArray === undefined) return; // premature exit
 
-            // details.lastTransaction = respArray[0].data.message;
-            details.prodBits = respArray[0].data.message;
-            details.passes = respArray[1].data.message;
+            if (respArray !== null) {
+                /* check for failure */
+                for (let resp of respArray) {
+                    if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
+                }
 
-            if (validateReq.hasOwnProperty('cardVerify')) {
-                /* verify card details */
-                if (!verifyCard(validateReq.cardVerify, details)) {
-                    /* invalid card - block card now */
-                    console.log(validateReq.card);
-                    return blockCard(validateReq.card.type, validateReq.card.id).then((resp) => {
-                        console.log(resp.data);
-                        if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
-                        details.disabled = true;
-                        respondBlocked(res, details);
-                    });
+                // details.lastTransaction = respArray[0].data.message;
+                details.prodBits = respArray[0].data.message;
+                details.passes = respArray[1].data.message;
+
+                if (validateReq.hasOwnProperty('cardVerify')) {
+                    /* verify card details */
+                    if (!verifyCard(validateReq.cardVerify, details)) {
+                        /* invalid card - block card now */
+                        console.log(validateReq.card);
+                        return blockCard(validateReq.card.type, validateReq.card.id).then((resp) => {
+                            console.log(resp.data);
+                            if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
+                            details.disabled = true;
+                            respondBlocked(res, details);
+                        });
+                    }
                 }
             }
-        }
 
-        // oldCurrentProduct = details.currentProduct;
-        return getLocDetails(validateReq.location);
-    }).then((resp) => {
-        if (resp === undefined) return; // premature exit
+            // oldCurrentProduct = details.currentProduct;
+            return getLocDetails(validateReq.location);
+        }).then((resp) => {
+            if (resp === undefined) return; // premature exit
 
-        if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message); // pass error from upstream
-        validateReq.location = {
-            id: validateReq.location,
-            ...resp.data.message
-        }; // replaces msg.locDetails
+            if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message); // pass error from upstream
+            validateReq.location = {
+                id: validateReq.location,
+                ...resp.data.message
+            }; // replaces msg.locDetails
 
-        if (details.touchedOn == 0) {
-            /* touched off */
-            if (validateReq.direction.exitOnly)
-                return missingTouchOn(res, validateReq.location, ticketID, details);
-            return touchOn(res, validateReq.location, ticketID, details, false);
-        } else {
-            /* touched on - now touch off */
-            return touchOff(res, validateReq.location, validateReq.direction.entryOnly, ticketID, details);
-        }
+            if (details.touchedOn == 0) {
+                /* touched off */
+                if (validateReq.direction.exitOnly)
+                    return missingTouchOn(res, validateReq.location, ticketID, details);
+                return touchOn(res, validateReq.location, ticketID, details, false);
+            } else {
+                /* touched on - now touch off */
+                return touchOff(res, validateReq.location, validateReq.direction.entryOnly, ticketID, details);
+            }
+        });
     });
-});
+};
+app.post('/api/validate', handleValidate);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
