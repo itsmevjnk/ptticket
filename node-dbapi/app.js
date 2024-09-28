@@ -248,7 +248,7 @@ app.post('/api/tickets', (req, res) => {
     if (req.body.hasOwnProperty('fareType')) queryParams[1] = parseInt(req.body.fareType);
 
     let pTicket = null; // we'll put the promise in here
-    let queryStmt = 'WITH ticket AS (INSERT INTO "dynamic"."Tickets" ("fareType") VALUES ($2) RETURNING "id") ';
+    let queryStmt = 'WITH ticket AS (INSERT INTO "dynamic"."Tickets" ("fareType", "prodValidated") VALUES ($2, \'1970-01-01T00:00:00Z\') RETURNING "id") ';
     if (req.body.hasOwnProperty('cardID')) {
         /* ticket creation with given ID */
         queryParams.push(req.body.cardID);
