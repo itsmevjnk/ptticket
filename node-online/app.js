@@ -141,7 +141,7 @@ app.get('/api/healthcheck', (req, res) => {
         }
     }).catch((err) => {
         respondHttp(res, (TOKEN) ? 299 : 500, `Upstream database API health check failed (status code ${err.code})`); // NOTE: 299 is our custom status code to indicate that we can't process anything other than smart cards
-        upstreamOK = false;
+        upstreamOK.value = false;
     })
 });
 
