@@ -18,34 +18,74 @@ const upstreamOK = new Proxy(_upstreamOK, {
                 /* upstream server OK */
                 console.log('Upstream server is good again');
 
+                let idCache = new Map();
+
                 /* flush ticket write queue */
                 for (let [id, data] of Object.entries(dbTicketWriteQueue)) {
-                    console.log(`Writing ticket ${id}`);
-                    axios.patch(`${DATABASE_API}/tickets/${id}`, data)
+                    let pResolveID = (id.includes('/')) ? axios.get(`/api/cards/${id}?idOnly=true`) : new Promise((resolve, reject) => {
+                        resolve({
+                            status: 200,
+                            message: {
+                                ticketID: id
+                            }
+                        });                        
+                    });
+                    pResolveID.then((resp) => {
+                        if (resp.status != 200) return console.error(`Ticket ID query for ${id} failed: ${resp.status} ${resp.data.message}`);
+                        
+                        let ticketID = resp.data.message.ticketID;
+                        idCache.set(id, ticketID);
+
+                        console.log(`Writing ticket ${ticketID}`);
+                        return axios.patch(`${DATABASE_API}/tickets/${ticketID}`, data)
                         .then((resp) => {
                             if (resp.status != 200)
-                                console.error(`Cannot write data for ticket ${id}: ${resp.status} ${resp.data.message}`);
-                            else delete dbTicketWriteQueue[id];
-                        })
-                        .catch((err) => value = _upstreamOK.value = false);
+                                console.error(`Cannot write data for ticket ${ticketID}: ${resp.status} ${resp.data.message}`);
+                            else delete dbTicketWriteQueue[ticketID];
+                        });
+                    }).catch((err) => value = _upstreamOK.value = false);
                 }
 
                 /* flush transaction write queue */
                 for (let [id, data] of Object.entries(dbTransactionQueue)) {
-                    let ticketID = data.ticketID;
-                    let details = {
-                        id: id,
-                        timestamp: data.timestamp,
-                        ...data.details
-                    };
-                    console.log(`Writing transaction ${id} for ${ticketID}`);
-                    axios.post(`${DATABASE_API}/tickets/${ticketID}/transactions`, details)
-                        .then((resp) => {
-                            if (resp.status != 200)
-                                console.error(`Cannot write transaction ${id} for ${ticketID}: ${resp.status} ${resp.data.message}`);
-                            else delete dbTransactionQueue[id];
-                        })
-                        .catch((err) => value = _upstreamOK.value = false);
+                    let pResolveID = (idCache.has(id))
+                        ? new Promise((resolve, reject) => {
+                            resolve({
+                                status: 200,
+                                message: {
+                                    ticketID: idCache.get(id)
+                                }
+                            });                        
+                        }) : (
+                            (id.includes('/')) ? axios.get(`/api/cards/${id}?idOnly=true`) : new Promise((resolve, reject) => {
+                                resolve({
+                                    status: 200,
+                                    message: {
+                                        ticketID: id
+                                    }
+                                });                        
+                            })
+                        );
+
+                    pResolveID.then((resp) => {
+                        if (resp.status != 200) return console.error(`Ticket ID query for ${id} failed: ${resp.status} ${resp.data.message}`);
+                        
+                        let ticketID = resp.data.message.ticketID;
+                        idCache.set(id, ticketID);
+
+                        let details = {
+                            id: id,
+                            timestamp: data.timestamp,
+                            ...data.details
+                        };
+                        console.log(`Writing transaction ${id} for ${ticketID}`);
+                        return axios.post(`${DATABASE_API}/tickets/${ticketID}/transactions`, details)
+                            .then((resp) => {
+                                if (resp.status != 200)
+                                    console.error(`Cannot write transaction ${id} for ${ticketID}: ${resp.status} ${resp.data.message}`);
+                                else delete dbTransactionQueue[id];
+                            });
+                    }).catch((err) => value = _upstreamOK.value = false);
                 }
             } else {
                 /* upstream server down */
@@ -780,9 +820,17 @@ const handleValidate = (req, res) => {
         let details = null;
         let oldCurrentProduct = null;
         let ticketID = ''; // ticket ID
-        let pDetails = validateReq.hasOwnProperty('card')
-            ? getCardInfo(validateReq.card.type, validateReq.card.id)
-            : getTicketInfo(validateReq.ticketID);
+        let pDetails = (UPSTREAM_API !== null && upstreamOK.value)
+            ? (
+                validateReq.hasOwnProperty('card')
+                ? getCardInfo(validateReq.card.type, validateReq.card.id)
+                : getTicketInfo(validateReq.ticketID)
+            ) : new Promise((resolve, reject) => resolve({
+                status: 200,
+                data: {
+                    message: validateReq
+                }
+            }));
         pDetails.then((resp) => {
             if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message); // pass error from upstream
 
@@ -790,7 +838,7 @@ const handleValidate = (req, res) => {
             if (details.disabled) return respondBlocked(res, details);
 
             if (validateReq.hasOwnProperty('card')) {
-                ticketID = details.ticketID;
+                ticketID = (UPSTREAM_API !== null && upstreamOK.value) ? details.ticketID : `${validateReq.card.type}/${validateReq.card.id}`;
                 if (details.expiryDate !== null && new Date(details.expiryDate) < new Date())
                     return respondExpired(res, details);
             } else ticketID = validateReq.ticketID;
