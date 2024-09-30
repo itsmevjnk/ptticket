@@ -1,0 +1,569 @@
+[
+    {
+        "id": "dd74c076c8417c65",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "a3a0a3e2ae7dd5d8",
+        "type": "http in",
+        "z": "dd74c076c8417c65",
+        "name": "",
+        "url": "/api/healthcheck",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 240,
+        "y": 260,
+        "wires": [
+            [
+                "86b835132939939a"
+            ]
+        ]
+    },
+    {
+        "id": "359e66e61c09439d",
+        "type": "http request",
+        "z": "dd74c076c8417c65",
+        "name": "Check upstream health",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 710,
+        "y": 260,
+        "wires": [
+            [
+                "58d1b566d4a294ed"
+            ]
+        ]
+    },
+    {
+        "id": "86b835132939939a",
+        "type": "function",
+        "z": "dd74c076c8417c65",
+        "name": "Prepare upstream request",
+        "func": "msg.url = env.get('VENDING_API') + '/healthcheck';\nmsg.headers = { 'Authorization': env.get('AUTH_TOKEN') || '' };\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 260,
+        "wires": [
+            [
+                "359e66e61c09439d"
+            ]
+        ]
+    },
+    {
+        "id": "58d1b566d4a294ed",
+        "type": "function",
+        "z": "dd74c076c8417c65",
+        "name": "Prepare response",
+        "func": "msg.payload = (msg.statusCode == 200) \n? {\n    status: 200,\n    message: 'Smart card vending API is functional'\n} : {\n    status: 502,\n    message: `Upstream vending API health check failed with status code ${msg.statusCode}`\n};\nmsg.payload.time = Date.now();\nmsg.statusCode = msg.payload.status;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 930,
+        "y": 260,
+        "wires": [
+            [
+                "425665755798549c"
+            ]
+        ]
+    },
+    {
+        "id": "425665755798549c",
+        "type": "http response",
+        "z": "dd74c076c8417c65",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1090,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "e0bee832e8ba1f1d",
+        "type": "http in",
+        "z": "dd74c076c8417c65",
+        "name": "",
+        "url": "/api/purchase/:id",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 240,
+        "y": 320,
+        "wires": [
+            [
+                "c1262c9937b310f8"
+            ]
+        ]
+    },
+    {
+        "id": "c1262c9937b310f8",
+        "type": "function",
+        "z": "dd74c076c8417c65",
+        "name": "Prepare upstream request",
+        "func": "let reqBody = {\n    cardType: 'sc',\n    cardID: `${msg.req.params.id}-0000-0000-0000-0123456789ab`, // the rest are just filler\n    fareType: msg.payload.fareType\n};\nif (msg.payload.hasOwnProperty('balance') && msg.payload.balance > 0) reqBody.balance = msg.payload.balance;\nif (msg.payload.hasOwnProperty('pass')) reqBody.pass = msg.payload.pass;\n\nmsg.payload = reqBody;\nmsg.url = env.get('VENDING_API') + '/tickets';\n\nmsg.transactions = [];\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 320,
+        "wires": [
+            [
+                "e59245d6f5b20ce5"
+            ]
+        ]
+    },
+    {
+        "id": "e59245d6f5b20ce5",
+        "type": "http request",
+        "z": "dd74c076c8417c65",
+        "name": "Send request to upstream",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 710,
+        "y": 320,
+        "wires": [
+            [
+                "559e9e921fc334f3"
+            ]
+        ]
+    },
+    {
+        "id": "559e9e921fc334f3",
+        "type": "switch",
+        "z": "dd74c076c8417c65",
+        "name": "Check status code",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 930,
+        "y": 320,
+        "wires": [
+            [
+                "428949967e9ec465"
+            ],
+            [
+                "43e1c04dd835cca8"
+            ]
+        ]
+    },
+    {
+        "id": "428949967e9ec465",
+        "type": "http response",
+        "z": "dd74c076c8417c65",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1110,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "43e1c04dd835cca8",
+        "type": "switch",
+        "z": "dd74c076c8417c65",
+        "name": "Check for balance transaction",
+        "property": "payload.message.balance",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nnull"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 290,
+        "y": 380,
+        "wires": [
+            [
+                "f65592b23743b090"
+            ],
+            [
+                "1f9b1a78aeef3396"
+            ]
+        ]
+    },
+    {
+        "id": "f65592b23743b090",
+        "type": "function",
+        "z": "dd74c076c8417c65",
+        "name": "Add balance transaction",
+        "func": "msg.transactions.push({\n    id: msg.payload.message.balance.id,\n    type: msg.payload.message.balance.type,\n    timestamp: Math.floor(new Date(msg.payload.message.balance.timestamp).getTime() / 1000),\n    balance: msg.payload.message.balance.balance\n});\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 590,
+        "y": 380,
+        "wires": [
+            [
+                "1f9b1a78aeef3396"
+            ]
+        ]
+    },
+    {
+        "id": "c7aee5b350b7b5ad",
+        "type": "function",
+        "z": "dd74c076c8417c65",
+        "name": "Add pass transaction",
+        "func": "msg.transactions.push({\n    id: msg.payload.message.pass.id,\n    type: msg.payload.message.pass.type,\n    timestamp: Math.floor(new Date(msg.payload.message.pass.timestamp).getTime() / 1000),\n    balance: msg.payload.message.pass.balance\n});\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 440,
+        "wires": [
+            [
+                "8cb47b5b9b0f45ef"
+            ]
+        ]
+    },
+    {
+        "id": "1f9b1a78aeef3396",
+        "type": "switch",
+        "z": "dd74c076c8417c65",
+        "name": "Check for pass transaction",
+        "property": "payload.message.pass",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nnull"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 280,
+        "y": 440,
+        "wires": [
+            [
+                "c7aee5b350b7b5ad"
+            ],
+            [
+                "8cb47b5b9b0f45ef"
+            ]
+        ]
+    },
+    {
+        "id": "8cb47b5b9b0f45ef",
+        "type": "function",
+        "z": "dd74c076c8417c65",
+        "name": "Form response",
+        "func": "msg.statusCode = 200;\nmsg.payload = {\n    status: 200,\n    message: msg.transactions,\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 740,
+        "y": 500,
+        "wires": [
+            [
+                "428949967e9ec465"
+            ]
+        ]
+    },
+    {
+        "id": "290e4ddfd54c9e46",
+        "type": "http in",
+        "z": "dd74c076c8417c65",
+        "name": "",
+        "url": "/api/balance/:id",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 240,
+        "y": 600,
+        "wires": [
+            [
+                "d95a45e6a28cfc6c"
+            ]
+        ]
+    },
+    {
+        "id": "d95a45e6a28cfc6c",
+        "type": "function",
+        "z": "dd74c076c8417c65",
+        "name": "Prepare upstream request",
+        "func": "msg.payload = { amount: msg.payload.amount };\nmsg.url = env.get('VENDING_API') + `/cards/sc/${msg.req.params.id}-0000-0000-0000-0123456789ab/balance`;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 600,
+        "wires": [
+            [
+                "fc947e02727aac37"
+            ]
+        ]
+    },
+    {
+        "id": "fc947e02727aac37",
+        "type": "http request",
+        "z": "dd74c076c8417c65",
+        "name": "Send request to upstream",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 710,
+        "y": 600,
+        "wires": [
+            [
+                "36c5eaefd190b481"
+            ]
+        ]
+    },
+    {
+        "id": "36c5eaefd190b481",
+        "type": "switch",
+        "z": "dd74c076c8417c65",
+        "name": "Check status code",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 930,
+        "y": 600,
+        "wires": [
+            [
+                "455d402ab708d3be"
+            ],
+            [
+                "16726021a895e5c3"
+            ]
+        ]
+    },
+    {
+        "id": "455d402ab708d3be",
+        "type": "http response",
+        "z": "dd74c076c8417c65",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1110,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "16726021a895e5c3",
+        "type": "function",
+        "z": "dd74c076c8417c65",
+        "name": "Filter response",
+        "func": "msg.payload.message = {\n    id: msg.payload.message.id,\n    type: msg.payload.message.type,\n    timestamp: Math.floor(new Date(msg.payload.message.timestamp).getTime() / 1000),\n    balance: msg.payload.message.balance\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 640,
+        "wires": [
+            [
+                "455d402ab708d3be"
+            ]
+        ]
+    },
+    {
+        "id": "a79471930fc92b01",
+        "type": "http in",
+        "z": "dd74c076c8417c65",
+        "name": "",
+        "url": "/api/pass/:id",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 230,
+        "y": 680,
+        "wires": [
+            [
+                "3269165f838f6b1e"
+            ]
+        ]
+    },
+    {
+        "id": "3269165f838f6b1e",
+        "type": "function",
+        "z": "dd74c076c8417c65",
+        "name": "Prepare upstream request",
+        "func": "msg.payload = {\n    product: msg.payload.product,\n    duration: msg.payload.duration\n};\nmsg.url = env.get('VENDING_API') + `/cards/sc/${msg.req.params.id}-0000-0000-0000-0123456789ab/pass`;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 470,
+        "y": 680,
+        "wires": [
+            [
+                "2611e54c2423421d"
+            ]
+        ]
+    },
+    {
+        "id": "2611e54c2423421d",
+        "type": "http request",
+        "z": "dd74c076c8417c65",
+        "name": "Send request to upstream",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 710,
+        "y": 680,
+        "wires": [
+            [
+                "07b1b587cde87501"
+            ]
+        ]
+    },
+    {
+        "id": "07b1b587cde87501",
+        "type": "switch",
+        "z": "dd74c076c8417c65",
+        "name": "Check status code",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "neq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 930,
+        "y": 680,
+        "wires": [
+            [
+                "598d4621273fb6e1"
+            ],
+            [
+                "101334623ee4c7b0"
+            ]
+        ]
+    },
+    {
+        "id": "598d4621273fb6e1",
+        "type": "http response",
+        "z": "dd74c076c8417c65",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1110,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "101334623ee4c7b0",
+        "type": "function",
+        "z": "dd74c076c8417c65",
+        "name": "Filter response",
+        "func": "msg.payload.message = {\n    id: msg.payload.message.id,\n    type: msg.payload.message.type,\n    timestamp: Math.floor(new Date(msg.payload.message.timestamp).getTime() / 1000),\n    balance: msg.payload.message.balance\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 720,
+        "wires": [
+            [
+                "598d4621273fb6e1"
+            ]
+        ]
+    }
+]
