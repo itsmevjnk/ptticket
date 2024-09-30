@@ -517,7 +517,7 @@ void doTopUpBalance() {
   char path[100] = API_VENDING_BASE "/balance/";
   int len = strlen(path); getCardID(uid, &path[len], sizeof(path) - len);
   String postData = "{\"amount\":" + String(amount) + "}";
-  Serial.print("Creating ticket...");
+  Serial.print("Topping up...");
   httpClient.beginRequest();
   httpClient.post(path);
   httpClient.sendHeader("Content-Type", "application/json");
