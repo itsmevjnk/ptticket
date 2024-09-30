@@ -820,7 +820,7 @@ const handleValidate = (req, res) => {
         let details = null;
         let oldCurrentProduct = null;
         let ticketID = ''; // ticket ID
-        let pDetails = (UPSTREAM_API !== null && upstreamOK.value)
+        let pDetails = (upstreamOK.value)
             ? (
                 validateReq.hasOwnProperty('card')
                 ? getCardInfo(validateReq.card.type, validateReq.card.id)
@@ -838,7 +838,7 @@ const handleValidate = (req, res) => {
             if (details.disabled) return respondBlocked(res, details);
 
             if (validateReq.hasOwnProperty('card')) {
-                ticketID = (UPSTREAM_API !== null && upstreamOK.value) ? details.ticketID : `${validateReq.card.type}/${validateReq.card.id}`;
+                ticketID = (upstreamOK.value) ? details.ticketID : `${validateReq.card.type}/${validateReq.card.id}`;
                 if (details.expiryDate !== null && new Date(details.expiryDate) < new Date())
                     return respondExpired(res, details);
             } else ticketID = validateReq.ticketID;
@@ -910,7 +910,7 @@ const handleValidate = (req, res) => {
 };
 app.post('/api/validate', handleValidate);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3103;
 app.listen(PORT, () => {
     console.log(`App running on port ${PORT}`);
 });
