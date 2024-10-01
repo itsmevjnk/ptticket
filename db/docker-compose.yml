@@ -1,5 +1,5 @@
 # Docker compose file for database server deployment
-version: '3'
+version: '3.8'
 services:
   postgres:
     container_name: ptticket-postgres
@@ -21,15 +21,6 @@ services:
       PGADMIN_DEFAULT_EMAIL: ptticket-admin@ptticket.xyz
       PGADMIN_DEFAULT_PASSWORD: hackme
     restart: unless-stopped
-  mosquitto:
-    container_name: ptticket-mqtt
-    image: eclipse-mosquitto
-    ports:
-      - "1883:1883"
-    volumes:
-      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-      - /var/mqtt:/mosquitto/config
-    restart: unless-stopped
   mosquitto-init:
     image: eclipse-mosquitto
     environment:
@@ -40,5 +31,15 @@ services:
       - /var/mqtt:/mosquitto/config
     command:
       - /mqtt-init.sh
+  mosquitto:
+    container_name: ptticket-mqtt
+    image: eclipse-mosquitto
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - /var/mqtt:/mosquitto/config
+    restart: unless-stopped
     depends_on:
-      - mosquitto
+      mosquitto-init:
+        condition: service_completed_successfully
