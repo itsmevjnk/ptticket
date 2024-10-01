@@ -10,5 +10,4 @@ RUN npm install --omit=dev
 
 ENV TZ=UTC
 
-EXPOSE 3000
 CMD ["npm", "start"]
