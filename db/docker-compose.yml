@@ -49,7 +49,7 @@ services:
       mosquitto-init:
         condition: service_completed_successfully
   auth-watcher:
-    container_name: auth-watcher
+    container_name: ptticket-auth-watcher
     image: itsmevjnk/ptticket-auth-watcher
     environment:
       - DB_HOST=ptticket-postgres
@@ -61,7 +61,7 @@ services:
       postgres:
         condition: service_started
   dbstatic:
-    container_name: dbstatic
+    container_name: ptticket-dbstatic
     image: itsmevjnk/ptticket-dbstatic
     environment:
       - DB_HOST=ptticket-postgres
