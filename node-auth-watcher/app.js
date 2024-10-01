@@ -1,10 +1,21 @@
 const mqtt = require('mqtt');
 
-const ADMIN_USERNAME = process.env.MQTT_ADMIN_USERNAME || 'mqadmin';
-const mqttClient = mqtt.connect(`mqtt://${process.env.MQTT_HOST || '127.0.0.1'}:${process.env.MQTT_PORT || 1883}`, {
-    username: ADMIN_USERNAME,
+const mqttOptions = {
+    username: process.env.MQTT_ADMIN_USERNAME || 'mqadmin',
     password: process.env.MQTT_ADMIN_PASSWORD || 'mqadmin'
-});
+};
+
+const fs = require('fs');
+const CA_CERT_PATH = process.env.MQTT_CA_CERT || '/ca.crt';
+try {
+    mqttOptions.ca = fs.readFileSync(CA_CERT_PATH); // supply CA certificate if one exists
+    console.log(`Using MQTT via SSL/TLS (MQTTS) with CA certificate at ${CA_CERT_PATH}.`);
+} catch (err) {
+    console.warn(`Cannot open CA certificate at ${CA_CERT_PATH}, proceeding with insecure MQTT.`);
+}
+let isMQTTS = mqttOptions.hasOwnProperty('ca');
+
+const mqttClient = mqtt.connect(`${isMQTTS ? 'mqtts' : 'mqtt'}://${process.env.MQTT_HOST || '127.0.0.1'}:${process.env.MQTT_PORT || (isMQTTS ? 8883 : 1883)}`, mqttOptions);
 const DYNSEC_TOPIC = process.env.MQTT_DYNSEC_TOPIC || '$CONTROL/dynamic-security/v1'; // Mosquitto Dynamic Security Plugin topic
 
 mqttClient.publish(DYNSEC_TOPIC, JSON.stringify({
@@ -31,7 +42,7 @@ mqttClient.publish(DYNSEC_TOPIC, JSON.stringify({
         },
         {
             command: 'addClientRole',
-            username: ADMIN_USERNAME,
+            username: mqttOptions.username,
             rolename: 'broadcast'
         }
     ]

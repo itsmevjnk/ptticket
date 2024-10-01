@@ -16,11 +16,22 @@ process.env.TZ = 'UTC';
 
 /* MQTT connection */
 const mqtt = require('mqtt');
-const mqttClient = mqtt.connect(`mqtt://${process.env.MQTT_HOST || '127.0.0.1'}:${process.env.MQTT_PORT || 1883}`, {
+const mqttOptions = {
     username: process.env.MQTT_USERNAME || 'mqadmin',
-    password: process.env.MQTT_PASSWORD || 'mqadmin',
-    debug: true
-});
+    password: process.env.MQTT_PASSWORD || 'mqadmin'
+};
+
+const fs = require('fs');
+const CA_CERT_PATH = process.env.MQTT_CA_CERT || '/ca.crt';
+try {
+    mqttOptions.ca = fs.readFileSync(CA_CERT_PATH); // supply CA certificate if one exists
+    console.log(`Using MQTT via SSL/TLS (MQTTS) with CA certificate at ${CA_CERT_PATH}.`);
+} catch (err) {
+    console.warn(`Cannot open CA certificate at ${CA_CERT_PATH}, proceeding with insecure MQTT.`);
+}
+let isMQTTS = mqttOptions.hasOwnProperty('ca');
+
+const mqttClient = mqtt.connect(`${isMQTTS ? 'mqtts' : 'mqtt'}://${process.env.MQTT_HOST || '127.0.0.1'}:${process.env.MQTT_PORT || (isMQTTS ? 8883 : 1883)}`, mqttOptions);
 
 /* static data fetching */
 let staticData = null;
