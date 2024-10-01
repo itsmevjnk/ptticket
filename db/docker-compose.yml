@@ -26,6 +26,7 @@ services:
     environment:
       - MQTT_ADMIN_USERNAME=$MQTT_ADMIN_USERNAME
       - MQTT_ADMIN_PASSWORD=$MQTT_ADMIN_PASSWORD
+      - MQTT_CLEAN=$MQTT_CLEAN
     volumes:
       - ./mqtt-init.sh:/mqtt-init.sh
       - /var/mqtt:/mosquitto

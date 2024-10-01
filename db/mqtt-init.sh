@@ -1,5 +1,13 @@
 #!/bin/sh
 
+if [[ -n "$MQTT_CLEAN" ]]; then
+    echo "Cleaning MQTT files..."
+    rm -rf /mosquitto/*
+fi
+mkdir -p /mosquitto/data
+mkdir -p /mosquitto/config
+mkdir -p /mosquitto/log
+
 DEFAULT_MQTT_USERNAME=mqadmin
 DEFAULT_MQTT_PASSWORD=mqadmin
 

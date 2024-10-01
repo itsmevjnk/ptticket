@@ -1,4 +1,3 @@
-# Docker compose file for database server deployment
 version: '3.8'
 services:
   mosquitto-init:
@@ -6,20 +5,19 @@ services:
     environment:
       - MQTT_ADMIN_USERNAME=$MQTT_ADMIN_USERNAME
       - MQTT_ADMIN_PASSWORD=$MQTT_ADMIN_PASSWORD
+      - MQTT_CLEAN=$MQTT_CLEAN
     volumes:
-      - ./mqtt-clean.sh:/mqtt-clean.sh
-      - ../db/mqtt-init.sh:/mqtt-init.sh
+      - ./mqtt-init.sh:/mqtt-init.sh
       - /var/mqtt:/mosquitto
     command:
-      - /mqtt-clean.sh
-      # - /mqtt-init.sh
+      - /mqtt-init.sh
   mosquitto:
     container_name: ptticket-mqtt
     image: eclipse-mosquitto
     ports:
       - "1883:1883"
     volumes:
-      - ../db/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - /var/mqtt:/mosquitto
     restart: unless-stopped
     depends_on:
