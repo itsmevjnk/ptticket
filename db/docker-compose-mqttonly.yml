@@ -16,9 +16,11 @@ services:
     image: eclipse-mosquitto
     ports:
       - "1883:1883"
+      - "8883:8883"
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - /var/mqtt:/mosquitto
+      - ./mqttcerts:/mqttcerts
     restart: unless-stopped
     depends_on:
       mosquitto-init:
