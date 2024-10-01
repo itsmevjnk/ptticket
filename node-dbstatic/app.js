@@ -16,10 +16,11 @@ process.env.TZ = 'UTC';
 
 /* MQTT connection */
 const mqtt = require('mqtt');
-const mqttOptions = {
-    username: process.env.MQTT_USERNAME || 'mqadmin',
-    password: process.env.MQTT_PASSWORD || 'mqadmin'
-};
+const mqttOptions = {};
+if (process.env.MQTT_ADMIN_USERNAME && process.env.MQTT_ADMIN_USERNAME.length > 0) {
+    mqttOptions.username = process.env.MQTT_ADMIN_USERNAME;
+    mqttOptions.password = process.env.MQTT_ADMIN_PASSWORD || '';
+}
 
 const fs = require('fs');
 const CA_CERT_PATH = process.env.MQTT_CA_CERT || '/ca.crt';
