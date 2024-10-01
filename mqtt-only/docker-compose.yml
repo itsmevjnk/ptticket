@@ -9,7 +9,7 @@ services:
     volumes:
       - ./mqtt-clean.sh:/mqtt-clean.sh
       - ../db/mqtt-init.sh:/mqtt-init.sh
-      - /var/mqtt:/mosquitto/config
+      - /var/mqtt:/mosquitto
     command:
       - /mqtt-clean.sh
       # - /mqtt-init.sh
@@ -20,7 +20,7 @@ services:
       - "1883:1883"
     volumes:
       - ../db/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-      - /var/mqtt:/mosquitto/config
+      - /var/mqtt:/mosquitto
     restart: unless-stopped
     depends_on:
       mosquitto-init:

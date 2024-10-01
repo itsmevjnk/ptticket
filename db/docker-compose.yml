@@ -28,7 +28,7 @@ services:
       - MQTT_ADMIN_PASSWORD=$MQTT_ADMIN_PASSWORD
     volumes:
       - ./mqtt-init.sh:/mqtt-init.sh
-      - /var/mqtt:/mosquitto/config
+      - /var/mqtt:/mosquitto
     command:
       - /mqtt-init.sh
   mosquitto:
@@ -38,7 +38,7 @@ services:
       - "1883:1883"
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-      - /var/mqtt:/mosquitto/config
+      - /var/mqtt:/mosquitto
     restart: unless-stopped
     depends_on:
       mosquitto-init:
