@@ -2,6 +2,8 @@
 DROP DATABASE IF EXISTS "ptticket";
 CREATE DATABASE "ptticket";
 
+\c ptticket
+
 DROP GROUP IF EXISTS "ptticket";
 CREATE GROUP "ptticket";
 DROP USER IF EXISTS "static";

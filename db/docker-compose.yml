@@ -3,6 +3,7 @@ version: '3.8'
 services:
   postgres:
     container_name: ptticket-postgres
+    hostname: ptticket-postgres
     image: postgres
     ports:
       - "5432:5432"
@@ -35,6 +36,7 @@ services:
   mosquitto:
     container_name: ptticket-mqtt
     image: itsmevjnk/mosquitto
+    hostname: ptticket-mqtt
     ports:
       - "1883:1883"
       - "8883:8883"
@@ -49,6 +51,9 @@ services:
   auth-watcher:
     container_name: auth-watcher
     image: itsmevjnk/ptticket-auth-watcher
+    environment:
+      - DB_HOST=ptticket-postgres
+      - MQTT_HOST=ptticket-mqtt
     restart: unless-stopped
     depends_on:
       mosquitto:
@@ -58,6 +63,9 @@ services:
   dbstatic:
     container_name: dbstatic
     image: itsmevjnk/ptticket-dbstatic
+    environment:
+      - DB_HOST=ptticket-postgres
+      - MQTT_HOST=ptticket-mqtt
     ports:
       - "3199:3000"
     depends_on:
