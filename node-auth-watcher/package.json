@@ -1,0 +1,16 @@
+{
+  "name": "auth-watcher",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "mqtt": "^5.10.1",
+    "pg-listen": "^1.7.0"
+  }
+}
