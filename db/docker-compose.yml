@@ -30,7 +30,6 @@ services:
     volumes:
       - ./mqtt-init.sh:/mqtt-init.sh
       - /var/mqtt:/mosquitto
-      - ./mqttcerts:/mqttcerts
     command:
       - /mqtt-init.sh
   mosquitto:
@@ -42,6 +41,7 @@ services:
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - /var/mqtt:/mosquitto
+      - ./mqttcerts:/mqttcerts
     restart: unless-stopped
     depends_on:
       mosquitto-init:
@@ -58,7 +58,7 @@ services:
   dbstatic:
     container_name: dbstatic
     image: itsmevjnk/ptticket-dbstatic
-    port:
+    ports:
       - "3199:3000"
     depends_on:
       mosquitto:
