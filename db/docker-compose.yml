@@ -43,3 +43,22 @@ services:
     depends_on:
       mosquitto-init:
         condition: service_completed_successfully
+  auth-watcher:
+    container_name: auth-watcher
+    image: itsmevjnk/ptticket-auth-watcher
+    restart: unless-stopped
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_started
+  dbstatic:
+    container_name: dbstatic
+    image: itsmevjnk/ptticket-dbstatic
+    port:
+      - "3000:3000"
+    depends_on:
+      mosquitto:
+        condition: service_started
+      postgres:
+        condition: service_started
