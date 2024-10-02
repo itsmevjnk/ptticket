@@ -1,6 +1,6 @@
 const VENDING_API = process.env.VENDING_API || 'http://127.0.0.1:3102/api';
-const DB_API = process.env.DB_API || 'http://127.0.0.1:3101/api';
-const AUTH_API = process.env.AUTH_API || 'http://127.0.0.1:3121/api';
+const DATABASE_API = process.env.DATABASE_API || 'http://127.0.0.1:3101/api';
+// const AUTH_API = process.env.AUTH_API || 'http://127.0.0.1:3121/api';
 
 const express = require('express');
 
@@ -41,26 +41,26 @@ app.all('*', (req, res, next) => {
     next();
 });
 
-app.get('/testAuth', (req, res) => {
-    axios.get(AUTH_API + '/auth', req.axOptions).then((resp) => {
-        respondHttp(res, resp.status, resp.data.message);
-    });
-})
+// app.get('/testAuth', (req, res) => {
+//     axios.get(AUTH_API + '/auth', req.axOptions).then((resp) => {
+//         respondHttp(res, resp.status, resp.data.message);
+//     });
+// })
 
 app.get('/fareTypes', (req, res) => {
-    axios.get(DB_API + '/fareTypes?hideFares=true&dict=true', req.axOptions).then((resp) => {
+    axios.get(DATABASE_API + '/fareTypes?hideFares=true&dict=true', req.axOptions).then((resp) => {
         respondHttp(res, resp.status, resp.data.message);
     });
 });
 
 app.get('/products', (req, res) => {
-    axios.get(DB_API + '/products?hideZones=true&dict=true', req.axOptions).then((resp) => {
+    axios.get(DATABASE_API + '/products?hideZones=true&dict=true', req.axOptions).then((resp) => {
         respondHttp(res, resp.status, resp.data.message);
     });
 });
 
 app.get('/card/:id', (req, res) => {
-    axios.get(DB_API + `/cards/qr/${req.params.id}`, req.axOptions).then((resp) => {
+    axios.get(DATABASE_API + `/cards/qr/${req.params.id}`, req.axOptions).then((resp) => {
         if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
         let payload = {
             disabled: resp.data.message.disabled
@@ -72,9 +72,9 @@ app.get('/card/:id', (req, res) => {
             payload.productExpiry = prodExpiry.toISOString();
 
             Promise.all([
-                axios.get(DB_API + `/tickets/${resp.data.message.ticketID}/passes`, req.axOptions),
-                axios.get(DB_API + `/products/${resp.data.message.currentProduct}`, req.axOptions),
-                axios.get(DB_API + `/fareTypes/${resp.data.message.fareType}?hideFares=true`, req.axOptions)
+                axios.get(DATABASE_API + `/tickets/${resp.data.message.ticketID}/passes`, req.axOptions),
+                axios.get(DATABASE_API + `/products/${resp.data.message.currentProduct}`, req.axOptions),
+                axios.get(DATABASE_API + `/fareTypes/${resp.data.message.fareType}?hideFares=true`, req.axOptions)
             ]).then((respArray) => {
                 /* product name */
                 let resp = respArray[1];
@@ -99,7 +99,7 @@ app.get('/card/:id', (req, res) => {
                             duration: pass.duration,
                             activeDate: pass.activationDate
                         });
-                        promises.push(axios.get(DB_API + `/products/${pass.product}`, req.axOptions));
+                        promises.push(axios.get(DATABASE_API + `/products/${pass.product}`, req.axOptions));
                     }
                     Promise.all(promises).then((respArray) => {
                         for (let i = 0; i < respArray.length; i++)

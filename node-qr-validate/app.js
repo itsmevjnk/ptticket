@@ -1,5 +1,5 @@
 const ONLINE_API = process.env.ONLINE_API || 'http://127.0.0.1:3103/api';
-const AUTH_API = process.env.AUTH_API || 'http://127.0.0.1:3121/api';
+// const AUTH_API = process.env.AUTH_API || 'http://127.0.0.1:3121/api';
 
 const AUTH_TOKEN = process.env.AUTH_TOKEN || '';
 const LOCATION = parseInt(process.env.LOCATION || '');
@@ -31,13 +31,13 @@ const axios = require('axios').create({
     validateStatus: () => true
 });
 
-axios.get(AUTH_API + '/auth').then((resp) => {
-    if (resp.status != 200) {
-        console.error(`Authentication check failed with status code ${resp.status}:`);
-        console.error(resp.data);
-        process.exit(1);
-    }
-});
+// axios.get(AUTH_API + '/auth').then((resp) => {
+//     if (resp.status != 200) {
+//         console.error(`Authentication check failed with status code ${resp.status}:`);
+//         console.error(resp.data);
+//         process.exit(1);
+//     }
+// });
 
 const respondHttp = (res, status, payload) => {
     res.status(status).json({
