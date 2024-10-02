@@ -6,6 +6,35 @@ const UPSTREAM_API = process.env.UPSTREAM_API || null;
 const TOKEN = process.env.TOKEN || null; // API token for contacting upstream transaction server
 if (UPSTREAM_API !== null) console.log('This instance is deployed OUTSIDE of the central server - per instance caching will be performed!');
 
+/* static data pulled off MQTT */
+let staticData = null;
+
+const mqttOptions = {};
+if (process.env.MQTT_USERNAME && process.env.MQTT_USERNAME.length > 0) {
+    mqttOptions.username = process.env.MQTT_USERNAME;
+    mqttOptions.password = process.env.MQTT_PASSWORD || '';
+}
+
+const fs = require('fs');
+const CA_CERT_PATH = process.env.MQTT_CA_CERT || '/ca.crt';
+try {
+    mqttOptions.ca = fs.readFileSync(CA_CERT_PATH); // supply CA certificate if one exists
+    console.log(`Using MQTT via SSL/TLS (MQTTS) with CA certificate at ${CA_CERT_PATH}.`);
+} catch (err) {
+    console.warn(`Cannot open CA certificate at ${CA_CERT_PATH}, proceeding with insecure MQTT.`);
+}
+let isMQTTS = mqttOptions.hasOwnProperty('ca');
+
+const mqttClient = require('mqtt').connect(`${isMQTTS ? 'mqtts' : 'mqtt'}://${process.env.MQTT_HOST || '127.0.0.1'}:${process.env.MQTT_PORT || (isMQTTS ? 8883 : 1883)}`, mqttOptions);
+mqttClient.on('message', (topic, message) => {
+    staticData = JSON.parse(message);
+    console.log('Received static data from upstream, expiry timestamp:', new Date(staticData.expiry).toString());
+});
+mqttClient.on('connect', () => {
+    console.log('Connected to MQTT broker for static data');
+    mqttClient.subscribe('static');
+});
+
 /* database write queue - for outside deployments only */
 const dbTicketWriteQueue = {};
 const dbTransactionQueue = {};
@@ -242,134 +271,52 @@ const getProdBits = (id) => axios.get(`${DATABASE_API}/tickets/${id}/prodbits`);
 const blockCard = (type, id) => axios.delete(`${DATABASE_API}/cards/${type}/${id}`);
 
 /* get location details */
-let getLocDetails = (id) => axios.get(`${DATABASE_API}/locations/${id}`);
+const getLocDetails = (id) => {
+    const sLocations = staticData.locations;
+    if (!isNaN(id) && id >= 0 && id < sLocations.length)
+        return sLocations[id];
+    else return null;
+};
 
 /* get product details */
-let getProdDetails = (id) => axios.get(`${DATABASE_API}/products/${id}`);
+const getProdDetails = (id) => {
+    const sProducts = staticData.products;
+    if (!isNaN(id) && id >= 0 && id < sProducts.length)
+        return sProducts[id];
+    else return null;
+}
+
 
 /* get fare type details */
-let getFareTypeDetails = (id) => axios.get(`${DATABASE_API}/fareTypes/${id}`);
+const getFareTypeDetails = (id) => {
+    const sFareTypes = staticData.fareTypes;
+    if (!isNaN(id) && id >= 0 && id < sFareTypes.length)
+        return sFareTypes[id];
+    else return null;
+};
 
 /* search product covering zones */
-let searchProduct = (from, to) => axios.get(`${DATABASE_API}/products/search/${from}/${to}`);
-
-/* pre-fetch copy of the static database */
-if (UPSTREAM_API !== null) {
-    let sLocations = [];
-    let sProducts = [];
-    let sFareTypes = [];
-
-    const updateStaticCache = () => {
-        Promise.all([
-            axios.get(`${DATABASE_API}/locations`),
-            axios.get(`${DATABASE_API}/products`),
-            axios.get(`${DATABASE_API}/fareTypes`)
-        ]).then((respArray) => {
-            for (let resp of respArray) {
-                if (resp.status != 200) {
-                    upstreamOK.value = false;
-                    return;
-                }
+const searchProduct = (from, to) => {
+    const sProducts = staticData.products;
+    let prodID = -1, prodDelta = Infinity;
+    for (let i = 0; i < sProducts.length; i++) {
+        if (sProducts[i].fromZone <= from && sProducts[i].toZone >= to) {
+            let delta = (from - sProducts[i].fromZone) + (sProducts[i].toZone - to);
+            if (delta < prodDelta) {
+                prodID = i;
+                prodDelta = delta;
             }
+            if (delta == 0) break; // exit early
+        }
+    }
 
-            sLocations = respArray[0].data.message;
-            sProducts = respArray[1].data.message;
-            sFareTypes = respArray[2].data.message;
-            console.log(`Updated cache with ${sLocations.length} locations, ${sProducts.length} products and ${sFareTypes.length} fare types`);
-        }).catch((err) => {
-            upstreamOK.value = false;
-        });
+    if (prodID < 0) return null;
+    else return {
+        id: prodID,
+        delta: prodDelta,
+        details: sProducts[prodID]
     };
-    updateStaticCache();
-    require('node-cron').schedule('0 2 3 * * *', updateStaticCache); // update every 03:02AM (2 min to allow upstream time to update its own cache)
-    
-    getLocDetails = (id) => new Promise((resolve, reject) => {
-        if (!isNaN(id) && id >= 0 && id < sLocations.length) {
-            resolve({
-                status: 200,
-                data: {
-                    message: sLocations[id]
-                }
-            });
-        } else {
-            resolve({
-                status: 400,
-                data: {
-                    message: `Invalid location ID '${id}'`
-                }
-            });
-        }
-    });
-
-    getProdDetails = (id) => new Promise((resolve, reject) => {
-        if (!isNaN(id) && id >= 0 && id < sProducts.length) {
-            resolve({
-                status: 200,
-                data: {
-                    message: sProducts[id]
-                }
-            });
-        } else {
-            resolve({
-                status: 400,
-                data: {
-                    message: `Invalid product ID '${id}'`
-                }
-            });
-        }
-    });
-
-    getFareTypeDetails = (id) => new Promise((resolve, reject) => {
-        if (!isNaN(id) && id >= 0 && id < sFareTypes.length) {
-            resolve({
-                status: 200,
-                data: {
-                    message: sFareTypes[id]
-                }
-            });
-        } else {
-            resolve({
-                status: 400,
-                data: {
-                    message: `Invalid fare type ID '${id}'`
-                }
-            });
-        }
-    });
-
-    searchProduct = (from, to) => {
-        let prodID = -1, prodDelta = Infinity;
-        for (let i = 0; i < sProducts.length; i++) {
-            if (sProducts[i].fromZone <= from && sProducts[i].toZone >= to) {
-                let delta = (from - sProducts[i].fromZone) + (sProducts[i].toZone - to);
-                if (delta < prodDelta) {
-                    prodID = i;
-                    prodDelta = delta;
-                }
-                if (delta == 0) break; // exit early
-            }
-        }
-
-        return new Promise((resolve, reject) => {
-            if (prodID < 0) resolve({
-                status: 404,
-                data: {
-                    message: `Cannot find any product for zones ${from} to ${to}`
-                }
-            });
-            else resolve({
-                status: 200,
-                data: {
-                    message: {
-                        id: prodID,
-                        delta: prodDelta,
-                        details: sProducts[prodID]
-                    }
-                }
-            });
-        });
-    };
-}
+};
 
 /* set bit in base64 bitmap */
 const b64Set = (bitmap, bit) => {
@@ -405,6 +352,7 @@ const respondNegBalance = (res, details) => respondValidate(res, 403, 'negBalanc
 
 /* write ticket data */
 const writeTicketData = (res, id, details) => {
+    // console.log('writeTicketData');
     return axios.patch(
         `${DATABASE_API}/tickets/${id}`,
         {
@@ -417,9 +365,11 @@ const writeTicketData = (res, id, details) => {
             prodDuration: details.prodDuration
         }
     ).then((resp) => {
+        // console.log(resp.status, resp.data);
         if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
         return resp;
     }).catch((err) => {
+        // console.error(err);
         if (UPSTREAM_API !== null) {
             dbTicketWriteQueue[id] = Object.assign(dbTicketWriteQueue.hasOwnProperty(id) ? dbTicketWriteQueue[id] : {}, details);
             console.log(`Added ticket data write for ${id} to queue`);
@@ -579,142 +529,120 @@ const getPTDate = (date) => {
 
 /* stub method for touching off given the end product ID */
 const touchOffProduct = (res, prodID, ticketID, fareType, details, currentProductExpired) => {
-    let onProduct = null, offProduct = null, minProduct = null;
     let ticketValue = 0, farePending = 0;
-    return Promise.all([
-        getProdDetails(details.touchedOn),
-        getProdDetails(prodID)
-    ]).then((respArray) => {
-        for (let resp of respArray)
-            if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
-        
-        onProduct = {
-            id: details.touchedOn,
-            ...respArray[0].data.message
-        };
-        offProduct = {
-            id: prodID,
-            ...respArray[1].data.message
-        };
-
-        if (currentProductExpired || details.currentProduct == 0) return null;
-        
+    
+    let touchedOnProdDetails = getProdDetails(details.touchedOn);
+    if (touchedOnProdDetails == null) return respondHttp(res, 500, `Invalid product ID ${details.touchedOn}`);
+    let onProduct = { id: details.touchedOn, ...touchedOnProdDetails };
+    
+    let prodIDDetails = getProdDetails(prodID);
+    if (prodIDDetails == null) return respondHttp(res, 500, `Invalid product ID ${prodID}`);
+    let offProduct = { id: prodID, ...prodIDDetails };
+    
+    let from = Math.min(onProduct.fromZone, offProduct.fromZone);
+    let to = Math.min(onProduct.toZone, offProduct.toZone);
+    
+    if (!currentProductExpired && details.currentProduct != 0) {
         ticketValue = fareType.productFares[details.currentProduct];
         // let prodBits1 = Buffer.from(msg.details.prodBits[1], 'base64');
         // let byte = Math.floor(details.currentProduct / 8), bit = details.currentProduct % 8;
         if (b64Test(details.prodBits[1], details.currentProduct)) ticketValue *= 2;
 
-        return getProdDetails(details.currentProduct);
-    }).then((resp) => {
-        if (resp === undefined) return;
+        let currentProdDetails = getProdDetails(details.currentProduct);
+        if (currentProdDetails == null) return respondHttp(res, 500, `Invalid product ID ${details.currentProduct}`);
 
-        let from = Math.min(onProduct.fromZone, offProduct.fromZone);
-        let to = Math.min(onProduct.toZone, offProduct.toZone);
-
-        if (resp !== null) {
-            if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
-            from = Math.min(from, resp.data.message.fromZone);
-            to = Math.max(to, resp.data.message.toZone);
-        }
-
-        return searchProduct(from, to);
-    }).then((resp) => {
-        if (resp === undefined) return;
-        if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
-        minProduct = resp.data.message; // replaces msg.minProd
+        from = Math.min(from, currentProdDetails.fromZone);
+        to = Math.max(to, currentProdDetails.toZone);
+    }
+    
+    let minProduct = searchProduct(from, to); // replaces msg.minProd
+    if (minProduct == null) return respondHttp(res, 500, `Cannot search for product spanning zones ${from}-${to}`);
         
-        /* query for passes */
-        let pPasses = []; // list of promises
-        for (let pass of details.passes)
-            pPasses.push(getProdDetails(pass.product));
-        return Promise.all(pPasses);
-    }).then((respArray) => {
-        if (respArray === undefined) return;
+    /* query for passes */
+    let passes = []; // list of promises
+    for (let pass of details.passes) {
+        let passProduct = getProdDetails(pass.product);
+        if (passProduct == null) return respondHttp(res, 500, `Invalid pass product ID ${pass.product}`);
+        passes.push(passProduct);
+    }
 
-        let passes = [];
-        for (let resp of respArray) {
-            if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
-            passes.push(resp.data.message);
+    /* find suitable pass */
+    let passIdx = -1;
+    for (let i = passes.length - 1; i >= 0; i--) {
+        let prodDetails = passes[i];
+        if (prodDetails.fromZone <= minProduct.fromZone && prodDetails.toZone >= minProduct.toZone) {
+            passIdx = i;
+            if (details.passes[i].activationDate !== null) break; // pre-activated pass
         }
+    }
 
-        /* find suitable pass */
-        let passIdx = -1;
-        for (let i = passes.length - 1; i >= 0; i--) {
-            let prodDetails = passes[i];
-            if (prodDetails.fromZone <= minProduct.fromZone && prodDetails.toZone >= minProduct.toZone) {
-                passIdx = i;
-                if (details.passes[i].activationDate !== null) break; // pre-activated pass
-            }
-        }
+    if (passIdx >= 0) {
+        /* pass found */
+        ticketValue = 2 * fareType.productFares[details.passes[passIdx].product];
+        details.currentProduct = details.passes[passIdx].id;
+        details.prodDuration = -1; // daily fare
+        // farePending = 0
+        for (let pbits of details.prodBits)
+            b64Set(pbits, details.currentProduct);
+        if (details.passes[passIdx].activationDate === null) {
+            /* activate pass */
+            let activationDate = new Date();
+            activationDate.setHours(0, 0, 0, 0);
+            details.passes[passIdx].activationDate = activationDate.toISOString();
 
-        if (passIdx >= 0) {
-            /* pass found */
-            ticketValue = 2 * fareType.productFares[details.passes[passIdx].product];
-            details.currentProduct = details.passes[passIdx].id;
-            details.prodDuration = -1; // daily fare
-            // farePending = 0
-            for (let pbits of details.prodBits)
-                b64Set(pbits, details.currentProduct);
-            if (details.passes[passIdx].activationDate === null) {
-                /* activate pass */
-                let activationDate = new Date();
-                activationDate.setHours(0, 0, 0, 0);
-                details.passes[passIdx].activationDate = activationDate.toISOString();
-
-                return activatePass(ticketID, details.passes[passIdx].id, details.passes[passIdx].activationDate)
-                    .then((resp) => {
-                        if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
-                        return {
-                            farePending: farePending,
-                            defaultTouchOff: false
-                        };
-                    });
-            }
-            
-            return {
-                farePending: farePending,
-                defaultTouchOff: false
-            }; // pass already activated - do nothing
-        }
-
-        /* pass not found - check if product is actually expired */
-        if (!currentProductExpired) {
-            let prodExpiry = new Date(details.prodValidated);
-            if (details.prodDuration < 0) {
-                /* daily fare */
-                if (prodExpiry.getHours() >= 3) prodExpiry.setDate(prodExpiry.getDate() + 1);
-                prodExpiry.setHours(3, 0, 0, 0);
-            } else {
-                prodExpiry.setMinutes(prodExpiry.getMinutes() + minProduct.details.duration);
-            }
-            if (prodExpiry.getTime() < Date.now()) return {
-                farePending: farePending, // probably 0
-                defaultTouchOff: true
-            }; // follow up with a default touch-off
+            return activatePass(ticketID, details.passes[passIdx].id, details.passes[passIdx].activationDate)
+                .then((resp) => {
+                    if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
+                    return {
+                        farePending: farePending,
+                        defaultTouchOff: false
+                    };
+                });
         }
         
-        details.prodDuration = minProduct.details.duration;
-        if (details.currentProduct != minProduct.id) {
-            let prodMarked = [];
-            for (let pbits of details.prodBits)
-                prodMarked.push(b64Test(pbits, minProduct.id));
-
-            if (!prodMarked[0]) { // 2hr
-                farePending = fareType.productFares[minProduct.id];
-                b64Set(details.prodBits[0], minProduct.id);
-            } else if (!prodMarked[1]) { // daily
-                farePending = 2 * fareType.productFares[minProduct.id];
-                b64Set(details.prodBits[1], minProduct.id);
-            } // otherwise fare has already been paid for
-        }
-        details.currentProduct = minProduct.id;
-        farePending -= ticketValue; if (farePending < 0) farePending = 0;
-        if (details.dailyExpenditure + farePending > fareType.cap) farePending = fareType.cap - details.dailyExpenditure;
         return {
             farePending: farePending,
             defaultTouchOff: false
-        };
-    });
+        }; // pass already activated - do nothing
+    }
+
+    /* pass not found - check if product is actually expired */
+    if (!currentProductExpired) {
+        let prodExpiry = new Date(details.prodValidated);
+        if (details.prodDuration < 0) {
+            /* daily fare */
+            if (prodExpiry.getHours() >= 3) prodExpiry.setDate(prodExpiry.getDate() + 1);
+            prodExpiry.setHours(3, 0, 0, 0);
+        } else {
+            prodExpiry.setMinutes(prodExpiry.getMinutes() + minProduct.details.duration);
+        }
+        if (prodExpiry.getTime() < Date.now()) return {
+            farePending: farePending, // probably 0
+            defaultTouchOff: true
+        }; // follow up with a default touch-off
+    }
+    
+    details.prodDuration = minProduct.details.duration;
+    if (details.currentProduct != minProduct.id) {
+        let prodMarked = [];
+        for (let pbits of details.prodBits)
+            prodMarked.push(b64Test(pbits, minProduct.id));
+
+        if (!prodMarked[0]) { // 2hr
+            farePending = fareType.productFares[minProduct.id];
+            b64Set(details.prodBits[0], minProduct.id);
+        } else if (!prodMarked[1]) { // daily
+            farePending = 2 * fareType.productFares[minProduct.id];
+            b64Set(details.prodBits[1], minProduct.id);
+        } // otherwise fare has already been paid for
+    }
+    details.currentProduct = minProduct.id;
+    farePending -= ticketValue; if (farePending < 0) farePending = 0;
+    if (details.dailyExpenditure + farePending > fareType.cap) farePending = fareType.cap - details.dailyExpenditure;
+    return {
+        farePending: farePending,
+        defaultTouchOff: false
+    };
 };
 
 /* handler for touch off */
@@ -726,30 +654,20 @@ const touchOff = (res, location, entryOnly, ticketID, details) => {
     let prodExpiredPrev = false;
     let oldCurrentProduct = details.currentProduct;
 
-    return Promise.all([
-        getLastTransaction(ticketID).then((resp) => {
-            if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
-    
-            if (resp.data.message.length == 0) return respondHttp(res, 500, 'Assertion failed: no last transaction');
-            lastTransaction = resp.data.message[0];
-    
-            return getLocDetails(lastTransaction.location); // get transaction location details
-        }).then((resp) => {
-            if (resp === undefined) return;
-            if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
-            lastTransaction.location = {
-                id: lastTransaction.location,
-                ...resp.data.message
-            }; // replaces msg.lastLocDetails
-        }), // get last transaction and its location details (undefined)
-        // getProdDetails(details.touchedOn), // get touched on product details
-        getFareTypeDetails(details.fareType) // get fare type details
-    ]).then((respArray) => {
-        if (respArray[1].status != 200)
-            return respondHttp(res, respArray[1].status, respArray[1].data.message);
+    getLastTransaction(ticketID).then((resp) => {
+        if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message);
 
+        if (resp.data.message.length == 0) return respondHttp(res, 500, 'Assertion failed: no last transaction');
+        lastTransaction = resp.data.message[0];
+
+        let locDetails = getLocDetails(lastTransaction.location); // get transaction location details
+        if (locDetails == null) return respondHttp(res, 500, `Invalid location ID ${lastTransaction.location}`);
+        lastTransaction.location = { id: lastTransaction.location, ...locDetails }; // replaces msg.lastLocDetails
+        
+        let ftDetails = getFareTypeDetails(details.fareType) // get fare type details
+        if (ftDetails == null) return respondHttp(res, 500, `Invalid fare type ID ${details.fareType}`);
         // touchedOn = { id: details.touchedOn, ...respArray[1].data.message }; // replaces msg.onDetails
-        fareType = { id: details.fareType, ...respArray[1].data.message };
+        fareType = { id: details.fareType, ...ftDetails };
 
         let validatedDay = getPTDate(details.prodValidated);
         let today = getPTDate(Date.now());
@@ -763,18 +681,14 @@ const touchOff = (res, location, entryOnly, ticketID, details) => {
         let offProduct = (location.minProduct == 3)
             ? ((details.touchedOn == 5 || details.touchedOn == 3) ? 5 : 1)
             : location.minProduct;
-        return touchOffProduct(res, offProduct, ticketID, fareType, details, false);
-    }).then((resp) => { // {farePending: number, defaultTouchOff: boolean} or undefined
-        if (resp === undefined) return;
-        if (resp.defaultTouchOff)
-            return touchOffProduct(res, lastTransaction.location.defaultProduct, ticketID, fareType, details, true);
-        return resp; // pass on to next stage
-    }).then((resp) => {
-        if (resp === undefined) return;
-        if (resp.defaultTouchOff) return respondHttp(res, 500, 'Assertion failed: defaultTouchOff still true after default touch-off');
+        let toffResp = touchOffProduct(res, offProduct, ticketID, fareType, details, false); // {farePending: number, defaultTouchOff: boolean} or undefined
+        if (toffResp.defaultTouchOff)
+            toffResp = touchOffProduct(res, lastTransaction.location.defaultProduct, ticketID, fareType, details, true);
+        if (toffResp.defaultTouchOff)
+            return respondHttp(res, 500, 'Assertion failed: defaultTouchOff still true after default touch-off');
 
-        details.balance -= resp.farePending;
-        details.dailyExpenditure += resp.farePending;
+        details.balance -= toffResp.farePending;
+        details.dailyExpenditure += toffResp.farePending;
         details.touchedOn = 0;
 
         if (prodExpiredPrev) { // reset for new day
@@ -799,7 +713,10 @@ const touchOff = (res, location, entryOnly, ticketID, details) => {
 };
 
 /* main endpoint - ticket validation */
-const handleValidate = (req, res) => {
+app.post('/api/validate', (req, res) => {
+    if ((staticData === null) || (staticData.expiry < new Date()))
+        return respondHttp(res, 503, 'Static database cache expired');
+
     new Promise((resolve, reject) => { // passthrough to central server
         if (UPSTREAM_API !== null && upstreamOK.value) {
             axios.post(`${UPSTREAM_API}/validate`, req.body).then((resp) => {
@@ -813,6 +730,7 @@ const handleValidate = (req, res) => {
     }).then((passed) => {
         if (passed) return;
 
+        // console.log(req.body);
         let validateReq = extractValidateRequest(req.body);
         if (validateReq === null) return respondHttp(res, 400, 'Invalid request body');
 
@@ -886,15 +804,9 @@ const handleValidate = (req, res) => {
             }
 
             // oldCurrentProduct = details.currentProduct;
-            return getLocDetails(validateReq.location);
-        }).then((resp) => {
-            if (resp === undefined) return; // premature exit
-
-            if (resp.status != 200) return respondHttp(res, resp.status, resp.data.message); // pass error from upstream
-            validateReq.location = {
-                id: validateReq.location,
-                ...resp.data.message
-            }; // replaces msg.locDetails
+            let locDetails = getLocDetails(validateReq.location);
+            if (locDetails == null) return respondHttp(res, 400, `Invalid location ID ${validateReq.location}`);
+            validateReq.location = { id: validateReq.location, ...locDetails }; // replaces msg.locDetails
 
             if (details.touchedOn == 0) {
                 /* touched off */
@@ -907,10 +819,9 @@ const handleValidate = (req, res) => {
             }
         });
     });
-};
-app.post('/api/validate', handleValidate);
+});
 
-const PORT = process.env.PORT || 3103;
+const PORT = process.env.PORT || 3000; // whoopsie!
 app.listen(PORT, () => {
     console.log(`App running on port ${PORT}`);
 });
