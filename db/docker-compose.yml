@@ -23,7 +23,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: hackme
     restart: unless-stopped
   mosquitto-init:
-    image: itsmevjnk/mosquitto
+    image: eclipse-mosquitto
     environment:
       - MQTT_ADMIN_USERNAME=$MQTT_ADMIN_USERNAME
       - MQTT_ADMIN_PASSWORD=$MQTT_ADMIN_PASSWORD
@@ -35,7 +35,7 @@ services:
       - /mqtt-init.sh
   mosquitto:
     container_name: ptticket-mqtt
-    image: itsmevjnk/mosquitto
+    image: eclipse-mosquitto
     hostname: ptticket-mqtt
     ports:
       - "1883:1883"
