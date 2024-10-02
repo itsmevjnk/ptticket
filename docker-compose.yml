@@ -66,8 +66,6 @@ services:
     environment:
       - DB_HOST=ptticket-postgres
       - MQTT_HOST=ptticket-mqtt
-    ports:
-      - "3199:3000"
     depends_on:
       mosquitto:
         condition: service_started
