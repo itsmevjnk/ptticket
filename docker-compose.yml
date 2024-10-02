@@ -87,12 +87,12 @@ services:
     environment:
       - DBAPI_HOST=http://ptticket-dbapi:3000
     volumes:
-      - ./docker/nr-vending:/data
+      - ./ptticket-vending:/data
     ports:
       - "3102:1880"
-  online:
-    container_name: ptticket-online
-    image: itsmevjnk/ptticket-online
+  validate:
+    container_name: ptticket-validate
+    image: itsmevjnk/ptticket-validate
     environment:
       - DATABASE_API=http://ptticket-dbapi:3000/api
       - MQTT_HOST=ptticket-mqtt
@@ -112,7 +112,7 @@ services:
     environment:
       - VENDING_API=http://ptticket-vending:1880/api
     volumes:
-      - ./docker/nr-sc-vending:/data
+      - ./ptticket-sc-vending:/data
     ports:
       - "3131:1880"
   

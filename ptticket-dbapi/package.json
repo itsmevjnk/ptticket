@@ -1,5 +1,5 @@
 {
-  "name": "dbapi",
+  "name": "ptticket-dbapi",
   "version": "1.0.0",
   "description": "Public transport ticketing system database microservice",
   "main": "app.js",

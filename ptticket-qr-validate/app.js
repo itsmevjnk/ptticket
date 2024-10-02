@@ -1,4 +1,4 @@
-const ONLINE_API = process.env.ONLINE_API || 'http://127.0.0.1:3103/api';
+const VALIDATE_API = process.env.VALIDATE_API || 'http://127.0.0.1:3103/api';
 // const AUTH_API = process.env.AUTH_API || 'http://127.0.0.1:3121/api';
 
 const AUTH_TOKEN = process.env.AUTH_TOKEN || '';
@@ -70,7 +70,7 @@ app.all('*', (req, res, next) => {
 });
 
 app.post('/validate/:id', (req, res) => {
-    axios.post(ONLINE_API + '/validate', {
+    axios.post(VALIDATE_API + '/validate', {
         card: {
             type: 'qr',
             id: req.params.id,
