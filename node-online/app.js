@@ -3,7 +3,7 @@ console.log(`Database API URL set to ${DATABASE_API}`);
 process.env.TZ = 'Australia/Melbourne';
 
 const UPSTREAM_API = process.env.UPSTREAM_API || null;
-const TOKEN = process.env.TOKEN || null; // API token for contacting upstream transaction server
+const AUTH_TOKEN = process.env.AUTH_TOKEN || null; // API token for contacting upstream transaction server
 if (UPSTREAM_API !== null) console.log('This instance is deployed OUTSIDE of the central server - per instance caching will be performed!');
 
 /* static data pulled off MQTT */
@@ -142,7 +142,7 @@ resetUpstreamCheck();
 const express = require('express');
 const axios = require('axios').create({
     headers: {
-        'Authorization': (TOKEN !== null) ? ('Bearer ' + TOKEN) : undefined
+        'Authorization': (AUTH_TOKEN !== null) ? ('Bearer ' + AUTH_TOKEN) : undefined
     },
     validateStatus: () => true
 });
@@ -162,14 +162,14 @@ const respondHttp = (res, status, payload) => {
 app.get('/api/healthcheck', (req, res) => {
     axios.get(`${DATABASE_API}/healthcheck`).then((resp) => {
         if (resp.status != 200) {
-            respondHttp(res, (TOKEN) ? 299 : 500, `Upstream database API health check failed (status code ${resp.status})`); // NOTE: 299 is our custom status code to indicate that we can't process anything other than smart cards
+            respondHttp(res, (AUTH_TOKEN) ? 299 : 500, `Upstream database API health check failed (status code ${resp.status})`); // NOTE: 299 is our custom status code to indicate that we can't process anything other than smart cards
             upstreamOK.value = false;
         } else {
             respondHttp(res, 200, 'Online transaction API is functional');
             upstreamOK.value = true;
         }
     }).catch((err) => {
-        respondHttp(res, (TOKEN) ? 299 : 500, `Upstream database API health check failed (status code ${err.code})`); // NOTE: 299 is our custom status code to indicate that we can't process anything other than smart cards
+        respondHttp(res, (AUTH_TOKEN) ? 299 : 500, `Upstream database API health check failed (status code ${err.code})`); // NOTE: 299 is our custom status code to indicate that we can't process anything other than smart cards
         upstreamOK.value = false;
     })
 });
