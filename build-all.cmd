@@ -1,0 +1,9 @@
+docker build -t itsmevjnk/ptticket-auth ptticket-auth
+docker build -t itsmevjnk/ptticket-auth-watcher ptticket-auth-watcher
+docker build -t itsmevjnk/ptticket-dbapi ptticket-dbapi
+docker build -t itsmevjnk/ptticket-dbstatic ptticket-dbstatic
+docker build -t itsmevjnk/ptticket-qr-validate ptticket-qr-validate
+docker build -t itsmevjnk/ptticket-qr-vending ptticket-qr-vending
+docker build -t itsmevjnk/ptticket-sc-vending ptticket-sc-vending
+docker build -t itsmevjnk/ptticket-validate ptticket-validate
+docker build -t itsmevjnk/ptticket-vending ptticket-vending

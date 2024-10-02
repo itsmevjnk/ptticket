@@ -1,0 +1,9 @@
+docker push itsmevjnk/ptticket-auth
+docker push itsmevjnk/ptticket-auth-watcher
+docker push itsmevjnk/ptticket-dbapi
+docker push itsmevjnk/ptticket-dbstatic
+docker push itsmevjnk/ptticket-qr-validate
+docker push itsmevjnk/ptticket-qr-vending
+docker push itsmevjnk/ptticket-sc-vending
+docker push itsmevjnk/ptticket-validate
+docker push itsmevjnk/ptticket-vending
