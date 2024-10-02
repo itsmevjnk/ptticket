@@ -15,6 +15,11 @@ let dbConfig = {
 console.log('Connecting to database with config:', dbConfig);
 const pool = new Pool(dbConfig);
 
+/* listener for token deletions */
+const subscriber = require('pg-listen')({
+    connectionString: `postgres://${dbConfig.user}:${dbConfig.password}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`
+});
+
 // TZ should be UTC because turns out node-postgress doesn't exactly like having it set to anything else to then feed it with ISO timestamps
 // process.env.TZ = 'Australia/Melbourne';
 
@@ -33,6 +38,20 @@ cron.schedule(cronStr, () => {
 }); // schedule key cache clearing
 console.log('Key cache scheduled for clearing using cron string', cronStr);
 
+const DEL_CHANNEL = process.env.DB_DEL_CHANNEL || 'auth_del';
+subscriber.notifications.on(DEL_CHANNEL, (payload) => {
+    let id = payload.id;
+    console.log('API token deleted:', id);
+
+    // keyCache.delete(id);
+    keyCache.set(id, false);
+});
+
+subscriber.connect().then(() => {
+    console.log('Listener connected to database');
+    subscriber.listenTo(DEL_CHANNEL).then(() => console.log('Connected to token deletion notification channel', DEL_CHANNEL));
+});
+
 const express = require('express');
 
 const app = express();
@@ -50,9 +69,6 @@ const respondHttp = (res, status, payload) => {
 app.get('/api/healthcheck', (req, res) => {
     respondHttp(res, 200, 'Authorisation API is functional');
 });
-
-/* check if string is UUID */
-const isUUID = (str) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(str);
 
 /* test authorisation */
 app.get('/api/auth', (req, res) => {
@@ -83,66 +99,6 @@ app.get('/api/auth', (req, res) => {
         console.log(e);
         respondHttp(res, 500, `Error performing operation: ${e}`);
     });
-});
-
-/* middleware for authorising administration endpoints */
-app.all(['/api/keys', '/api/keys*'], (req, res, next) => {
-    if (req.headers.authorization !== `Bearer ${ADMIN_KEY}`) return respondHttp(res, 401, 'Unauthorised operation');
-    next();
-});
-
-/* create key */
-app.post('/api/keys', (req, res) => {
-    pool.query('INSERT INTO "auth"."Keys" DEFAULT VALUES RETURNING *;').then((result) => {
-        if (result.rowCount == 0) return respondHttp(res, 500, 'Database insertion failed');
-        
-        keyCache.set(result.rows[0].key, true); // set in cache
-        respondHttp(res, 200, result.rows[0]);
-    }).catch((e) => {
-        console.log(e);
-        respondHttp(res, 500, `Error performing operation: ${e}`);
-    });
-});
-
-/* revoke key */
-app.delete('/api/keys/:key', (req, res) => {
-    let key = req.params.key;
-    if (!isUUID(key)) return respondHttp(res, 400, 'Invalid key format');
-    pool.query('DELETE FROM "auth"."Keys" WHERE "key" = $1;', [key]).then((result) => {
-        keyCache.set(key, false); // TODO: propagate cache invalidation across other instances
-        respondHttp(res, 200, 'Key has been revoked');
-    }).catch((e) => {
-        console.log(e);
-        respondHttp(res, 500, `Error performing operation: ${e}`);
-    });
-});
-
-/* query key in database */
-app.get('/api/keys/:key', (req, res) => {
-    let key = req.params.key;
-    if (!isUUID(key)) return respondHttp(res, 400, 'Invalid key format');
-    pool.query('SELECT * FROM "auth"."Keys" WHERE "key" = $1', [key]).then((result) => {
-        if (result.rowCount == 0) { // key doesn't exist in database
-            keyCache.set(key, false);
-            respondHttp(res, 404, 'Key does not exist in database');
-        } else {
-            respondHttp(res, 200, {
-                timestamp: result.rows[0].timestamp,
-                cached: (keyCache.get(key) !== undefined)
-            });
-            keyCache.set(key, true);
-        }
-    }).catch((e) => {
-        console.log(e);
-        respondHttp(res, 500, `Error performing operation: ${e}`);
-    });
-});
-
-/* invalidate key in cache (i.e. next authorisation will be sourced from database) */
-app.post('/api/keys/:key/invalidate', (req, res) => {
-    let key = req.params.key;
-    if (!isUUID(key)) return respondHttp(res, 400, 'Invalid key format');
-    respondHttp(res, 200, keyCache.delete(req.params.key) ? 'Key has been invalidated in cache' : 'Key is not cached');
 });
 
 const port = process.env.PORT || 3000;
