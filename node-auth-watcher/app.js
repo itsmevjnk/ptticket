@@ -61,8 +61,8 @@ const dbConfig = {
     port: process.env.DB_PORT || 5432,
     database: process.env.DB_NAME || 'ptticket'
 };
-const ADD_CHANNEL = process.env.DB_CHANNEL || 'auth_add';
-const DEL_CHANNEL = process.env.DB_CHANNEL || 'auth_del';
+const ADD_CHANNEL = process.env.DB_ADD_CHANNEL || 'auth_add';
+const DEL_CHANNEL = process.env.DB_DEL_CHANNEL || 'auth_del';
 
 const subscriber = createSubscriber({
     connectionString: `postgres://${dbConfig.user}:${dbConfig.password}@${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`
