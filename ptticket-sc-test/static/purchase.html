@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Purchase ticket - QR Ticket Vending</title>
+        <link rel="stylesheet" href="bs/css/bootstrap.min.css"/>
+        <link rel="stylesheet" href="style.css"/>
+        <script language="javascript" src="bs/js/bootstrap.min.js"></script>
+        <script language="javascript" src="jq/jquery.js"></script>
+    </head>
+    <body>
+        <header></header>
+            <div class="navbar navbar-dark bg-dark text-white">
+                <div class="container my-2">
+                    <a href="index.html" class="text-white" style="text-decoration: none;"><h3>Public transport ticketing system</h3></a>
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            <section class="mt-3">
+                <a href="index.html">&lt; Back</a>
+            </section>
+            <section class="text-center">
+                <h1 class="mt-4">Purchase ticket</h1>
+            </section>
+            <form action="purchase" method="POST" class="d-flex flex-column">
+                <fieldset id="fs_fareType" disabled="true">
+                    <label for="fareType" class="form-label">Fare type</label>
+                    <select id="fareType" name="fareType" class="form-select">
+                        <option>Loading...</option>
+                    </select>
+                </fieldset>
+                <fieldset id="fs_topUp" class="my-2">
+                    <input type="checkbox" class="form-check-input" id="topUp" name="topUp" onchange="$('#fs_balance').attr('disabled', !$('#topUp')[0].checked)"/>
+                    <label class="form-check-label" for="topUp">Top up ticket</label>
+                </fieldset>
+                <fieldset id="fs_balance" disabled="true">
+                    <label class="form-label" for="balance">Initial balance</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" name="balance" id="balance" min="0" step="0.10" class="form-control" value="0.00" required="true" onchange="$('#balance')[0].value = parseFloat($('#balance')[0].value).toFixed(2)"/>
+                    </div>
+                </fieldset>
+                <fieldset id="fs_pass" class="my-2">
+                    <input type="checkbox" class="form-check-input" id="pass" name="pass" onchange="$('#fs_passOpts').attr('disabled', !$('#pass')[0].checked)"/>
+                    <label class="form-check-label" for="pass">Purchase pass</label>
+                </fieldset>
+                <fieldset id="fs_passOpts" disabled="true">
+                    <label for="passProduct" class="form-label">Pass product</label>
+                    <select id="passProduct" name="passProduct" class="form-select" disabled="true">
+                        <option>Loading...</option>
+                    </select>
+                    <label for="passDuration" class="form-label">Pass duration</label>
+                    <div class="input-group">
+                        <input type="number" name="passDuration" id="passDuration" min="7" max="365" class="form-control" value="7" required="true"/>
+                        <span class="input-group-text">days</span>                        
+                    </div>
+                </fieldset>
+                <button type="submit" class="btn btn-success my-2 flex-grow-1" id="submit">Purchase</button>
+            </form>
+            <div id="loading" class="text-center text-muted d-none">
+                Processing...
+            </div>
+            <div id="error" class="alert alert-danger d-none" role="alert">
+                <strong>Request failed:</strong>
+                <span id="errorMsg"></span>
+            </div>
+        </main>
+
+        <footer class="footer bg-dark text-white">
+            <div class="container py-3">
+                <span>Created for SIT314 by <a href="https://github.com/itsmevjnk" target="_blank" class="text-white">Thanh Vinh Nguyen (223145883)</a></span>
+            </div>
+        </footer>
+
+        <script>
+            $(document).ready(() => {
+                $.getJSON('fareTypes', (data) => {
+                    let html = '';
+                    $.each(data.message, (key, val) => {
+                        html += `<option value="${key}">${val}</option>`;
+                    });
+                    $('#fareType').html(html);
+                    $('#fs_fareType').removeAttr('disabled');
+                });
+
+                $.getJSON('products', (data) => {
+                    let html = '';
+                    $.each(data.message, (key, val) => {
+                        if (key == 0 || key == 3) return; // None and Z1/2 overlap
+                        html += `<option value="${key}">${val}</option>`;
+                    });
+                    let passProduct = $('#passProduct');
+                    passProduct.html(html);
+                    passProduct.removeAttr('disabled');
+                });
+
+                $('form').submit((event) => {
+                    let balance = parseFloat($('#balance').val());
+                    let formData = {
+                        fareType: parseInt($('#fareType').val()),
+                        topUp: $('#topUp')[0].checked && balance > 0,
+                        pass: $('#pass')[0].checked
+                    };
+                    if (formData.topUp) formData.balance = balance;
+                    if (formData.pass) {
+                        formData.passProduct = parseInt($('#passProduct').val());
+                        formData.passDuration = parseInt($('#passDuration').val());
+                    }
+
+                    // console.log(formData);
+                    $('#error').addClass('d-none');
+                    $('#result').addClass('d-none');
+                    $('#submit').attr('disabled', 'true');
+                    $.ajax({
+                        type: 'POST',
+                        url: 'purchase',
+                        data: JSON.stringify(formData),
+                        contentType: 'application/json; charset=utf-8',
+                        traditional: true
+                    }).done((data) => {
+                        window.location.href = 'index.html';
+                    }).fail((err) => {
+                        $('#errorMsg').text(`${err.status} ${err.statusText}: ${err.responseText}`);
+                        $('#error').removeClass('d-none');
+                    }).always(() => {
+                        $('#loading').addClass('d-none');
+                        $('#submit').removeAttr('disabled');
+                    });
+
+                    event.preventDefault();
+                });
+            });
+        </script>
+    </body>
+</html>

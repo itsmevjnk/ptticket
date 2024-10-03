@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>Smart card ticket</title>
+        <link rel="stylesheet" href="bs/css/bootstrap.min.css"/>
+        <link rel="stylesheet" href="style.css"/>
+        <script language="javascript" src="bs/js/bootstrap.min.js"></script>
+        <script language="javascript" src="jq/jquery.js"></script>
+    </head>
+    <body>
+        <header></header>
+            <div class="navbar navbar-dark bg-dark text-white">
+                <div class="container my-2">
+                    <a href='index.html' class="text-white" style="text-decoration: none;"><h3>Public transport ticketing system</h3></a>
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            <section class="text-center">
+                <h1 class="mt-4">Simulated smart card ticket</h1>
+                <a role="button" href="purchase.html" class="btn btn-success my-1 flex-grow-1 mx-3" id="ticketNotExisting">Purchase ticket</a>
+                <div class="d-flex flex-row mx-auto" id="ticketExists">
+                    <a role="button" href="check.html" class="btn btn-primary my-1 flex-grow-1 mx-3">Check/top up ticket</a>
+                    <button class="btn btn-primary my-1 flex-grow-1 mx-3" id="validate">Validate ticket</a>
+                </div>
+            </section>
+            <div class="d-none alert alert-danger text-center" role="alert" id="validateError">
+                <h1 id="errorTitle"></h1>
+            </div>
+            <div class="d-none alert alert-success text-center" role="alert" id="validateOK">
+                <h1 id="okTitle"></h1>
+                <strong>Balance:</strong>&nbsp;$<span id="balance"></span>
+            </div>
+        </main>
+
+        <footer class="footer bg-dark text-white">
+            <div class="container py-3">
+                <span>Created for SIT314 by <a href="https://github.com/itsmevjnk" target="_blank" class="text-white">Thanh Vinh Nguyen (223145883)</a></span>
+            </div>
+        </footer>
+
+        <script>
+            $(document).ready(() => {
+                $.getJSON(`card/local`, (data) => {
+                    if (data.message == null) $('#ticketExists').addClass('d-none');
+                    else $('#ticketNotExisting').addClass('d-none');
+                });
+
+                $('#validate').click(() => {
+                    $.ajax({
+                        type: 'POST',
+                        url: `validate`,
+                        traditional: true
+                    }).done((data) => {
+                        $('#okTitle').text(data.message.text);
+                        $('#balance').text((data.message.details.balance / 100).toFixed(2));
+                        $('#validateOK').removeClass('d-none');
+                    }).fail((err) => {
+                        let resp = JSON.parse(err.responseText);
+                        $('#errorTitle').text((typeof resp.message === 'object') ? resp.message.text : resp.message);
+                        $('#validateError').removeClass('d-none');
+                    }).always(() => {
+                        setTimeout(() => {
+                            $('#validateOK').addClass('d-none');
+                            $('#validateError').addClass('d-none');
+                            setTimeout(() => {
+                                scan = true;
+                            }, 500);
+                        }, 1000);
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>
