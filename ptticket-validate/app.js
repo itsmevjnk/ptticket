@@ -630,10 +630,10 @@ const touchOffProduct = (res, prodID, ticketID, fareType, details, currentProduc
 
         if (!prodMarked[0]) { // 2hr
             farePending = fareType.productFares[minProduct.id];
-            b64Set(details.prodBits[0], minProduct.id);
+            details.prodBits[0] = b64Set(details.prodBits[0], minProduct.id);
         } else if (!prodMarked[1]) { // daily
             farePending = 2 * fareType.productFares[minProduct.id];
-            b64Set(details.prodBits[1], minProduct.id);
+            details.prodBits[1] = b64Set(details.prodBits[1], minProduct.id);
         } // otherwise fare has already been paid for
     }
     details.currentProduct = minProduct.id;
