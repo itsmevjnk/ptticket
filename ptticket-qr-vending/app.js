@@ -41,11 +41,11 @@ app.all('*', (req, res, next) => {
     next();
 });
 
-// app.get('/testAuth', (req, res) => {
-//     axios.get(AUTH_API + '/auth', req.axOptions).then((resp) => {
-//         respondHttp(res, resp.status, resp.data.message);
-//     });
-// })
+app.get('/testAuth', (req, res) => {
+    axios.get(VENDING_API + '/healthcheck', req.axOptions).then((resp) => {
+        respondHttp(res, resp.status, resp.data.message);
+    });
+})
 
 app.get('/fareTypes', (req, res) => {
     axios.get(DATABASE_API + '/fareTypes?hideFares=true&dict=true', req.axOptions).then((resp) => {
