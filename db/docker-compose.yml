@@ -43,7 +43,7 @@ services:
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - /var/mqtt:/mosquitto
-      - ./mqttcerts:/mqttcerts
+      - ./mqttcerts:/mqttcerts:ro
     restart: unless-stopped
     depends_on:
       mosquitto-init:
@@ -54,6 +54,10 @@ services:
     environment:
       - DB_HOST=ptticket-postgres
       - MQTT_HOST=ptticket-mqtt
+      - MQTT_ADMIN_USERNAME=$MQTT_ADMIN_USERNAME
+      - MQTT_ADMIN_PASSWORD=$MQTT_ADMIN_PASSWORD
+    volumes:
+      - ./mqttcerts/ca.crt:/ca.crt:ro
     restart: unless-stopped
     depends_on:
       mosquitto:
