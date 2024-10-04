@@ -1,7 +1,3 @@
-/* admin authorisation token */
-const ADMIN_KEY = process.env.ADMIN_KEY || require('crypto').randomUUID();
-if (process.env.ADMIN_KEY === undefined) console.log('Auto-generated administration key for this instance:', ADMIN_KEY);
-
 /* database connection */
 const Pool = require('pg').Pool;
 
@@ -78,7 +74,7 @@ app.get('/api/auth', (req, res) => {
     key = key.split(' ')[1]; // key[1] has our key
 
     /* query from either key cache or database */
-    let auth = (key == ADMIN_KEY) ? true : keyCache.get(key);
+    let auth = keyCache.get(key);
     let pFetchAuth = (auth === undefined) ? pool.query('SELECT 1 FROM "auth"."Keys" WHERE "key" = $1', [key]) : new Promise((resolve, reject) => resolve(null));
 
     /* act on result */
