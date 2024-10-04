@@ -1,10 +1,9 @@
 const mqtt = require('mqtt');
 
-const mqttOptions = {};
-if (process.env.MQTT_ADMIN_USERNAME && process.env.MQTT_ADMIN_USERNAME.length > 0) {
-    mqttOptions.username = process.env.MQTT_ADMIN_USERNAME;
-    mqttOptions.password = process.env.MQTT_ADMIN_PASSWORD || '';
-}
+const mqttOptions = {
+    username: process.env.MQTT_ADMIN_USERNAME || 'mqadmin',
+    password: process.env.MQTT_ADMIN_PASSWORD || 'mqadmin'
+};
 
 const fs = require('fs');
 const CA_CERT_PATH = process.env.MQTT_CA_CERT || '/ca.crt';
@@ -19,37 +18,40 @@ let isMQTTS = mqttOptions.hasOwnProperty('ca');
 const mqttClient = mqtt.connect(`${isMQTTS ? 'mqtts' : 'mqtt'}://${process.env.MQTT_HOST || '127.0.0.1'}:${process.env.MQTT_PORT || (isMQTTS ? 8883 : 1883)}`, mqttOptions);
 const DYNSEC_TOPIC = process.env.MQTT_DYNSEC_TOPIC || '$CONTROL/dynamic-security/v1'; // Mosquitto Dynamic Security Plugin topic
 
-mqttClient.publish(DYNSEC_TOPIC, JSON.stringify({
-    commands: [
-        {
-            command: 'createRole',
-            rolename: 'listen',
-            acls: [{
-                acltype: 'subscribePattern',
-                topic: 'static',
-                priority: -1,
-                allow: true
-            }]
-        },
-        {
-            command: 'createRole',
-            rolename: 'broadcast',
-            acls: [{
-                acltype: 'publishClientSend',
-                topic: 'static',
-                priority: -1,
-                allow: true
-            }]
-        },
-        {
-            command: 'addClientRole',
-            username: mqttOptions.username,
-            rolename: 'broadcast'
-        }
-    ]
-}), (err) => {
-    if (err) console.warn('Cannot execute role creation command:', err);
-    // else console.log('Created role for ordinary listeners');
+mqttClient.on('connect', () => {
+    console.log('Connected to MQTT broker');
+    mqttClient.publish(DYNSEC_TOPIC, JSON.stringify({
+        commands: [
+            {
+                command: 'createRole',
+                rolename: 'listen',
+                acls: [{
+                    acltype: 'subscribePattern',
+                    topic: 'static',
+                    priority: -1,
+                    allow: true
+                }]
+            },
+            {
+                command: 'createRole',
+                rolename: 'broadcast',
+                acls: [{
+                    acltype: 'publishClientSend',
+                    topic: 'static',
+                    priority: -1,
+                    allow: true
+                }]
+            },
+            {
+                command: 'addClientRole',
+                username: mqttOptions.username,
+                rolename: 'broadcast'
+            }
+        ]
+    }), (err) => {
+        if (err) console.warn('Cannot execute role creation command:', err);
+        // else console.log('Created role for ordinary listeners');
+    });
 });
 
 const createSubscriber = require('pg-listen');
@@ -81,7 +83,7 @@ subscriber.notifications.on(ADD_CHANNEL, (payload) => {
         }]
     }), (err) => {
         if (err) console.error(`Cannot authorise client ${id}:`, err);
-        // else console.log(`Authorised client ${id}`);
+        else console.log(`Authorised client ${id}`);
     });
 });
 
@@ -96,7 +98,7 @@ subscriber.notifications.on(DEL_CHANNEL, (payload) => {
         }]
     }), (err) => {
         if (err) console.error(`Cannot deauthorise client ${id}:`, err);
-        // else console.log(`Deauthorised client ${id}`);
+        else console.log(`Deauthorised client ${id}`);
     });
 });
 
