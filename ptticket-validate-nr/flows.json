@@ -8,6 +8,37 @@
         "env": []
     },
     {
+        "id": "74f300c5a2f5e238",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "${MQTT_HOST || '127.0.0.1'}",
+        "port": "${MQTT_PORT || 1883}",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
         "id": "4617ea774ec280c3",
         "type": "http in",
         "z": "743b84be8cadd541",
@@ -16,11 +47,11 @@
         "method": "post",
         "upload": false,
         "swaggerDoc": "",
-        "x": 130,
-        "y": 240,
+        "x": 110,
+        "y": 280,
         "wires": [
             [
-                "5b42c619db0fb418"
+                "adbff650f5b6f24d"
             ]
         ]
     },
@@ -30,8 +61,8 @@
         "z": "743b84be8cadd541",
         "name": "Ticket validation",
         "info": "",
-        "x": 120,
-        "y": 280,
+        "x": 100,
+        "y": 240,
         "wires": []
     },
     {
@@ -46,11 +77,12 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 410,
-        "y": 240,
+        "x": 1150,
+        "y": 340,
         "wires": [
             [
-                "496eabe5fae27a86"
+                "496eabe5fae27a86",
+                "4b6fa6eacd5745dc"
             ]
         ]
     },
@@ -72,8 +104,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 710,
-        "y": 240,
+        "x": 1450,
+        "y": 340,
         "wires": [
             [
                 "293478139ae221a3"
@@ -95,8 +127,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 950,
-        "y": 240,
+        "x": 1690,
+        "y": 340,
         "wires": [
             [
                 "68bbbd1ef56b49e8"
@@ -110,8 +142,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 1130,
-        "y": 260,
+        "x": 1850,
+        "y": 340,
         "wires": []
     },
     {
@@ -126,8 +158,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 500,
-        "y": 300,
+        "x": 1240,
+        "y": 400,
         "wires": [
             [
                 "fdd93e75f25deac9"
@@ -150,8 +182,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 740,
-        "y": 300,
+        "x": 1480,
+        "y": 400,
         "wires": [
             [
                 "7ab16e35fd511b53"
@@ -178,8 +210,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 950,
-        "y": 300,
+        "x": 1690,
+        "y": 400,
         "wires": [
             [
                 "68bbbd1ef56b49e8"
@@ -207,8 +239,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 810,
-        "y": 520,
+        "x": 1550,
+        "y": 620,
         "wires": [
             [
                 "01de6b48752a3262"
@@ -238,8 +270,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 220,
-        "y": 400,
+        "x": 960,
+        "y": 500,
         "wires": [
             [
                 "a3079aba76142642"
@@ -268,8 +300,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 500,
-        "y": 380,
+        "x": 1240,
+        "y": 480,
         "wires": [
             [
                 "3498c8b5469a8f09"
@@ -288,8 +320,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1140,
-        "y": 480,
+        "x": 1880,
+        "y": 580,
         "wires": [
             [
                 "6de3f6c35cfae252"
@@ -314,8 +346,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 1430,
-        "y": 480,
+        "x": 2170,
+        "y": 580,
         "wires": [
             [
                 "e356177a66e65159"
@@ -337,8 +369,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1830,
-        "y": 400,
+        "x": 2570,
+        "y": 480,
         "wires": [
             [
                 "9164dd914e43135b"
@@ -361,8 +393,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 1310,
-        "y": 420,
+        "x": 2050,
+        "y": 520,
         "wires": [
             [
                 "d97bf390cb9eb755"
@@ -389,14 +421,14 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 1000,
-        "y": 680,
+        "x": 1540,
+        "y": 780,
         "wires": [
             [
                 "3a5b57c5805349ef"
             ],
             [
-                "2f629a05b2c34225"
+                "816d82f5897434de"
             ]
         ]
     },
@@ -418,14 +450,14 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 1450,
-        "y": 580,
+        "x": 1810,
+        "y": 780,
         "wires": [
             [
                 "e280b541539255d4"
             ],
             [
-                "a7bbc5aa6ed09ad4"
+                "8c98c955bd43645c"
             ]
         ]
     },
@@ -441,11 +473,11 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2810,
-        "y": 420,
+        "x": 2070,
+        "y": 760,
         "wires": [
             [
-                "363e9d7cf0096f0e"
+                "0f2414fe6a0a94fd"
             ]
         ]
     },
@@ -461,11 +493,11 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1890,
-        "y": 440,
+        "x": 650,
+        "y": 840,
         "wires": [
             [
-                "9164dd914e43135b"
+                "57687ff0735ede2e"
             ]
         ]
     },
@@ -489,8 +521,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 2340,
-        "y": 540,
+        "x": 420,
+        "y": 860,
         "wires": [
             [
                 "76b82a0dfd836bec"
@@ -512,8 +544,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2530,
-        "y": 560,
+        "x": 610,
+        "y": 880,
         "wires": [
             [
                 "b6beb0607bd9ae0d"
@@ -536,8 +568,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 170,
-        "y": 500,
+        "x": 910,
+        "y": 600,
         "wires": [
             [
                 "476993fbf7804b42"
@@ -564,8 +596,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 290,
-        "y": 540,
+        "x": 1030,
+        "y": 640,
         "wires": [
             [
                 "ae051db41b1f5a44"
@@ -594,8 +626,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 500,
-        "y": 560,
+        "x": 1240,
+        "y": 660,
         "wires": [
             [
                 "2145a9c391c31116"
@@ -609,8 +641,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 450,
-        "y": 520,
+        "x": 1190,
+        "y": 620,
         "wires": []
     },
     {
@@ -631,8 +663,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 930,
-        "y": 360,
+        "x": 1670,
+        "y": 460,
         "wires": [
             [
                 "fef6b07c45f8603e"
@@ -654,8 +686,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 700,
-        "y": 380,
+        "x": 1440,
+        "y": 480,
         "wires": [
             [
                 "b73fcc803ef57249"
@@ -674,11 +706,11 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1180,
-        "y": 360,
+        "x": 1920,
+        "y": 460,
         "wires": [
             [
-                "9164dd914e43135b"
+                "53d8a2b49244d0b0"
             ]
         ]
     },
@@ -702,8 +734,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 1080,
-        "y": 1020,
+        "x": 1020,
+        "y": 1100,
         "wires": [
             [
                 "58651e1b0afef04a"
@@ -738,8 +770,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 3,
-        "x": 1130,
-        "y": 1080,
+        "x": 1010,
+        "y": 1160,
         "wires": [
             [
                 "80e9fc5bd96868df"
@@ -771,11 +803,11 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1320,
-        "y": 1000,
+        "x": 1260,
+        "y": 1080,
         "wires": [
             [
-                "d23474d06380d419"
+                "683f851fb29ba50a"
             ]
         ]
     },
@@ -798,11 +830,11 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1390,
-        "y": 1040,
+        "x": 1270,
+        "y": 1120,
         "wires": [
             [
-                "d23474d06380d419"
+                "683f851fb29ba50a"
             ]
         ]
     },
@@ -825,11 +857,11 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1400,
-        "y": 1080,
+        "x": 1280,
+        "y": 1160,
         "wires": [
             [
-                "d23474d06380d419"
+                "683f851fb29ba50a"
             ]
         ]
     },
@@ -851,14 +883,14 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 2110,
-        "y": 620,
+        "x": 3510,
+        "y": 1520,
         "wires": [
             [
-                "a7bbc5aa6ed09ad4"
+                "74068978659d579e"
             ],
             [
-                "8f96f52e469a016a"
+                "6aaab1c82924d7a0"
             ]
         ]
     },
@@ -882,38 +914,14 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 2670,
-        "y": 720,
+        "x": 3690,
+        "y": 1640,
         "wires": [
             [
-                "a7bbc5aa6ed09ad4"
+                "74068978659d579e"
             ],
             [
                 "b6c089719227cd1e"
-            ]
-        ]
-    },
-    {
-        "id": "d4d42c164957905d",
-        "type": "http request",
-        "z": "743b84be8cadd541",
-        "name": "Fetch last location details",
-        "method": "GET",
-        "ret": "obj",
-        "paytoqs": "ignore",
-        "url": "{{{dbHost}}}/locations/{{{details.lastTransaction.location}}}",
-        "tls": "",
-        "persist": false,
-        "proxy": "",
-        "insecureHTTPParser": false,
-        "authType": "",
-        "senderr": false,
-        "headers": [],
-        "x": 2070,
-        "y": 720,
-        "wires": [
-            [
-                "aa45ee7ec0d521e9"
             ]
         ]
     },
@@ -922,13 +930,11 @@
         "type": "switch",
         "z": "743b84be8cadd541",
         "name": "Check if successful",
-        "property": "statusCode",
+        "property": "lastLocDetails",
         "propertyType": "msg",
         "rules": [
             {
-                "t": "neq",
-                "v": "200",
-                "vt": "str"
+                "t": "null"
             },
             {
                 "t": "else"
@@ -937,14 +943,14 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 2090,
-        "y": 760,
+        "x": 3670,
+        "y": 1580,
         "wires": [
             [
                 "f704c28440c96939"
             ],
             [
-                "707fdae789cf5208"
+                "cfdd8f649f7fc7f4"
             ]
         ]
     },
@@ -960,11 +966,11 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2790,
-        "y": 560,
+        "x": 850,
+        "y": 880,
         "wires": [
             [
-                "363e9d7cf0096f0e"
+                "77f9beeb9f1acfe8"
             ]
         ]
     },
@@ -975,8 +981,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 2110,
-        "y": 360,
+        "x": 2850,
+        "y": 460,
         "wires": []
     },
     {
@@ -995,8 +1001,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 3250,
-        "y": 460,
+        "x": 2510,
+        "y": 1020,
         "wires": [
             [
                 "182f8d4b850b471b"
@@ -1023,8 +1029,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 3450,
-        "y": 460,
+        "x": 2710,
+        "y": 1020,
         "wires": [
             [
                 "b81f10ebd71c778b"
@@ -1072,8 +1078,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 3680,
-        "y": 480,
+        "x": 2960,
+        "y": 1020,
         "wires": [
             [
                 "b81f10ebd71c778b"
@@ -1100,8 +1106,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 1490,
-        "y": 420,
+        "x": 2230,
+        "y": 520,
         "wires": [
             [
                 "7d8145d0ef33580d"
@@ -1118,8 +1124,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 1670,
-        "y": 480,
+        "x": 2410,
+        "y": 580,
         "wires": []
     },
     {
@@ -1129,8 +1135,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 3850,
-        "y": 340,
+        "x": 3010,
+        "y": 920,
         "wires": []
     },
     {
@@ -1140,8 +1146,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 2290,
-        "y": 740,
+        "x": 3830,
+        "y": 1560,
         "wires": []
     },
     {
@@ -1156,11 +1162,11 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2990,
-        "y": 720,
+        "x": 4010,
+        "y": 1640,
         "wires": [
             [
-                "363e9d7cf0096f0e"
+                "8d6a78c9b65f501e"
             ]
         ]
     },
@@ -1182,8 +1188,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 1150,
-        "y": 540,
+        "x": 1890,
+        "y": 640,
         "wires": [
             [
                 "7d8145d0ef33580d"
@@ -1213,8 +1219,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 250,
-        "y": 640,
+        "x": 990,
+        "y": 740,
         "wires": [
             [
                 "2657c8889225f0eb"
@@ -1240,8 +1246,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 140,
-        "y": 600,
+        "x": 880,
+        "y": 700,
         "wires": [
             [
                 "2ddd89dd674dcb8f"
@@ -1267,35 +1273,11 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 490,
-        "y": 660,
+        "x": 1230,
+        "y": 760,
         "wires": [
             [
                 "e8929aab22eedb10"
-            ]
-        ]
-    },
-    {
-        "id": "059c70d511bf2d42",
-        "type": "http request",
-        "z": "743b84be8cadd541",
-        "name": "Fetch location details",
-        "method": "GET",
-        "ret": "obj",
-        "paytoqs": "ignore",
-        "url": "{{{dbHost}}}/locations/{{{location}}}",
-        "tls": "",
-        "persist": false,
-        "proxy": "",
-        "insecureHTTPParser": false,
-        "authType": "",
-        "senderr": false,
-        "headers": [],
-        "x": 780,
-        "y": 620,
-        "wires": [
-            [
-                "f9498ccb2018b14c"
             ]
         ]
     },
@@ -1304,13 +1286,11 @@
         "type": "switch",
         "z": "743b84be8cadd541",
         "name": "Check if successful",
-        "property": "statusCode",
+        "property": "locDetails",
         "propertyType": "msg",
         "rules": [
             {
-                "t": "neq",
-                "v": "200",
-                "vt": "str"
+                "t": "null"
             },
             {
                 "t": "else"
@@ -1319,39 +1299,12 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 990,
-        "y": 620,
+        "x": 1730,
+        "y": 720,
         "wires": [
             [
                 "a1799a8acb4458db"
             ],
-            [
-                "5547b11df0723452"
-            ]
-        ]
-    },
-    {
-        "id": "5547b11df0723452",
-        "type": "change",
-        "z": "743b84be8cadd541",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "locDetails",
-                "pt": "msg",
-                "to": "payload.message",
-                "tot": "msg"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 770,
-        "y": 680,
-        "wires": [
             [
                 "1abf6d00432a7d6b"
             ]
@@ -1364,102 +1317,9 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 1170,
-        "y": 620,
+        "x": 1910,
+        "y": 720,
         "wires": []
-    },
-    {
-        "id": "2f629a05b2c34225",
-        "type": "http request",
-        "z": "743b84be8cadd541",
-        "name": "Fetch touched on product details",
-        "method": "GET",
-        "ret": "obj",
-        "paytoqs": "ignore",
-        "url": "{{{dbHost}}}/products/{{{details.touchedOn}}}",
-        "tls": "",
-        "persist": false,
-        "proxy": "",
-        "insecureHTTPParser": false,
-        "authType": "",
-        "senderr": false,
-        "headers": [],
-        "x": 770,
-        "y": 740,
-        "wires": [
-            [
-                "bfa1cfa1250665b9"
-            ]
-        ]
-    },
-    {
-        "id": "bfa1cfa1250665b9",
-        "type": "switch",
-        "z": "743b84be8cadd541",
-        "name": "Check if successful",
-        "property": "statusCode",
-        "propertyType": "msg",
-        "rules": [
-            {
-                "t": "neq",
-                "v": "200",
-                "vt": "str"
-            },
-            {
-                "t": "else"
-            }
-        ],
-        "checkall": "true",
-        "repair": false,
-        "outputs": 2,
-        "x": 1010,
-        "y": 740,
-        "wires": [
-            [
-                "d8d6b080c9908912"
-            ],
-            [
-                "4cd87b36bdec85eb"
-            ]
-        ]
-    },
-    {
-        "id": "d8d6b080c9908912",
-        "type": "http response",
-        "z": "743b84be8cadd541",
-        "name": "",
-        "statusCode": "",
-        "headers": {},
-        "x": 1230,
-        "y": 700,
-        "wires": []
-    },
-    {
-        "id": "4cd87b36bdec85eb",
-        "type": "change",
-        "z": "743b84be8cadd541",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "onDetails",
-                "pt": "msg",
-                "to": "payload.message",
-                "tot": "msg"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 1230,
-        "y": 740,
-        "wires": [
-            [
-                "3a349ea16f23c655"
-            ]
-        ]
     },
     {
         "id": "35dfcdcaa1aae866",
@@ -1480,11 +1340,11 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1080,
-        "y": 960,
+        "x": 1240,
+        "y": 1040,
         "wires": [
             [
-                "d23474d06380d419"
+                "683f851fb29ba50a"
             ]
         ]
     },
@@ -1495,8 +1355,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 430,
-        "y": 620,
+        "x": 1170,
+        "y": 720,
         "wires": []
     },
     {
@@ -1511,8 +1371,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 650,
-        "y": 480,
+        "x": 1390,
+        "y": 580,
         "wires": [
             [
                 "67f88a1d3cd49924"
@@ -1539,8 +1399,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 390,
-        "y": 460,
+        "x": 1130,
+        "y": 560,
         "wires": [
             [
                 "be62c7d8fa854dab"
@@ -1566,8 +1426,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 190,
-        "y": 460,
+        "x": 930,
+        "y": 560,
         "wires": [
             [
                 "7aca30d7bae79ea2"
@@ -1581,8 +1441,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 590,
-        "y": 440,
+        "x": 1330,
+        "y": 540,
         "wires": []
     },
     {
@@ -1597,8 +1457,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 490,
-        "y": 960,
+        "x": 430,
+        "y": 1080,
         "wires": [
             [
                 "508766a58512205b"
@@ -1623,8 +1483,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 760,
-        "y": 960,
+        "x": 700,
+        "y": 1080,
         "wires": [
             [
                 "35dfcdcaa1aae866"
@@ -1635,123 +1495,15 @@
         ]
     },
     {
-        "id": "f870d0d99b649222",
-        "type": "http request",
-        "z": "743b84be8cadd541",
-        "name": "Fetch last location details",
-        "method": "GET",
-        "ret": "obj",
-        "paytoqs": "ignore",
-        "url": "{{{dbHost}}}/locations/{{{details.lastTransaction.location}}}",
-        "tls": "",
-        "persist": false,
-        "proxy": "",
-        "insecureHTTPParser": false,
-        "authType": "",
-        "senderr": false,
-        "headers": [],
-        "x": 510,
-        "y": 880,
-        "wires": [
-            [
-                "41698f0b4cd1d994"
-            ]
-        ]
-    },
-    {
-        "id": "41698f0b4cd1d994",
-        "type": "switch",
-        "z": "743b84be8cadd541",
-        "name": "Check if successful",
-        "property": "statusCode",
-        "propertyType": "msg",
-        "rules": [
-            {
-                "t": "neq",
-                "v": "200",
-                "vt": "str"
-            },
-            {
-                "t": "else"
-            }
-        ],
-        "checkall": "true",
-        "repair": false,
-        "outputs": 2,
-        "x": 750,
-        "y": 880,
-        "wires": [
-            [
-                "86cbf47820f572ec"
-            ],
-            [
-                "d4c5ceb2395cf780"
-            ]
-        ]
-    },
-    {
-        "id": "d4c5ceb2395cf780",
-        "type": "change",
-        "z": "743b84be8cadd541",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "lastLocDetails",
-                "pt": "msg",
-                "to": "payload.message",
-                "tot": "msg"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 980,
-        "y": 900,
-        "wires": [
-            [
-                "8f9da2b1fcac3182"
-            ]
-        ]
-    },
-    {
-        "id": "fee58f5552df0f99",
-        "type": "http request",
-        "z": "743b84be8cadd541",
-        "name": "Fetch 2nd pass product details",
-        "method": "GET",
-        "ret": "obj",
-        "paytoqs": "ignore",
-        "url": "{{{dbHost}}}/products/{{{details.passes[1].product}}}",
-        "tls": "",
-        "persist": false,
-        "proxy": "",
-        "insecureHTTPParser": false,
-        "authType": "",
-        "senderr": false,
-        "headers": [],
-        "x": 2470,
-        "y": 1260,
-        "wires": [
-            [
-                "c531d05b1e8d3c09"
-            ]
-        ]
-    },
-    {
         "id": "c531d05b1e8d3c09",
         "type": "switch",
         "z": "743b84be8cadd541",
         "name": "Check if successful",
-        "property": "statusCode",
+        "property": "fetchOK",
         "propertyType": "msg",
         "rules": [
             {
-                "t": "neq",
-                "v": "200",
-                "vt": "str"
+                "t": "false"
             },
             {
                 "t": "else"
@@ -1760,41 +1512,14 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 2710,
-        "y": 1260,
+        "x": 2490,
+        "y": 1180,
         "wires": [
             [
                 "b8ddebc980342e0c"
             ],
             [
-                "7aedcec4e4465c17"
-            ]
-        ]
-    },
-    {
-        "id": "7aedcec4e4465c17",
-        "type": "change",
-        "z": "743b84be8cadd541",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "details.passes[1].prodDetails",
-                "pt": "msg",
-                "to": "payload.message",
-                "tot": "msg"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 2990,
-        "y": 1260,
-        "wires": [
-            [
-                "dfac6eaa58c222d6"
+                "d6c35bf3eaa4b507"
             ]
         ]
     },
@@ -1805,169 +1530,20 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 2910,
-        "y": 1220,
+        "x": 2690,
+        "y": 1180,
         "wires": []
-    },
-    {
-        "id": "e867ee4c20434e7d",
-        "type": "switch",
-        "z": "743b84be8cadd541",
-        "name": "Determine number of passes to check",
-        "property": "$count(msg.details.passes)\t\t",
-        "propertyType": "jsonata",
-        "rules": [
-            {
-                "t": "eq",
-                "v": "2",
-                "vt": "str"
-            },
-            {
-                "t": "eq",
-                "v": "1",
-                "vt": "str"
-            },
-            {
-                "t": "eq",
-                "v": "0",
-                "vt": "str"
-            }
-        ],
-        "checkall": "true",
-        "repair": false,
-        "outputs": 3,
-        "x": 2110,
-        "y": 1320,
-        "wires": [
-            [
-                "fee58f5552df0f99"
-            ],
-            [
-                "dfac6eaa58c222d6"
-            ],
-            [
-                "e3f17bb79b0443c4"
-            ]
-        ]
-    },
-    {
-        "id": "dfac6eaa58c222d6",
-        "type": "http request",
-        "z": "743b84be8cadd541",
-        "name": "Fetch 1st pass product value",
-        "method": "GET",
-        "ret": "obj",
-        "paytoqs": "ignore",
-        "url": "{{{dbHost}}}/products/{{{details.passes[0].product}}}",
-        "tls": "",
-        "persist": false,
-        "proxy": "",
-        "insecureHTTPParser": false,
-        "authType": "",
-        "senderr": false,
-        "headers": [],
-        "x": 2460,
-        "y": 1320,
-        "wires": [
-            [
-                "a6c0930e5cc0c99b"
-            ]
-        ]
-    },
-    {
-        "id": "a6c0930e5cc0c99b",
-        "type": "switch",
-        "z": "743b84be8cadd541",
-        "name": "Check if successful",
-        "property": "statusCode",
-        "propertyType": "msg",
-        "rules": [
-            {
-                "t": "neq",
-                "v": "200",
-                "vt": "str"
-            },
-            {
-                "t": "else"
-            }
-        ],
-        "checkall": "true",
-        "repair": false,
-        "outputs": 2,
-        "x": 2710,
-        "y": 1320,
-        "wires": [
-            [
-                "b8ddebc980342e0c"
-            ],
-            [
-                "0db8dd0f66889a08"
-            ]
-        ]
-    },
-    {
-        "id": "0db8dd0f66889a08",
-        "type": "change",
-        "z": "743b84be8cadd541",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "details.passes[0].prodDetails",
-                "pt": "msg",
-                "to": "payload.message",
-                "tot": "msg"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 2990,
-        "y": 1320,
-        "wires": [
-            [
-                "d6c35bf3eaa4b507"
-            ]
-        ]
-    },
-    {
-        "id": "3a349ea16f23c655",
-        "type": "http request",
-        "z": "743b84be8cadd541",
-        "name": "Fetch fare type information",
-        "method": "GET",
-        "ret": "obj",
-        "paytoqs": "ignore",
-        "url": "{{{dbHost}}}/fareTypes/{{{details.fareType}}}",
-        "tls": "",
-        "persist": false,
-        "proxy": "",
-        "insecureHTTPParser": false,
-        "authType": "",
-        "senderr": false,
-        "headers": [],
-        "x": 520,
-        "y": 840,
-        "wires": [
-            [
-                "3c3217c50f767b75"
-            ]
-        ]
     },
     {
         "id": "3c3217c50f767b75",
         "type": "switch",
         "z": "743b84be8cadd541",
         "name": "Check if successful",
-        "property": "statusCode",
+        "property": "fetchOK",
         "propertyType": "msg",
         "rules": [
             {
-                "t": "neq",
-                "v": "200",
-                "vt": "str"
+                "t": "false"
             },
             {
                 "t": "else"
@@ -1976,14 +1552,14 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 750,
-        "y": 840,
+        "x": 870,
+        "y": 960,
         "wires": [
             [
                 "86cbf47820f572ec"
             ],
             [
-                "f3ec7e0f8f11d01e"
+                "8f9da2b1fcac3182"
             ]
         ]
     },
@@ -1994,36 +1570,9 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 1130,
-        "y": 840,
+        "x": 1050,
+        "y": 940,
         "wires": []
-    },
-    {
-        "id": "f3ec7e0f8f11d01e",
-        "type": "change",
-        "z": "743b84be8cadd541",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "fareDetails",
-                "pt": "msg",
-                "to": "payload.message",
-                "tot": "msg"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 970,
-        "y": 860,
-        "wires": [
-            [
-                "f870d0d99b649222"
-            ]
-        ]
     },
     {
         "id": "d6c35bf3eaa4b507",
@@ -2037,35 +1586,11 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2980,
-        "y": 1360,
+        "x": 2360,
+        "y": 1240,
         "wires": [
             [
                 "1d8af34375a5f8cf"
-            ]
-        ]
-    },
-    {
-        "id": "d23474d06380d419",
-        "type": "http request",
-        "z": "743b84be8cadd541",
-        "name": "Fetch touched off product details",
-        "method": "GET",
-        "ret": "obj",
-        "paytoqs": "ignore",
-        "url": "{{{dbHost}}}/products/{{{offProduct}}}",
-        "tls": "",
-        "persist": false,
-        "proxy": "",
-        "insecureHTTPParser": false,
-        "authType": "",
-        "senderr": false,
-        "headers": [],
-        "x": 1610,
-        "y": 960,
-        "wires": [
-            [
-                "c3033b5826e4ceaf"
             ]
         ]
     },
@@ -2089,39 +1614,12 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 1610,
-        "y": 1000,
+        "x": 1770,
+        "y": 1040,
         "wires": [
             [
                 "2ef0adbc9aef4e05"
             ],
-            [
-                "29f071dc9f66554f"
-            ]
-        ]
-    },
-    {
-        "id": "29f071dc9f66554f",
-        "type": "change",
-        "z": "743b84be8cadd541",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "offDetails",
-                "pt": "msg",
-                "to": "payload.message",
-                "tot": "msg"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 1630,
-        "y": 1040,
-        "wires": [
             [
                 "adfad84f427e0600"
             ]
@@ -2134,8 +1632,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 1790,
-        "y": 1000,
+        "x": 1970,
+        "y": 1020,
         "wires": []
     },
     {
@@ -2158,8 +1656,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 2970,
-        "y": 1400,
+        "x": 2650,
+        "y": 1240,
         "wires": [
             [
                 "a0ef6c9aec2e65be"
@@ -2181,8 +1679,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 3520,
-        "y": 1260,
+        "x": 3220,
+        "y": 1160,
         "wires": [
             [
                 "3b03cf35b41ce1da"
@@ -2207,8 +1705,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 3310,
-        "y": 1380,
+        "x": 2930,
+        "y": 1220,
         "wires": [
             [
                 "2e03a3837cab859a"
@@ -2234,8 +1732,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 3550,
-        "y": 1300,
+        "x": 3250,
+        "y": 1200,
         "wires": [
             [
                 "f497ebe6740a29f2"
@@ -2262,8 +1760,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 3550,
-        "y": 1340,
+        "x": 3250,
+        "y": 1240,
         "wires": [
             [
                 "bf883cfd3b9997e8"
@@ -2280,8 +1778,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 3750,
-        "y": 1320,
+        "x": 3430,
+        "y": 1240,
         "wires": []
     },
     {
@@ -2290,15 +1788,15 @@
         "z": "743b84be8cadd541",
         "name": "Touch off",
         "info": "",
-        "x": 540,
-        "y": 740,
+        "x": 220,
+        "y": 960,
         "wires": []
     },
     {
         "id": "8f9da2b1fcac3182",
         "type": "change",
         "z": "743b84be8cadd541",
-        "name": "",
+        "name": "Reset ticket value to 0",
         "rules": [
             {
                 "t": "set",
@@ -2313,8 +1811,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 290,
-        "y": 960,
+        "x": 1080,
+        "y": 980,
         "wires": [
             [
                 "d199eaa20a9080b2"
@@ -2333,8 +1831,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 3540,
-        "y": 1440,
+        "x": 3220,
+        "y": 1300,
         "wires": [
             [
                 "f5aa33c6ca693c74"
@@ -2359,8 +1857,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 1690,
-        "y": 1120,
+        "x": 1570,
+        "y": 1160,
         "wires": [
             [
                 "a8d1b3affdf97246"
@@ -2374,16 +1872,16 @@
         "id": "a8d1b3affdf97246",
         "type": "function",
         "z": "743b84be8cadd541",
-        "name": "Prep for min product fetch",
-        "func": "msg.minProd = {\n    idFrom: Math.min(msg.onDetails.fromZone, msg.offDetails.fromZone),\n    idTo: Math.max(msg.onDetails.toZone, msg.offDetails.toZone)\n};\n\nif (!msg.prodExpired && msg.details.currentProduct != 0) {\n    /* current product not expired, so there's current product details in msg.payload */\n    msg.minProd.idFrom = Math.min(msg.minProd.idFrom, msg.payload.message.fromZone);\n    msg.minProd.idTo = Math.max(msg.minProd.idTo, msg.payload.message.toZone);\n}\n\nreturn msg;",
+        "name": "Find min covering product",
+        "func": "let idFrom = Math.min(msg.onDetails.fromZone, msg.offDetails.fromZone);\nlet idTo = Math.max(msg.onDetails.toZone, msg.offDetails.toZone);\n\nif (!msg.prodExpired && msg.details.currentProduct != 0) {\n    /* current product not expired, so there's current product details in msg.payload */\n    idFrom = Math.min(idFrom, msg.payload.message.fromZone);\n    idTo = Math.max(idTo, msg.payload.message.toZone);\n}\n\nlet prodID = -1, prodDelta = Infinity;\nconst products = msg.staticData.products;\nfor (let i = 0; i < products.length; i++) {\n    if (products[i].fromZone <= idFrom && products[i].toZone >= idTo) {\n        let delta = (idFrom - products[i].fromZone) + (products[i].toZone - idTo);\n        if (delta < prodDelta) {\n            prodID = i;\n            prodDelta = delta;\n        }\n        if (delta == 0) break; // exit early\n    }\n}\n\nmsg.minProd = (prodID < 0) ? null : {\n    id: prodID,\n    delta: prodDelta,\n    details: products[prodID]\n};\n\nif (!msg.minProd) {\n    msg.statusCode = 500;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Cannot find product covering zones ${idFrom} to ${idTo}`,\n        time: Date.now()\n    };\n}\n\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2150,
-        "y": 1100,
+        "x": 1930,
+        "y": 1120,
         "wires": [
             [
                 "58c82ac6ff5c789a"
@@ -2406,8 +1904,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 2160,
-        "y": 1160,
+        "x": 2180,
+        "y": 1120,
         "wires": [
             [
                 "38f6f791526a2781"
@@ -2419,13 +1917,11 @@
         "type": "switch",
         "z": "743b84be8cadd541",
         "name": "Check if successful",
-        "property": "statusCode",
+        "property": "minProd",
         "propertyType": "msg",
         "rules": [
             {
-                "t": "neq",
-                "v": "200",
-                "vt": "str"
+                "t": "null"
             },
             {
                 "t": "else"
@@ -2434,39 +1930,12 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 2390,
-        "y": 1180,
+        "x": 2410,
+        "y": 1120,
         "wires": [
             [
                 "63eb7cb5c7008f2b"
             ],
-            [
-                "5c4d3cebe982f7fc"
-            ]
-        ]
-    },
-    {
-        "id": "5c4d3cebe982f7fc",
-        "type": "change",
-        "z": "743b84be8cadd541",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "minProd",
-                "pt": "msg",
-                "to": "payload.message",
-                "tot": "msg"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 1870,
-        "y": 1260,
-        "wires": [
             [
                 "e867ee4c20434e7d"
             ]
@@ -2488,8 +1957,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 1620,
-        "y": 1180,
+        "x": 1540,
+        "y": 1220,
         "wires": [
             [
                 "3b7dc35ee30eab9a"
@@ -2516,14 +1985,14 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 1850,
-        "y": 1180,
+        "x": 1770,
+        "y": 1220,
         "wires": [
             [
                 "a8d1b3affdf97246"
             ],
             [
-                "63eb7cb5c7008f2b"
+                "024aa310a84e34cb"
             ]
         ]
     },
@@ -2534,8 +2003,8 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 2550,
-        "y": 1140,
+        "x": 2570,
+        "y": 1100,
         "wires": []
     },
     {
@@ -2550,8 +2019,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1400,
-        "y": 1180,
+        "x": 1300,
+        "y": 1220,
         "wires": [
             [
                 "9e3fdb81034ad947"
@@ -2584,8 +2053,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 2290,
-        "y": 1500,
+        "x": 2230,
+        "y": 1360,
         "wires": [
             [
                 "c2eef7436847d4cc"
@@ -2625,8 +2094,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 3610,
-        "y": 1480,
+        "x": 3290,
+        "y": 1340,
         "wires": [
             [
                 "9bd90d80bf5089dc"
@@ -2645,8 +2114,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 3590,
-        "y": 1520,
+        "x": 3270,
+        "y": 1380,
         "wires": [
             [
                 "5cc81807a7477bcc"
@@ -2665,8 +2134,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2890,
-        "y": 1500,
+        "x": 2830,
+        "y": 1360,
         "wires": [
             [
                 "17b68b2dd913d5f8"
@@ -2691,8 +2160,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 2300,
-        "y": 1560,
+        "x": 2240,
+        "y": 1420,
         "wires": [
             [
                 "06c2ff8cac101938"
@@ -2714,8 +2183,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2570,
-        "y": 1560,
+        "x": 2510,
+        "y": 1420,
         "wires": [
             [
                 "142ed0157bfe8825"
@@ -2734,8 +2203,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2770,
-        "y": 1560,
+        "x": 2710,
+        "y": 1420,
         "wires": [
             [
                 "5cc81807a7477bcc"
@@ -2760,8 +2229,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 2300,
-        "y": 1620,
+        "x": 2240,
+        "y": 1480,
         "wires": [
             [
                 "c312c51a791fca12"
@@ -2790,8 +2259,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 2780,
-        "y": 1640,
+        "x": 2720,
+        "y": 1500,
         "wires": [
             [
                 "5cc81807a7477bcc"
@@ -2810,8 +2279,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2570,
-        "y": 1600,
+        "x": 2510,
+        "y": 1460,
         "wires": [
             [
                 "5b0670a9585ef8ce"
@@ -2830,8 +2299,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 2780,
-        "y": 1600,
+        "x": 2720,
+        "y": 1460,
         "wires": [
             [
                 "5cc81807a7477bcc"
@@ -2892,8 +2361,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 3050,
-        "y": 1640,
+        "x": 2990,
+        "y": 1500,
         "wires": [
             [
                 "f60aba7b0b1e4bef"
@@ -2918,8 +2387,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 1650,
-        "y": 620,
+        "x": 3230,
+        "y": 1500,
         "wires": [
             [
                 "55701c0773e70af5"
@@ -2955,11 +2424,11 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1910,
-        "y": 580,
+        "x": 3510,
+        "y": 1480,
         "wires": [
             [
-                "a7bbc5aa6ed09ad4"
+                "74068978659d579e"
             ]
         ]
     },
@@ -2982,8 +2451,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1140,
-        "y": 300,
+        "x": 1880,
+        "y": 400,
         "wires": [
             [
                 "ee12ba527b28d936"
@@ -2996,8 +2465,8 @@
         "z": "743b84be8cadd541",
         "name": "Touch on",
         "info": "",
-        "x": 2180,
-        "y": 520,
+        "x": 220,
+        "y": 860,
         "wires": []
     },
     {
@@ -3082,8 +2551,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 3200,
-        "y": 320,
+        "x": 2460,
+        "y": 880,
         "wires": [
             [
                 "bafa7bc13d9bdc01"
@@ -3106,8 +2575,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 3200,
-        "y": 360,
+        "x": 2460,
+        "y": 920,
         "wires": [
             [
                 "2fc4d027e64294c9"
@@ -3134,8 +2603,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 3410,
-        "y": 360,
+        "x": 2670,
+        "y": 920,
         "wires": [
             [
                 "b81f10ebd71c778b"
@@ -3157,69 +2626,11 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 3260,
-        "y": 420,
+        "x": 2520,
+        "y": 980,
         "wires": [
             [
                 "ea4db924adc7a439"
-            ]
-        ]
-    },
-    {
-        "id": "707fdae789cf5208",
-        "type": "change",
-        "z": "743b84be8cadd541",
-        "name": "",
-        "rules": [
-            {
-                "t": "set",
-                "p": "lastLocDetails",
-                "pt": "msg",
-                "to": "payload.message",
-                "tot": "msg"
-            }
-        ],
-        "action": "",
-        "property": "",
-        "from": "",
-        "to": "",
-        "reg": false,
-        "x": 2340,
-        "y": 780,
-        "wires": [
-            [
-                "cfdd8f649f7fc7f4"
-            ]
-        ]
-    },
-    {
-        "id": "8f96f52e469a016a",
-        "type": "switch",
-        "z": "743b84be8cadd541",
-        "name": "Check if we need to get last location details",
-        "property": "msg",
-        "propertyType": "jsonata",
-        "rules": [
-            {
-                "t": "hask",
-                "v": "lastLocDetails",
-                "vt": "str"
-            },
-            {
-                "t": "else"
-            }
-        ],
-        "checkall": "true",
-        "repair": false,
-        "outputs": 2,
-        "x": 2010,
-        "y": 680,
-        "wires": [
-            [
-                "cfdd8f649f7fc7f4"
-            ],
-            [
-                "d4d42c164957905d"
             ]
         ]
     },
@@ -3232,7 +2643,7 @@
         "propertyType": "msg",
         "rules": [
             {
-                "t": "true"
+                "t": "false"
             },
             {
                 "t": "else"
@@ -3241,14 +2652,14 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 1830,
-        "y": 1540,
+        "x": 1770,
+        "y": 1400,
         "wires": [
             [
-                "35dfcdcaa1aae866"
+                "3018bdde0bccba87"
             ],
             [
-                "3018bdde0bccba87"
+                "71243f7f08f9932d"
             ]
         ]
     },
@@ -3264,8 +2675,8 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1860,
-        "y": 1500,
+        "x": 1800,
+        "y": 1360,
         "wires": [
             [
                 "2a56d2e1ba13bcc0"
@@ -3290,8 +2701,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 1900,
-        "y": 1460,
+        "x": 1840,
+        "y": 1320,
         "wires": [
             [
                 "3018bdde0bccba87"
@@ -3321,8 +2732,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 1670,
-        "y": 1080,
+        "x": 1550,
+        "y": 1100,
         "wires": [
             [
                 "a8d1b3affdf97246"
@@ -3351,11 +2762,11 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 800,
-        "y": 580,
+        "x": 1540,
+        "y": 680,
         "wires": [
             [
-                "059c70d511bf2d42"
+                "8148e0745d982c89"
             ]
         ]
     },
@@ -3378,8 +2789,8 @@
         "from": "",
         "to": "",
         "reg": false,
-        "x": 1110,
-        "y": 420,
+        "x": 1850,
+        "y": 520,
         "wires": [
             [
                 "986fde79247c517f"
@@ -3404,8 +2815,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 1360,
-        "y": 280,
+        "x": 2100,
+        "y": 380,
         "wires": [
             [
                 "7d8145d0ef33580d"
@@ -3435,8 +2846,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 2610,
-        "y": 1500,
+        "x": 2550,
+        "y": 1360,
         "wires": [
             [
                 "8e67afcd7c8c0b27"
@@ -3452,8 +2863,8 @@
         "z": "743b84be8cadd541",
         "name": "Expired and already handled",
         "info": "",
-        "x": 2240,
-        "y": 1460,
+        "x": 2180,
+        "y": 1320,
         "wires": []
     },
     {
@@ -3465,8 +2876,8 @@
         "method": "get",
         "upload": false,
         "swaggerDoc": "",
-        "x": 140,
-        "y": 180,
+        "x": 640,
+        "y": 40,
         "wires": [
             [
                 "093ef1517464a64c"
@@ -3478,15 +2889,15 @@
         "type": "function",
         "z": "743b84be8cadd541",
         "name": "Return health check response",
-        "func": "if (msg.statusCode == 200) {\n    msg.payload = {\n        status: msg.statusCode,\n        message: 'Ticket vending API is operational',\n        time: Date.now()\n    };\n} else {\n    msg.payload = {\n        status: 500,\n        message: `Upstream database API health check failed (status code ${msg.statusCode})`,\n        time: Date.now()\n    };\n    msg.statusCode = 500;\n}\nreturn msg;",
+        "func": "if (msg.statusCode == 200) {\n    msg.payload = {\n        status: msg.statusCode,\n        message: 'Ticket vending API is operational',\n        time: Date.now()\n    };\n    if (msg.upstream) global.set('upstreamOK', true);\n} else {\n    msg.payload = {\n        status: 500,\n        message: `Upstream database API health check failed (status code ${msg.statusCode})`,\n        time: Date.now()\n    };\n    msg.statusCode = 500;\n    if (msg.upstream) global.set('upstreamOK', false);\n}\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 770,
-        "y": 180,
+        "x": 1370,
+        "y": 40,
         "wires": [
             [
                 "d90bba12944ed8f9"
@@ -3500,15 +2911,15 @@
         "name": "",
         "statusCode": "",
         "headers": {},
-        "x": 970,
-        "y": 180,
+        "x": 1570,
+        "y": 40,
         "wires": []
     },
     {
         "id": "a5011be4e0ecacfd",
         "type": "http request",
         "z": "743b84be8cadd541",
-        "name": "Upstream health check",
+        "name": "Database/upstream API health check",
         "method": "GET",
         "ret": "obj",
         "paytoqs": "body",
@@ -3520,8 +2931,8 @@
         "authType": "",
         "senderr": false,
         "headers": [],
-        "x": 520,
-        "y": 180,
+        "x": 1070,
+        "y": 40,
         "wires": [
             [
                 "1a5744008db16476"
@@ -3533,19 +2944,829 @@
         "type": "function",
         "z": "743b84be8cadd541",
         "name": "Prepare URL",
-        "func": "msg.url = env.get('DATABASE_API') + '/healthcheck';\nreturn msg;",
+        "func": "let upstreamAPI = env.get('UPSTREAM_API');\nif (upstreamAPI) {\n    msg.upstream = true;\n    msg.url = upstreamAPI;\n} else {\n    msg.upstream = false;\n    msg.url = env.get('DATABASE_API');\n}\nmsg.url += '/healthcheck';\nreturn msg;",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 330,
-        "y": 180,
+        "x": 830,
+        "y": 40,
         "wires": [
             [
                 "a5011be4e0ecacfd"
             ]
         ]
+    },
+    {
+        "id": "54db9efb60e722a8",
+        "type": "mqtt in",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "topic": "static",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "74f300c5a2f5e238",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 70,
+        "y": 40,
+        "wires": [
+            [
+                "326e699a601ef1e4"
+            ]
+        ]
+    },
+    {
+        "id": "326e699a601ef1e4",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Save static data",
+        "func": "msg.payload.expiry = new Date(msg.payload.expiry).getTime(); // convert to numeric timestamp\nglobal.set('staticData', msg.payload);\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 240,
+        "y": 40,
+        "wires": [
+            [
+                "7cc377a1609fa279"
+            ]
+        ]
+    },
+    {
+        "id": "7cc377a1609fa279",
+        "type": "debug",
+        "z": "743b84be8cadd541",
+        "name": "Show data",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 410,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "45d34f7da9b9a503",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Get static data validity",
+        "func": "msg.staticData = global.get('staticData');\nmsg.staticValid = (msg.staticData) && (msg.staticData.expiry > Date.now());\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 600,
+        "y": 320,
+        "wires": [
+            [
+                "845d633e1cd7cfe3"
+            ]
+        ]
+    },
+    {
+        "id": "845d633e1cd7cfe3",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if static data is valid",
+        "property": "staticValid",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "false"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 840,
+        "y": 320,
+        "wires": [
+            [
+                "72cfe3fe01bd0b05"
+            ],
+            [
+                "5b42c619db0fb418"
+            ]
+        ]
+    },
+    {
+        "id": "a4c3fe5a485979cc",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1210,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "72cfe3fe01bd0b05",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Return 503",
+        "func": "msg.statusCode = 503;\nmsg.payload = {\n    status: msg.statusCode,\n    message: 'Static data is invalid',\n    time: Date.now()\n};\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1070,
+        "y": 300,
+        "wires": [
+            [
+                "a4c3fe5a485979cc"
+            ]
+        ]
+    },
+    {
+        "id": "adbff650f5b6f24d",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if upstream API is available",
+        "property": "upstreamOK",
+        "propertyType": "global",
+        "rules": [
+            {
+                "t": "true"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 340,
+        "y": 320,
+        "wires": [
+            [
+                "4a7e56c315626716"
+            ],
+            [
+                "45d34f7da9b9a503"
+            ]
+        ]
+    },
+    {
+        "id": "19577e60a77a54a7",
+        "type": "inject",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "props": [],
+        "repeat": "15",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 90,
+        "y": 120,
+        "wires": [
+            [
+                "344974f49a79d556"
+            ]
+        ]
+    },
+    {
+        "id": "344974f49a79d556",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Get upstream API URL",
+        "func": "msg.upstreamAPI = env.get('UPSTREAM_API') || null;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 260,
+        "y": 120,
+        "wires": [
+            [
+                "a2c844b100c9fde8"
+            ]
+        ]
+    },
+    {
+        "id": "a2c844b100c9fde8",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if given",
+        "property": "upstreamAPI",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nnull"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 460,
+        "y": 120,
+        "wires": [
+            [
+                "b83ddaa3a730b17a"
+            ]
+        ]
+    },
+    {
+        "id": "b83ddaa3a730b17a",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Upstream health check",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "{{{upstreamAPI}}}/healthcheck",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 660,
+        "y": 120,
+        "wires": [
+            [
+                "9e26371fbb6cfe09"
+            ]
+        ]
+    },
+    {
+        "id": "9e26371fbb6cfe09",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "upstreamOK",
+                "pt": "global",
+                "to": "statusCode = 200",
+                "tot": "jsonata"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 880,
+        "y": 120,
+        "wires": [
+            [
+                "e496d751b60cdb88"
+            ]
+        ]
+    },
+    {
+        "id": "90881514525a5de3",
+        "type": "catch",
+        "z": "743b84be8cadd541",
+        "name": "Catch HTTP error",
+        "scope": [
+            "b83ddaa3a730b17a"
+        ],
+        "uncaught": false,
+        "x": 680,
+        "y": 160,
+        "wires": [
+            [
+                "54de3e449463073c"
+            ]
+        ]
+    },
+    {
+        "id": "54de3e449463073c",
+        "type": "change",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "rules": [
+            {
+                "t": "set",
+                "p": "upstreamOK",
+                "pt": "global",
+                "to": "false",
+                "tot": "bool"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 880,
+        "y": 160,
+        "wires": [
+            [
+                "e496d751b60cdb88"
+            ]
+        ]
+    },
+    {
+        "id": "e496d751b60cdb88",
+        "type": "debug",
+        "z": "743b84be8cadd541",
+        "name": "Upstream check result",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1120,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "3cee2e764036d493",
+        "type": "http request",
+        "z": "743b84be8cadd541",
+        "name": "Pass to upstream",
+        "method": "POST",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 750,
+        "y": 280,
+        "wires": [
+            [
+                "98bed9929a159b9d"
+            ]
+        ]
+    },
+    {
+        "id": "4a7e56c315626716",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Prepare URL",
+        "func": "msg.url = env.get('UPSTREAM_API') + '/validate';\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 280,
+        "wires": [
+            [
+                "3cee2e764036d493"
+            ]
+        ]
+    },
+    {
+        "id": "98bed9929a159b9d",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 910,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "3531873699d8c39a",
+        "type": "catch",
+        "z": "743b84be8cadd541",
+        "name": "On upstream error",
+        "scope": [
+            "3cee2e764036d493"
+        ],
+        "uncaught": false,
+        "x": 390,
+        "y": 360,
+        "wires": [
+            [
+                "45d34f7da9b9a503"
+            ]
+        ]
+    },
+    {
+        "id": "53d8a2b49244d0b0",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 2090,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "57687ff0735ede2e",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 850,
+        "y": 840,
+        "wires": []
+    },
+    {
+        "id": "8148e0745d982c89",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Fetch location details",
+        "func": "msg.locDetails = msg.staticData.locations[msg.location] || null;\n\nif (!msg.locDetails) {\n    /* populate response to be returned immediately */\n    msg.statusCode = 500;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Invalid location ID ${msg.location}`,\n        time: Date.now()\n    };\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1520,
+        "y": 720,
+        "wires": [
+            [
+                "f9498ccb2018b14c"
+            ]
+        ]
+    },
+    {
+        "id": "9edc1aa45ae92258",
+        "type": "link in",
+        "z": "743b84be8cadd541",
+        "name": "Write ticket",
+        "links": [
+            "0f2414fe6a0a94fd",
+            "77f9beeb9f1acfe8",
+            "8d6a78c9b65f501e"
+        ],
+        "x": 2275,
+        "y": 880,
+        "wires": [
+            [
+                "363e9d7cf0096f0e"
+            ]
+        ]
+    },
+    {
+        "id": "1a4ee87516170381",
+        "type": "link in",
+        "z": "743b84be8cadd541",
+        "name": "Touch on",
+        "links": [
+            "8c98c955bd43645c",
+            "74068978659d579e"
+        ],
+        "x": 305,
+        "y": 860,
+        "wires": [
+            [
+                "a7bbc5aa6ed09ad4"
+            ]
+        ]
+    },
+    {
+        "id": "0f2414fe6a0a94fd",
+        "type": "link out",
+        "z": "743b84be8cadd541",
+        "name": "Missing touch-on",
+        "mode": "link",
+        "links": [
+            "9edc1aa45ae92258"
+        ],
+        "x": 2235,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "8c98c955bd43645c",
+        "type": "link out",
+        "z": "743b84be8cadd541",
+        "name": "Touch on (fresh)",
+        "mode": "link",
+        "links": [
+            "1a4ee87516170381"
+        ],
+        "x": 1955,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "8fd9c649cc2bbed3",
+        "type": "comment",
+        "z": "743b84be8cadd541",
+        "name": "Touch on",
+        "info": "",
+        "x": 2040,
+        "y": 800,
+        "wires": []
+    },
+    {
+        "id": "c4f0fc4256dc3bbf",
+        "type": "comment",
+        "z": "743b84be8cadd541",
+        "name": "Write ticket",
+        "info": "",
+        "x": 2320,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "bbbf9fca315355da",
+        "type": "link in",
+        "z": "743b84be8cadd541",
+        "name": "Touch off",
+        "links": [
+            "816d82f5897434de"
+        ],
+        "x": 305,
+        "y": 960,
+        "wires": [
+            [
+                "fde1d6b48ee3aa0d"
+            ]
+        ]
+    },
+    {
+        "id": "fde1d6b48ee3aa0d",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Fetch touched on product + fare type + last location details",
+        "func": "msg.onDetails = msg.staticData.products[msg.details.touchedOn] || null;\nmsg.fareDetails = msg.staticData.fareTypes[msg.details.fareType] || null;\nmsg.lastLocDetails = msg.staticData.locations[msg.details.lastTransaction.location] || null;\n\nmsg.fetchOK = false;\nif (!msg.onDetails) {\n    msg.statusCode = 500;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Invalid product ID ${msg.details.touchedOn}`,\n        time: Date.now()\n    };\n} else if (!msg.fareDetails) {\n    msg.statusCode = 500;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Invalid fare type ID ${msg.details.fareType}`,\n        time: Date.now()\n    };\n} else if (!msg.lastLocDetails) {\n    msg.statusCode = 500;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Invalid location ID ${msg.details.lastTransaction.location}`,\n        time: Date.now()\n    };\n} else msg.fetchOK = true;\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 550,
+        "y": 960,
+        "wires": [
+            [
+                "3c3217c50f767b75"
+            ]
+        ]
+    },
+    {
+        "id": "12f424576e2f5f86",
+        "type": "link in",
+        "z": "743b84be8cadd541",
+        "name": "Default fare touch off",
+        "links": [
+            "71243f7f08f9932d"
+        ],
+        "x": 1105,
+        "y": 1060,
+        "wires": [
+            [
+                "35dfcdcaa1aae866"
+            ]
+        ]
+    },
+    {
+        "id": "71243f7f08f9932d",
+        "type": "link out",
+        "z": "743b84be8cadd541",
+        "name": "Default fare touch off",
+        "mode": "link",
+        "links": [
+            "12f424576e2f5f86"
+        ],
+        "x": 1825,
+        "y": 1460,
+        "wires": []
+    },
+    {
+        "id": "8ef35eeb933a0845",
+        "type": "comment",
+        "z": "743b84be8cadd541",
+        "name": "Default fare touch off",
+        "info": "",
+        "x": 1950,
+        "y": 1460,
+        "wires": []
+    },
+    {
+        "id": "e867ee4c20434e7d",
+        "type": "switch",
+        "z": "743b84be8cadd541",
+        "name": "Check if there are passes",
+        "property": "details.passes",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "nempty"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 2030,
+        "y": 1180,
+        "wires": [
+            [
+                "5b92b4a3b50d84cb"
+            ],
+            [
+                "e3f17bb79b0443c4"
+            ]
+        ]
+    },
+    {
+        "id": "683f851fb29ba50a",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Get touched off product details",
+        "func": "msg.offDetails = msg.staticData.products[msg.offProduct] || null;\nif (!msg.offDetails) {\n    msg.statusCode = 500;\n    msg.payload = {\n        status: msg.statusCode,\n        message: `Invalid product ID ${msg.offProduct}`,\n        time: Date.now()\n    };\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1530,
+        "y": 1040,
+        "wires": [
+            [
+                "c3033b5826e4ceaf"
+            ]
+        ]
+    },
+    {
+        "id": "5b92b4a3b50d84cb",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Fetch pass details",
+        "func": "msg.fetchOK = true; // recycle (though this is not needed)\nfor (const pass of msg.details.passes) {\n    pass.prodDetails = msg.staticData.products[pass.product] || null;\n    if (!pass.prodDetails) {\n        msg.statusCode = 500;\n        msg.payload = {\n            status: msg.statusCode,\n            message: `Invalid product ID ${pass.product}`,\n            time: Date.now()\n        };\n\n        msg.fetchOK = false;\n        break; // stop right now (since we're failing)\n    }\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 2270,
+        "y": 1180,
+        "wires": [
+            [
+                "c531d05b1e8d3c09"
+            ]
+        ]
+    },
+    {
+        "id": "77f9beeb9f1acfe8",
+        "type": "link out",
+        "z": "743b84be8cadd541",
+        "name": "Write ticket",
+        "mode": "link",
+        "links": [
+            "9edc1aa45ae92258"
+        ],
+        "x": 1015,
+        "y": 880,
+        "wires": []
+    },
+    {
+        "id": "74068978659d579e",
+        "type": "link out",
+        "z": "743b84be8cadd541",
+        "name": "Touch on (from touch off)",
+        "mode": "link",
+        "links": [
+            "1a4ee87516170381"
+        ],
+        "x": 3935,
+        "y": 1540,
+        "wires": []
+    },
+    {
+        "id": "47cbbf0d02c8c653",
+        "type": "comment",
+        "z": "743b84be8cadd541",
+        "name": "Touch on again",
+        "info": "",
+        "x": 4040,
+        "y": 1540,
+        "wires": []
+    },
+    {
+        "id": "8d6a78c9b65f501e",
+        "type": "link out",
+        "z": "743b84be8cadd541",
+        "name": "Write ticket",
+        "mode": "link",
+        "links": [
+            "9edc1aa45ae92258"
+        ],
+        "x": 4155,
+        "y": 1640,
+        "wires": []
+    },
+    {
+        "id": "22bb8ac67ef16fec",
+        "type": "comment",
+        "z": "743b84be8cadd541",
+        "name": "Write ticket",
+        "info": "",
+        "x": 4240,
+        "y": 1640,
+        "wires": []
+    },
+    {
+        "id": "816d82f5897434de",
+        "type": "link out",
+        "z": "743b84be8cadd541",
+        "name": "Touch off",
+        "mode": "link",
+        "links": [
+            "bbbf9fca315355da"
+        ],
+        "x": 1715,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "e4a511440727ca75",
+        "type": "comment",
+        "z": "743b84be8cadd541",
+        "name": "Touch off",
+        "info": "",
+        "x": 1800,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "6aaab1c82924d7a0",
+        "type": "function",
+        "z": "743b84be8cadd541",
+        "name": "Get last location details",
+        "func": "if (!msg.hasOwnProperty('lastLocDetails')) {\n    msg.lastLocDetails = msg.staticData.locations[msg.details.lastTransaction.location] || null;\n\n    if (!msg.lastLocDetails) {\n        msg.statusCode = 500;\n        msg.payload = {\n            status: msg.statusCode,\n            message: `Invalid location ID ${msg.details.lastTransaction.location}`,\n            time: Date.now()\n        };\n    }\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 3450,
+        "y": 1580,
+        "wires": [
+            [
+                "aa45ee7ec0d521e9"
+            ]
+        ]
+    },
+    {
+        "id": "024aa310a84e34cb",
+        "type": "http response",
+        "z": "743b84be8cadd541",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1950,
+        "y": 1220,
+        "wires": []
+    },
+    {
+        "id": "4b6fa6eacd5745dc",
+        "type": "debug",
+        "z": "743b84be8cadd541",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1400,
+        "y": 240,
+        "wires": []
     }
 ]
