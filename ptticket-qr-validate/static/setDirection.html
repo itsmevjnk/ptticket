@@ -77,13 +77,7 @@
                     // console.log(document.cookie);
                     // return;
 
-                    $.getJSON('testAuth', (data) => {
-                        $('#token').addClass('is-valid');
-                        window.location.href = 'index.html'; // done
-                    }).fail((jqxhr, textStatus, err) => {
-                        console.log(err);
-                        $('#token').addClass('is-invalid');                        
-                    });
+                    window.location.href = 'index.html'; // done
                 });
             });
         </script>
