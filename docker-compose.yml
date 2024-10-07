@@ -11,7 +11,7 @@ services:
       POSTGRES_PASSWORD: postgres
     volumes:
       - ./db/dbinit.sql:/docker-entrypoint-initdb.d/dbinit.sql
-      - /var/postgres:/var/lib/postgresql/data
+      - ./docker-files/postgres:/var/lib/postgresql/data
     restart: unless-stopped
   pgadmin:
     container_name: ptticket-pgadmin
@@ -30,7 +30,7 @@ services:
       - MQTT_CLEAN=$MQTT_CLEAN
     volumes:
       - ./db/mqtt-init.sh:/mqtt-init.sh
-      - /var/mqtt:/mosquitto
+      - ./docker-files/mqtt:/mosquitto
     command:
       - /mqtt-init.sh
   mosquitto:
@@ -42,24 +42,12 @@ services:
       - "8883:8883"
     volumes:
       - ./db/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-      - /var/mqtt:/mosquitto
+      - ./docker-files/mqtt:/mosquitto
       - ./db/mqttcerts:/mqttcerts
     restart: unless-stopped
     depends_on:
       mosquitto-init:
         condition: service_completed_successfully
-  auth-watcher:
-    container_name: ptticket-auth-watcher
-    image: itsmevjnk/ptticket-auth-watcher
-    environment:
-      - DB_HOST=ptticket-postgres
-      - MQTT_HOST=ptticket-mqtt
-    restart: unless-stopped
-    depends_on:
-      mosquitto:
-        condition: service_started
-      postgres:
-        condition: service_started
   dbstatic:
     container_name: ptticket-dbstatic
     image: itsmevjnk/ptticket-dbstatic
@@ -80,39 +68,14 @@ services:
       - MQTT_HOST=ptticket-mqtt
     ports:
       - "3101:3000"
-  vending:
-    container_name: ptticket-vending-dev
-    hostname: ptticket-vending
+  validate-nr:
+    container_name: ptticket-validate-nr-dev
     image: nodered/node-red
-    environment:
-      - DBAPI_HOST=http://ptticket-dbapi:3000
     volumes:
-      - ./ptticket-vending:/data
-    ports:
-      - "3102:1880"
-  validate:
-    container_name: ptticket-validate
-    image: itsmevjnk/ptticket-validate
+      - ./ptticket-validate-nr:/data
     environment:
       - DATABASE_API=http://ptticket-dbapi:3000/api
       - MQTT_HOST=ptticket-mqtt
     ports:
-      - "3103:3000"
-  auth:
-    container_name: ptticket-auth
-    image: itsmevjnk/ptticket-auth
-    environment:
-      - DB_HOST=ptticket-postgres
-      - ADMIN_KEY=c6827a80-5b3e-4d5e-a537-8c5082ee91c2
-    ports:
-      - "3121:3000"
-  sc-vending:
-    container_name: ptticket-sc-vending-dev
-    image: nodered/node-red
-    environment:
-      - VENDING_API=http://ptticket-vending:1880/api
-    volumes:
-      - ./ptticket-sc-vending:/data
-    ports:
-      - "3131:1880"
+      - "3103:1880"
   
