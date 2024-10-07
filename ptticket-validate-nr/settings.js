@@ -20,6 +20,13 @@
  *
  **/
 
+process.env.MQTT_HOST = process.env.MQTT_HOST || '127.0.0.1';
+process.env.MQTT_PORT = process.env.MQTT_PORT || 1883;
+
+process.env.DATABASE_API = process.env.DATABASE_API || 'http://127.0.0.1:3101/api';
+
+process.env.TZ = 'Australia/Melbourne';
+
 module.exports = {
 
 /*******************************************************************************
