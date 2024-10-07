@@ -78,4 +78,14 @@ services:
       - MQTT_HOST=ptticket-mqtt
     ports:
       - "3103:1880"
+  vending:
+    container_name: ptticket-vending-dev
+    hostname: ptticket-vending
+    image: nodered/node-red
+    environment:
+      - DBAPI_HOST=http://ptticket-dbapi:3000
+    volumes:
+      - ./ptticket-vending:/data
+    ports:
+      - "3102:1880"
   
