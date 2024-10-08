@@ -669,19 +669,22 @@ const touchOff = (res, location, entryOnly, ticketID, details) => {
         // touchedOn = { id: details.touchedOn, ...respArray[1].data.message }; // replaces msg.onDetails
         fareType = { id: details.fareType, ...ftDetails };
 
+        let toffResp = null;
         let validatedDay = getPTDate(details.prodValidated);
         let today = getPTDate(Date.now());
         prodExpiredPrev = validatedDay.getTime() != today.getTime();
-        if (prodExpiredPrev) return new Promise((resolve, reject) => resolve({
+        if (prodExpiredPrev) toffResp = {
             farePending: 0,
             defaultTouchOff: true
-        })); // default touch off
+        }; // default touch off
+        else {
+            /* not rolling over to the next day yet - but we may still be expired */
+            let offProduct = (location.minProduct == 3)
+                ? ((details.touchedOn == 5 || details.touchedOn == 3) ? 5 : 1)
+                : location.minProduct;
+            toffResp = touchOffProduct(res, offProduct, ticketID, fareType, details, false); // {farePending: number, defaultTouchOff: boolean} or undefined
+        }
         
-        /* not rolling over to the next day yet - but we may still be expired */
-        let offProduct = (location.minProduct == 3)
-            ? ((details.touchedOn == 5 || details.touchedOn == 3) ? 5 : 1)
-            : location.minProduct;
-        let toffResp = touchOffProduct(res, offProduct, ticketID, fareType, details, false); // {farePending: number, defaultTouchOff: boolean} or undefined
         if (toffResp.defaultTouchOff)
             toffResp = touchOffProduct(res, lastTransaction.location.defaultProduct, ticketID, fareType, details, true);
         if (toffResp.defaultTouchOff)
